@@ -38,28 +38,13 @@ class BertForQA(Block):
         See document of `mx.gluon.Block`.
     params : ParameterDict or None
         See document of `mx.gluon.Block`.
-    n_rnn_layers: number of rnn layers added to the output of bert, 
-        before the dense layers (if any) and the span_classifier layer
-    rnn_hidden_size: the hidden size of each rnn layer
-    n_dense_layers : the number of dense layers,
-        before the final output (span_classifier) layer
-    units_dense    : the units of each dense layer
-    n_features     : # input features, needed to enable initialization
     """
 
-    def __init__(self, bert, prefix=None, params=None,
-                    n_rnn_layers=0, rnn_hidden_size=200,
-                    n_dense_layers=0, units_dense=200, add_query=False):
+    def __init__(self, bert, prefix=None, params=None):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
-        self.add_query=add_query
         self.bert = bert
-        self.span_classifier = nn.HybridSequential()
-        with self.span_classifier.name_scope():
-            for i in range(n_rnn_layers):
-                self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
-            for i in range(n_dense_layers):
-                self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-            self.span_classifier.add(nn.Dense(units=2, flatten=False))
+        with self.name_scope():
+            self.span_classifier = nn.Dense(units=2, flatten=False)
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -80,12 +65,6 @@ class BertForQA(Block):
             Shape (batch_size, seq_length, 2)
         """
         bert_output = self.bert(inputs, token_types, valid_length)
-        if self.add_query:
-            o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
-            mask = 1 - token_types
-            avg_q = mx.nd.sum(mx.nd.multiply(mask, o), axis=2) / mx.nd.sum(mask, axis=1)
-            o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
-            bert_output = mx.ndarray.transpose(o, axes=(1,2,0))
         output = self.span_classifier(bert_output)
         return output
 
