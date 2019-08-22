@@ -100,13 +100,13 @@ parser.add_argument('--uncased',
 parser.add_argument('--output_dir',
                     type=str,
                     default='./output_dir',
-                    help='The output directory where the model params will be written.'
+                    help='The output directory where the model params and predicted results will be written.'
                     ' default is ./output_dir')
 
 parser.add_argument('--epochs',
                     type=int,
-                    default=3,
-                    help='number of epochs, default is 3')
+                    default=2,
+                    help='number of epochs, default is 2')
 
 parser.add_argument('--batch_size',
                     type=int,
@@ -131,8 +131,8 @@ parser.add_argument('--accumulate',
 
 parser.add_argument('--lr',
                     type=float,
-                    default=5e-5,
-                    help='Initial learning rate. default is 5e-5')
+                    default=6e-5,
+                    help='Initial learning rate. default is 6e-5')
 
 parser.add_argument('--warmup_ratio',
                     type=float,
@@ -183,9 +183,9 @@ parser.add_argument('--version_2',
 
 parser.add_argument('--null_score_diff_threshold',
                     type=float,
-                    default=0.0,
+                    default=-2.0,
                     help='If null_score - best_non_null is greater than the threshold predict null.'
-                    'Typical values are between -1.0 and -5.0. default is 0.0')
+                    'Typical values are between -1.0 and -5.0. default is -2.0')
 
 parser.add_argument('--gpu',
                     type=int,
