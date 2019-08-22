@@ -122,3 +122,6 @@ conda
 
 # vscode
 .vscode
+scripts/word_embeddings/tools/extern/CLI11/
+scripts/word_embeddings/tools/extern/cnpy/
+scripts/word_embeddings/tools/extern/sparsepp/
