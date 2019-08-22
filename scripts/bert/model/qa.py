@@ -26,6 +26,8 @@ from mxnet import gluon, nd
 import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
 
+EMB_ENCODER_CONV_CHANNELS = 128
+
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
