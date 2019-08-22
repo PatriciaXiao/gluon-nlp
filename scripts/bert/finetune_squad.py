@@ -321,6 +321,9 @@ else:
     # no checkpoint is loaded
     net.initialize(init=mx.init.Normal(0.02), ctx=ctx)
 
+if args.apply_coattention:
+    net.co_attention.collect_params().initialize(ctx=ctx)
+
 net.hybridize(static_alloc=True)
 
 loss_function = BertForQALoss()
