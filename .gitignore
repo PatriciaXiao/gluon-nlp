@@ -125,4 +125,7 @@ conda
 
 # vscode
 .vscode
+
 *.DS_Store
+scripts/word_embeddings/tools/extern/cnpy
+scripts/word_embeddings/tools/extern/cnpy
