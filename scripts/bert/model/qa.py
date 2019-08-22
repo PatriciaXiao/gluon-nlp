@@ -144,7 +144,7 @@ class CoAttention(gluon.HybridBlock):
         return similarity_mat
 
 
-class BertForQA(Block):
+class BertForQA(gluon.HybridBlock):
     """Model for SQuAD task with BERT.
 
     The model feeds token ids and token type ids into BERT to get the
