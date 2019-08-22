@@ -208,10 +208,15 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
-            mask_q = 1 - token_types
-            context_max_len = query_max_len = bert_output.shape[1]
-            attended_output = self.co_attention(bert_output, bert_output, token_types,
-                                        mask_q, context_max_len, query_max_len)
+            context_mask = token_types
+            query_mask = 1 - context_mask
+            context_max_len = int(context_mask.sum(axis=1).max().asscalar())
+            query_max_len = int(query_mask.sum(axis=1).max().asscalar())
+            print(context_max_len)
+            print(query_max_len)
+            exit(0)
+            attended_output = self.co_attention(bert_output, bert_output, context_mask,
+                                        query_mask, context_max_len, query_max_len)
         if self.add_query or self.apply_coattention:
             output = self.span_classifier(attended_output)
         else:
