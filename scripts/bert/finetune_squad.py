@@ -69,7 +69,7 @@ formatter = logging.Formatter(
 
 # python finetune_squad.py --optimizer adam --batch_size 12 --lr 3e-5 --epochs 2 --gpu 0 --debug
 # python finetune_squad.py --optimizer adam --batch_size 12 --lr 3e-5 --epochs 2 --gpu 0 --debug --add_query
-# 
+# python finetune_squad.py --optimizer adam --batch_size 12 --lr 3e-5 --epochs 2 --gpu 0 --debug --apply_coattention
 
 parser = argparse.ArgumentParser(description='BERT QA example.'
                                  'We fine-tune the BERT model on SQuAD dataset.')
