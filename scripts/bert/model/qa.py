@@ -209,8 +209,9 @@ class BertForQA(Block):
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
             mask_q = 1 - token_types
-            attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, context_mask,
-                                        query_mask, context_max_len, query_max_len)
+            context_max_len = query_max_len = bert_output.shape[1]
+            attended_output = self.co_attention(bert_output, bert_output, token_types,
+                                        mask_q, context_max_len, query_max_len)
         if self.add_query or self.apply_coattention:
             output = self.span_classifier(attended_output)
         else:
