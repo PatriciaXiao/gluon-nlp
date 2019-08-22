@@ -67,6 +67,10 @@ formatter = logging.Formatter(
     fmt='%(levelname)s:%(name)s:%(asctime)s %(message)s', datefmt='%H:%M:%S')
 
 
+# python finetune_squad.py --optimizer adam --batch_size 12 --lr 3e-5 --epochs 2 --gpu 0 --debug
+# python finetune_squad.py --optimizer adam --batch_size 12 --lr 3e-5 --epochs 2 --gpu 0 --debug --add_query
+# 
+
 parser = argparse.ArgumentParser(description='BERT QA example.'
                                  'We fine-tune the BERT model on SQuAD dataset.')
 
@@ -206,6 +210,9 @@ parser.add_argument('--debug',
 parser.add_argument('--add_query', action='store_true', default=False,
                     help='add the embedding of query to the part of context if needed')
 
+parser.add_argument('--apply_coattention', action='store_true', default=False,
+                    help='apply coattention to BERT\' output')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -298,7 +305,7 @@ batchify_fn = nlp.data.batchify.Tuple(
     nlp.data.batchify.Stack('float32'),
     nlp.data.batchify.Stack('float32'))
 
-net = BertForQA(bert=bert, add_query=args.add_query)
+net = BertForQA(bert=bert, add_query=args.add_query, apply_coattention=args.apply_coattention)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
