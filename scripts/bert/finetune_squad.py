@@ -35,6 +35,8 @@ SQuAD, with Gluon NLP Toolkit.
 # under the License.
 # pylint:disable=redefined-outer-name,logging-format-interpolation
 
+# 
+
 import argparse
 import collections
 import json
@@ -201,6 +203,9 @@ parser.add_argument('--debug',
                     action='store_true',
                     help='Run the example in test mode for sanity checks')
 
+parser.add_argument('--add_query', action='store_true', default=False,
+                    help='add the embedding of query to the part of context if needed')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -293,7 +298,7 @@ batchify_fn = nlp.data.batchify.Tuple(
     nlp.data.batchify.Stack('float32'),
     nlp.data.batchify.Stack('float32'))
 
-net = BertForQA(bert=bert)
+net = BertForQA(bert=bert, add_query=args.add_query)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
