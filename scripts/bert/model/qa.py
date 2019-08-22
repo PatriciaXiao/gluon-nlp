@@ -124,13 +124,16 @@ class CoAttention(gluon.HybridBlock):
         query : NDArray
             input tensor with shape `(batch_size, query_sequence_length, hidden_size)`
         context_max_len : int
-        context_max_len : int
+        query_max_len : int
 
         Returns
         --------
         similarity_mat : NDArray
             output tensor with shape `(batch_size, context_sequence_length, query_sequence_length)`
         """
+        print(query_max_len)
+        print(context_max_len)
+        exit(0)
 
         subres0 = nd.tile(self.w4c(context), [1, 1, query_max_len])
         subres1 = nd.tile(nd.transpose(
