@@ -11,7 +11,7 @@ import sys
 
 OPTS = None
 
-# python evaluate-v2.0.py dev-v2.0.json predictions.json
+# python myeval.py dev-v2.0.json XXX/predictions.json
 
 def parse_args():
     parser = argparse.ArgumentParser('Official evaluation script for SQuAD version 2.0.')
