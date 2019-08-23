@@ -486,10 +486,9 @@ def train():
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
 
-            step_loss += sum([parallel.get().asscalar() for _ in ctx])
-
-            print("it works here")
-            exit(0)
+            looses = [parallel.get() for _ in ctx]
+            print(batch_id, [ls.asscalar() for ls in looses])
+            step_loss = step_loss + sum([ls.asscalar() for ls in looses])
 
             if (batch_id + 1) % log_interval == 0:
                 toc = time.time()
