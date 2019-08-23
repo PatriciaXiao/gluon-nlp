@@ -216,8 +216,9 @@ class BertForQA(Block):
         if self.apply_coattention:
             context_mask = token_types
             query_mask = 1 - context_mask
-            context_max_len = context_mask.sum(axis=1).max()
-            query_max_len = query_mask.sum(axis=1).max()
+            # context_max_len = context_mask.sum(axis=1).max()
+            # query_max_len = query_mask.sum(axis=1).max()
+            context_max_len = query_max_len = bert_output.shape[1]
             print(query_max_len)
             print(type(query_max_len))
             exit(0)
