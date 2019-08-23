@@ -46,7 +46,7 @@ def mask_logits(x, mask):
         """
     return x + -1e30 * (1 - mask)
 
-class CoAttention(Block):
+class CoAttention(gluon.HybridBlock):
     r"""
     An implementation of co-attention block.
     """
@@ -71,8 +71,8 @@ class CoAttention(Block):
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
-    def forward(self, context, query, context_mask, query_mask,
-                       context_max_len, query_max_len):
+    def hybrid_forward(self, F, context, query, context_mask, query_mask,
+                       context_max_len, query_max_len, w4mlu, bias):
         """Implement forward computation.
 
         Parameters
@@ -93,19 +93,13 @@ class CoAttention(Block):
         return : NDArray
             output tensor with shape `(batch_size, context_sequence_length, 4*hidden_size)`
         """
-
-        context_mask = context_mask.expand_dims(axis=-1)
-        query_mask = query_mask.expand_dims(axis=1)
-
-        context_max_len = int(context_max_len.asscalar())
-        query_max_len = int(query_max_len.asscalar())
+        context_mask = F.expand_dims(context_mask, axis=-1)
+        query_mask = F.expand_dims(query_mask, axis=1)
 
         similarity = self._calculate_trilinear_similarity(
-            context, query, context_max_len, query_max_len, self.w4mlu, self.bias)
+            context, query, context_max_len, query_max_len, w4mlu, bias)
 
-        exit(0)
-
-        similarity_dash = mx.ndarray.softmax(mask_logits(similarity, query_mask))
+        similarity_dash = F.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = F.transpose(F.softmax(
             mask_logits(similarity, context_mask), axis=1), axes=(0, 2, 1))
         c2q = F.batch_dot(similarity_dash, query)
@@ -131,7 +125,7 @@ class CoAttention(Block):
         query : NDArray
             input tensor with shape `(batch_size, query_sequence_length, hidden_size)`
         context_max_len : int
-        query_max_len : int
+        context_max_len : int
 
         Returns
         --------
@@ -146,6 +140,7 @@ class CoAttention(Block):
                                nd.transpose(query, axes=(0, 2, 1)))
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
+
 
 
 class BertForQA(Block):
