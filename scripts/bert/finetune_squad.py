@@ -305,7 +305,12 @@ batchify_fn = nlp.data.batchify.Tuple(
     nlp.data.batchify.Stack('float32'),
     nlp.data.batchify.Stack('float32'))
 
-net = BertForQA(bert=bert, add_query=args.add_query, apply_coattention=args.apply_coattention)
+BERT_DIM = {
+    'bert_12_768_12': 768,
+    'bert_24_1024_16': 1024
+}
+
+net = BertForQA(bert=bert, add_query=args.add_query, apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model])
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)

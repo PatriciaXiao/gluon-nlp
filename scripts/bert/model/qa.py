@@ -27,8 +27,6 @@ import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
 from mxnet import symbol
 
-EMB_ENCODER_CONV_CHANNELS = 128
-
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
@@ -67,7 +65,7 @@ class CoAttention(gluon.HybridBlock):
                 use_bias=False
             )
             self.w4mlu = self.params.get(
-                'linear_kernel', shape=(1, 1, EMB_ENCODER_CONV_CHANNELS), init=mx.init.Xavier())
+                'linear_kernel', shape=(1, 1, kwargs['EMB_ENCODER_CONV_CHANNELS']), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
@@ -174,13 +172,13 @@ class BertForQA(Block):
 
     def __init__(self, bert, prefix=None, params=None,
                     n_rnn_layers=0, rnn_hidden_size=200,
-                    n_dense_layers=0, units_dense=200, add_query=False, apply_coattention=False):
+                    n_dense_layers=0, units_dense=200, add_query=False, apply_coattention=False, bert_out_dim=768):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         if self.apply_coattention:
             with self.name_scope():
-                self.co_attention = CoAttention()
+                self.co_attention = CoAttention(EMB_ENCODER_CONV_CHANNELS=bert_out_dim)
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
