@@ -92,12 +92,17 @@ class CoAttention(gluon.HybridBlock):
         return : NDArray
             output tensor with shape `(batch_size, context_sequence_length, 4*hidden_size)`
         """
+        print(query_max_len)
+        print(context_max_len)
+        print(context)
+        print(context_mask)
+        print(query)
+        print(query_mask)
+        exit(0)
+
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
-        print(query_max_len)
-        print(context_max_len)
-        exit(0)
         context_max_len = int(context_max_len.asscalar())
         query_max_len = int(query_max_len.asscalar())
 
