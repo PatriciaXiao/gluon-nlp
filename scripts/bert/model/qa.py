@@ -72,7 +72,7 @@ class CoAttention(gluon.HybridBlock):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
     def forward(self, context, query, context_mask, query_mask,
-                       context_max_len, query_max_len, w4mlu, bias):
+                       context_max_len, query_max_len):
         """Implement forward computation.
 
         Parameters
@@ -94,6 +94,9 @@ class CoAttention(gluon.HybridBlock):
             output tensor with shape `(batch_size, context_sequence_length, 4*hidden_size)`
         """
         F = nd
+        ctx = context.context
+        w4mlu = self.w4mlu.data(ctx)
+        bias = self.bias.data(ctx)
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
@@ -213,8 +216,6 @@ class BertForQA(Block):
         if self.apply_coattention:
             context_mask = token_types
             query_mask = 1 - context_mask
-            # context_max_len = context_mask.sum(axis=1).max()
-            # query_max_len = query_mask.sum(axis=1).max()
             context_max_len = query_max_len = bert_output.shape[1]
             attended_output = self.co_attention(bert_output, bert_output, context_mask, query_mask, query_max_len, context_max_len)
         if self.add_query or self.apply_coattention:
