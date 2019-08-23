@@ -93,19 +93,9 @@ class CoAttention(Block):
         return : NDArray
             output tensor with shape `(batch_size, context_sequence_length, 4*hidden_size)`
         """
-        print(query_max_len)
-        print(context_max_len)
-        print(context)
-        print(context_mask)
-        print(query)
-        print(query_mask)
 
         context_mask = context_mask.expand_dims(axis=-1)
         query_mask = query_mask.expand_dims(axis=1)
-
-        print(context_mask)
-        print(query_mask)
-        exit(0)
 
         context_max_len = int(context_max_len.asscalar())
         query_max_len = int(query_max_len.asscalar())
@@ -113,7 +103,9 @@ class CoAttention(Block):
         similarity = self._calculate_trilinear_similarity(
             context, query, context_max_len, query_max_len, self.w4mlu, self.bias)
 
-        similarity_dash = F.softmax(mask_logits(similarity, query_mask))
+        exit(0)
+
+        similarity_dash = mx.ndarray.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = F.transpose(F.softmax(
             mask_logits(similarity, context_mask), axis=1), axes=(0, 2, 1))
         c2q = F.batch_dot(similarity_dash, query)
