@@ -226,8 +226,9 @@ class BertForQA(Block):
             attended_output = self.co_attention(bert_output, bert_output, context_mask, query_mask, query_max_len, context_max_len)
         if self.apply_self_attention:
             context_vec, att_weights = self.multi_head_attention(bert_output, bert_output)
+            print(bert_output)
             print(context_vec)
-            print(att_weights)
+            # print(att_weights)
             print("it works")
             exit(0)
         if self.add_query or self.apply_coattention:
