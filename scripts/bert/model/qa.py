@@ -27,7 +27,7 @@ import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
 
 import gluonnlp as nlp
-from nlp.model.attention_cell import MultiHeadAttentionCell
+from gluonnlp.model.attention_cell import MultiHeadAttentionCell
 
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
