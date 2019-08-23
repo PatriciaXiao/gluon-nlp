@@ -71,7 +71,7 @@ class CoAttention(gluon.HybridBlock):
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
-    def forward(self, F, context, query, context_mask, query_mask,
+    def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, w4mlu, bias):
         """Implement forward computation.
 
