@@ -218,10 +218,10 @@ class BertForQA(Block):
             query_mask = 1 - context_mask
             # context_max_len = context_mask.sum(axis=1).max()
             # query_max_len = query_mask.sum(axis=1).max()
-            context_max_len = query_max_len = bert_output.shape[1]
-            print(query_max_len)
-            print(type(query_max_len))
-            exit(0)
+            context_max_len = query_max_len = nd.array([bert_output.shape[1]])
+            # print(query_max_len)
+            # print(type(query_max_len))
+            # exit(0)
             attended_output = self.co_attention(bert_output, bert_output, context_mask,
                                         query_mask, context_max_len, query_max_len)
         if self.add_query or self.apply_coattention:
