@@ -141,6 +141,7 @@ class CoAttention(gluon.HybridBlock):
         subres1 = nd.tile(nd.transpose(
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
         print(w4mlu, context)
+        exit(0)
         subres2 = nd.batch_dot(w4mlu * context,
                                nd.transpose(query, axes=(0, 2, 1)))
         similarity_mat = subres0 + subres1 + subres2 + bias
