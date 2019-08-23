@@ -466,7 +466,7 @@ def train():
 
             data_split = [gluon.utils.split_and_load(x, ctx) for x in data]
 
-            print(data_split[0])
+            print(data_split[1])
             print("it is syntac legal")
             exit(0)
 
