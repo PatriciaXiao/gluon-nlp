@@ -184,7 +184,7 @@ class BertForQA(Block):
                 self.co_attention = CoAttention(str(bert_out_dim))
         if self.apply_self_attention:
             with self.name_scope():
-                self.multi_head_attention = MultiHeadAttentionCell(DotProductAttentionCell, 2,2,2,1)
+                self.multi_head_attention = MultiHeadAttentionCell(DotProductAttentionCell(), 2,2,2,1)
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
