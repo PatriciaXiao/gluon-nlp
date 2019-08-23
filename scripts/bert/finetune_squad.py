@@ -358,8 +358,9 @@ class ParallelNet(Parallelizable):
         self._net = net
         self._loss = loss_function
         self.accumulate = accumulate
-    def forward_backward(self, inputs, token_types, valid_length, start_label, end_label):
+    def forward_backward(self, x):
         with mx.autograd.record():
+            inputs, token_types, valid_length, start_label, end_label = x
             out = self._net(inputs.astype('float32'),
                           token_types.astype('float32'),
                           valid_length.astype('float32'))
@@ -468,11 +469,12 @@ def train():
             num_parallel = len(ctx)
 
             for pidx in range(num_parallel):
-                parallel.put(inputs[pidx], 
-                             token_types[pidx], 
-                             valid_length[pidx], 
-                             start_label[pidx], 
-                             end_label[pidx])
+                x = (inputs[pidx], 
+                     token_types[pidx], 
+                     valid_length[pidx], 
+                     start_label[pidx], 
+                     end_label[pidx])
+                parallel.put(x)
 
             step_loss += sum([parallel.get().asscalar() for _ in ctx])
 
