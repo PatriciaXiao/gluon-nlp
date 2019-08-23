@@ -489,7 +489,6 @@ def train():
             losses = [parallel.get() for _ in ctx]
             for ls in losses:
                 print("batch id", batch_id)
-                print("loss", ls)
                 print("loss value", ls.asscalar())
             step_loss = step_loss + sum([ls.asscalar() for ls in losses])
 
