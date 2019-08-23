@@ -26,6 +26,9 @@ from mxnet import gluon, nd
 import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
 
+import gluonnlp as nlp
+from nlp.model.attention_cell import MultiHeadAttentionCell
+
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
@@ -167,15 +170,21 @@ class BertForQA(Block):
     n_features     : # input features, needed to enable initialization
     """
 
-    def __init__(self, bert, prefix=None, params=None,
-                    n_rnn_layers=0, rnn_hidden_size=200,
-                    n_dense_layers=0, units_dense=200, add_query=False, apply_coattention=False, bert_out_dim=768):
+    def __init__(self, bert, prefix=None, params=None, \
+                    n_rnn_layers=0, rnn_hidden_size=200, n_dense_layers=0, units_dense=200, \
+                    add_query=False, \
+                    apply_coattention=False, bert_out_dim=768,\
+                    apply_self_attention=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
+        self.apply_self_attention = apply_self_attention
         if self.apply_coattention:
             with self.name_scope():
                 self.co_attention = CoAttention(str(bert_out_dim))
+        if self.apply_self_attention:
+            with self.name_scope():
+                self.multi_head_attention = MultiHeadAttentionCell(2,2,2,1)
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():

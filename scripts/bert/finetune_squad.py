@@ -213,6 +213,9 @@ parser.add_argument('--add_query', action='store_true', default=False,
 parser.add_argument('--apply_coattention', action='store_true', default=False,
                     help='apply coattention to BERT\' output')
 
+parser.add_argument('--apply_self_attention', action='store_true', default=False,
+                    help='apply self-attention to BERT\' output')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -310,7 +313,10 @@ BERT_DIM = {
     'bert_24_1024_16': 1024
 }
 
-net = BertForQA(bert=bert, add_query=args.add_query, apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model])
+net = BertForQA(bert=bert, \
+    add_query=args.add_query, \
+    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
+    apply_self_attention=args.apply_self_attention)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
