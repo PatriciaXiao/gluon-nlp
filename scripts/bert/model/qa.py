@@ -72,7 +72,7 @@ class CoAttention(Block):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
     def forward(self, context, query, context_mask, query_mask,
-                       context_max_len, query_max_len, w4mlu, bias):
+                       context_max_len, query_max_len):
         """Implement forward computation.
 
         Parameters
@@ -111,7 +111,7 @@ class CoAttention(Block):
         query_max_len = int(query_max_len.asscalar())
 
         similarity = self._calculate_trilinear_similarity(
-            context, query, context_max_len, query_max_len, w4mlu, bias)
+            context, query, context_max_len, query_max_len, self.w4mlu, self.bias)
 
         similarity_dash = F.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = F.transpose(F.softmax(
