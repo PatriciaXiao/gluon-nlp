@@ -464,7 +464,8 @@ def train():
             # forward and backward
             with mx.autograd.record():
 
-                data = gluon.utils.split_and_load(batch, ctx)
+                data_split = gluon.utils.split_and_load(data, ctx)
+                print(data_split[0])
                 print("it is syntac legal")
                 exit(0)
                 _, inputs, token_types, valid_length, start_label, end_label = data
