@@ -99,7 +99,7 @@ class CoAttention(gluon.HybridBlock):
         query_mask = nd.expand_dims(query_mask, axis=1)
 
         similarity = self._calculate_trilinear_similarity(
-            context, query, self.context_max_len, self.query_max_len, w4mlu, bias)
+            context, query, context_max_len, query_max_len)
 
         similarity_dash = nd.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = nd.transpose(F.softmax(
