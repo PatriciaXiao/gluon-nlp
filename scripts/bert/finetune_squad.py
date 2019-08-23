@@ -368,10 +368,7 @@ class ParallelNet(Parallelizable):
         loss.backward()
         return loss
 
-parallel = Parallel(len(ctx), ParallelNet(accumulate))
-
-print("safe here")
-exit(0)
+# parallel = Parallel(len(ctx), ParallelNet(accumulate))
 
 def train():
     """Training function."""
@@ -456,9 +453,6 @@ def train():
     total_num = 0
     log_num = 0
 
-    print("safe throughout here")
-    exit(0)
-
     for epoch_id in range(epochs):
         step_loss = 0.0
         tic = time.time()
@@ -467,6 +461,10 @@ def train():
             step_num = set_new_lr(step_num, batch_id)
             # forward and backward
             with mx.autograd.record():
+
+                data = gluon.utils.split_and_load(batch, ctx)
+                print("it is syntac legal")
+                exit(0)
                 _, inputs, token_types, valid_length, start_label, end_label = data
 
                 log_num += len(inputs)
