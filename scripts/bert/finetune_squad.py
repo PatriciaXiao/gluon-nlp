@@ -462,13 +462,15 @@ def train():
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
             # forward and backward
-            with mx.autograd.record():
-                _, inputs, token_types, valid_length, start_label, end_label = data
+            _, inputs, token_types, valid_length, start_label, end_label = data
 
-                data_split = gluon.utils.split_and_load(inputs, ctx)
-                print(data_split[0])
-                print("it is syntac legal")
-                exit(0)
+            data_split = [gluon.utils.split_and_load(x, ctx), for x in data]
+
+            print(data_split[0])
+            print("it is syntac legal")
+            exit(0)
+
+            with mx.autograd.record():
 
                 log_num += len(inputs)
                 total_num += len(inputs)
