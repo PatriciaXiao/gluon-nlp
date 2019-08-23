@@ -53,6 +53,8 @@ class CoAttention(gluon.HybridBlock):
 
     def __init__(self, **kwargs):
         super(CoAttention, self).__init__(**kwargs)
+        self.query_max_len = 0
+        self.context_max_len = 0
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
@@ -71,8 +73,12 @@ class CoAttention(gluon.HybridBlock):
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
+    def set_query_length(self, query_max_len, context_max_len):
+        self.query_max_len = query_max_len
+        self.context_max_len = context_max_len
+
     def hybrid_forward(self, F, context, query, context_mask, query_mask,
-                       context_max_len, query_max_len, w4mlu, bias):
+                        w4mlu, bias):
         """Implement forward computation.
 
         Parameters
@@ -96,8 +102,8 @@ class CoAttention(gluon.HybridBlock):
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
-        similarity = self._calculate_trilinear_similarity( F, # F for mxnet.symbol
-            context, query, context_max_len, query_max_len, w4mlu, bias)
+        similarity = self._calculate_trilinear_similarity(
+            context, query, self.context_max_len, self.query_max_len, w4mlu, bias)
 
         similarity_dash = F.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = F.transpose(F.softmax(
@@ -107,7 +113,7 @@ class CoAttention(gluon.HybridBlock):
             similarity_dash, similarity_dash_trans), context)
         return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
 
-    def _calculate_trilinear_similarity(self, F, context, query, context_max_len, query_max_len,
+    def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
         """Implement the computation of trilinear similarity function.
 
@@ -133,11 +139,11 @@ class CoAttention(gluon.HybridBlock):
             output tensor with shape `(batch_size, context_sequence_length, query_sequence_length)`
         """
 
-        subres0 = F.tile(self.w4c(context), [1, 1, query_max_len])
-        subres1 = F.tile(F.transpose(
+        subres0 = nd.tile(self.w4c(context), [1, 1, query_max_len])
+        subres1 = nd.tile(nd.transpose(
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
-        subres2 = F.batch_dot(w4mlu * context,
-                               F.transpose(query, axes=(0, 2, 1)))
+        subres2 = nd.batch_dot(w4mlu * context,
+                               nd.transpose(query, axes=(0, 2, 1)))
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
@@ -215,11 +221,8 @@ class BertForQA(Block):
             # context_max_len = context_mask.sum(axis=1).max()
             # query_max_len = query_mask.sum(axis=1).max()
             context_max_len = query_max_len = nd.array([bert_output.shape[1]])
-            # print(query_max_len)
-            # print(type(query_max_len))
-            # exit(0)
-            attended_output = self.co_attention(bert_output, bert_output, context_mask,
-                                        query_mask, context_max_len, query_max_len)
+            self.co_attention(query_max_len, context_max_len)
+            attended_output = self.co_attention(bert_output, bert_output, context_mask, query_mask)
         if self.add_query or self.apply_coattention:
             output = self.span_classifier(attended_output)
         else:
