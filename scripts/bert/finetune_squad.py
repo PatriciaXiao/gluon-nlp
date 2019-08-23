@@ -462,11 +462,11 @@ def train():
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
             # forward and backward
-            _, inputs, token_types, valid_length, start_label, end_label = data
+            data_in_context = [gluon.utils.split_and_load(x, ctx) for x in data]
 
-            data_split = [gluon.utils.split_and_load(x, ctx) for x in data]
+            _, inputs, token_types, valid_length, start_label, end_label = data_in_context
 
-            print(data_split[1])
+            print(inputs[1])
             print("it is syntac legal")
             exit(0)
 
