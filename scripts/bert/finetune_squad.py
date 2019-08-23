@@ -372,7 +372,8 @@ class ParallelNet(Parallelizable):
         loss.backward()
         return loss
 
-parallel = Parallel(len(ctx), ParallelNet(accumulate))
+# parallel_net = ParallelNet(accumulate)
+# parallel = Parallel(len(ctx), parallel_net)
 
 def train():
     """Training function."""
@@ -457,6 +458,9 @@ def train():
     total_num = 0
     log_num = 0
 
+    parallel_net = ParallelNet(accumulate)
+    parallel = Parallel(len(ctx), parallel_net)
+
     for epoch_id in range(epochs):
         step_loss = 0.0
         tic = time.time()
@@ -504,7 +508,7 @@ def train():
         epoch_toc = time.time()
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
-    # mx.nd.waitall()
+        mx.nd.waitall()
     # net.save_parameters(os.path.join(output_dir, 'net.params'))
 
 
