@@ -116,18 +116,18 @@ parser.add_argument('--epochs',
 
 parser.add_argument('--batch_size',
                     type=int,
-                    default=32,
-                    help='Batch size. Number of examples per gpu in a minibatch. default is 32')
+                    default=12,
+                    help='Batch size. Number of examples per gpu in a minibatch. default is 12')
 
 parser.add_argument('--test_batch_size',
                     type=int,
-                    default=24,
-                    help='Test batch size. default is 24')
+                    default=12,
+                    help='Test batch size. default is 12')
 
 parser.add_argument('--optimizer',
                     type=str,
-                    default='bertadam',
-                    help='optimization algorithm. default is bertadam(mxnet >= 1.5.0.)')
+                    default='adam',
+                    help='optimization algorithm. default is adam, bertadam is also usable (mxnet >= 1.5.0.)')
 
 parser.add_argument('--accumulate',
                     type=int,
