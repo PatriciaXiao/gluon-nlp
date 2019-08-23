@@ -25,7 +25,6 @@ from mxnet.gluon.loss import Loss
 from mxnet import gluon, nd
 import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
-from mxnet import symbol
 
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
