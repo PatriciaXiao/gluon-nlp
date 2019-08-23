@@ -255,8 +255,8 @@ if pretrained_bert_parameters and model_parameters:
 lower = args.uncased
 
 epochs = args.epochs
-batch_size = args.batch_size * len(ctx)
-test_batch_size = args.test_batch_size * len(ctx)
+batch_size = args.batch_size
+test_batch_size = args.test_batch_size
 lr = args.lr
 
 accumulate = args.accumulate
@@ -358,8 +358,7 @@ class ParallelNet(Parallelizable):
         self._net = net
         self._loss = loss_function
         self.accumulate = accumulate
-    def forward_backward(self, x):
-        _, inputs, token_types, valid_length, start_label, end_label = x
+    def forward_backward(self, inputs, token_types, valid_length, start_label, end_label):
         with mx.autograd.record():
             out = self._net(inputs.astype('float32'),
                           token_types.astype('float32'),
@@ -370,7 +369,7 @@ class ParallelNet(Parallelizable):
         loss.backward()
         return loss
 
-# parallel = Parallel(len(ctx), ParallelNet(accumulate))
+parallel = Parallel(len(ctx), ParallelNet(accumulate))
 
 def train():
     """Training function."""
@@ -466,7 +465,18 @@ def train():
 
             _, inputs, token_types, valid_length, start_label, end_label = data_in_context
 
-            print(inputs[0])
+            num_parallel = len(ctx)
+
+            for pidx in range(num_parallel):
+                parallel.put(inputs[pidx], 
+                             token_types[pidx], 
+                             valid_length[pidx], 
+                             start_label[pidx], 
+                             end_label[pidx])
+
+            step_loss += sum([parallel.get().asscalar() for _ in ctx])
+
+            print(step_loss)
             print("it is syntac legal")
             exit(0)
 
