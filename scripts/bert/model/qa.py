@@ -95,6 +95,9 @@ class CoAttention(gluon.HybridBlock):
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
+        context_max_len = int(context_mask_len.asscalar())
+        query_max_len = int(query_mask_len.asscalar())
+
         similarity = self._calculate_trilinear_similarity(
             context, query, context_max_len, query_max_len, w4mlu, bias)
 
@@ -213,8 +216,8 @@ class BertForQA(Block):
         if self.apply_coattention:
             context_mask = token_types
             query_mask = 1 - context_mask
-            context_max_len = int(context_mask.sum(axis=1).max().asscalar())
-            query_max_len = int(query_mask.sum(axis=1).max().asscalar())
+            context_max_len = context_mask.sum(axis=1).max()
+            query_max_len = query_mask.sum(axis=1).max()
             attended_output = self.co_attention(bert_output, bert_output, context_mask,
                                         query_mask, context_max_len, query_max_len)
             exit(0)
