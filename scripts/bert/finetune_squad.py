@@ -57,10 +57,6 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from gluonnlp.utils import Parallel, Parallelizable
-
-from mxnet import gluon, init, autograd, nd
-
 np.random.seed(6)
 random.seed(6)
 mx.random.seed(6)
@@ -197,11 +193,16 @@ parser.add_argument('--null_score_diff_threshold',
                     help='If null_score - best_non_null is greater than the threshold predict null.'
                     'Typical values are between -1.0 and -5.0. default is -2.0')
 
+parser.add_argument('--gpu',
+                    type=int,
+                    default=None,
+                    help='which gpu to use for finetuning. CPU is used if not set.')
+'''
 parser.add_argument('--gpus',
                     type=str,
                     default=None,
                     help='list of gpus to run, e.g. 0 or 0,2,5. empty means using cpu.')
-
+'''
 parser.add_argument('--sentencepiece',
                     type=str,
                     default=None,
@@ -221,12 +222,6 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
                     help='apply self-attention to BERT\' output')
 
 args = parser.parse_args()
-
-ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
-          [mx.gpu(int(x)) for x in args.gpus.split(',')]
-os.environ['MXNET_GPU_MEM_POOL_TYPE'] = 'Round'
-os.environ['MXNET_CPU_PARALLEL_RAND_COPY'] = str(len(ctx))
-os.environ['MXNET_CPU_WORKER_NTHREADS'] = str(len(ctx))
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -259,6 +254,14 @@ batch_size = args.batch_size
 test_batch_size = args.test_batch_size
 lr = args.lr
 
+ctx = mx.cpu() if args.gpu is None else mx.gpu(args.gpu)
+# ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
+#           [mx.gpu(int(x)) for x in args.gpus.split(',')]
+'''
+os.environ['MXNET_GPU_MEM_POOL_TYPE'] = 'Round'
+os.environ['MXNET_CPU_PARALLEL_RAND_COPY'] = str(len(ctx))
+os.environ['MXNET_CPU_WORKER_NTHREADS'] = str(len(ctx))
+'''
 accumulate = args.accumulate
 log_interval = args.log_interval * accumulate if accumulate else args.log_interval
 if accumulate:
@@ -352,28 +355,6 @@ net.hybridize(static_alloc=True)
 loss_function = BertForQALoss()
 loss_function.hybridize(static_alloc=True)
 
-# https://github.com/dmlc/gluon-nlp/blob/master/src/gluonnlp/utils/parallel.py
-class ParallelNet(Parallelizable):
-    def __init__(self, accumulate):
-        self._net = net
-        self._loss = loss_function
-        self.accumulate = accumulate
-    def forward_backward(self, x):
-        with mx.autograd.record():
-            inputs, token_types, valid_length, start_label, end_label = x
-            out = self._net(inputs.astype('float32'),
-                          token_types.astype('float32'),
-                          valid_length.astype('float32'))
-            loss = self._loss(out, 
-                            [start_label.astype('float32'), 
-                             end_label.astype('float32')]).mean()
-            if self.accumulate is not None:
-                loss = loss / self.accumulate
-        loss.backward()
-        return loss
-
-# parallel_net = ParallelNet(accumulate)
-# parallel = Parallel(len(ctx), parallel_net)
 
 def train():
     """Training function."""
@@ -457,10 +438,6 @@ def train():
     epoch_tic = time.time()
     total_num = 0
     log_num = 0
-
-    parallel_net = ParallelNet(accumulate)
-    parallel = Parallel(len(ctx), parallel_net)
-
     for epoch_id in range(epochs):
         step_loss = 0.0
         tic = time.time()
@@ -468,33 +445,30 @@ def train():
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
             # forward and backward
-            data_in_context = [gluon.utils.split_and_load(x, ctx) for x in data]
+            with mx.autograd.record():
+                _, inputs, token_types, valid_length, start_label, end_label = data
 
-            _, inputs, token_types, valid_length, start_label, end_label = data_in_context
+                log_num += len(inputs)
+                total_num += len(inputs)
 
-            num_parallel = len(ctx)
+                out = net(inputs.astype('float32').as_in_context(ctx),
+                          token_types.astype('float32').as_in_context(ctx),
+                          valid_length.astype('float32').as_in_context(ctx))
 
-            for pidx in range(num_parallel):
-                log_num += len(inputs[pidx])
-                total_num += len(inputs[pidx])
-                x = (inputs[pidx], 
-                     token_types[pidx], 
-                     valid_length[pidx], 
-                     start_label[pidx], 
-                     end_label[pidx])
-                parallel.put(x)
+                ls = loss_function(out, [
+                    start_label.astype('float32').as_in_context(ctx),
+                    end_label.astype('float32').as_in_context(ctx)]).mean()
 
+                if accumulate:
+                    ls = ls / accumulate
+            ls.backward()
             # update
             if not accumulate or (batch_id + 1) % accumulate == 0:
                 trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
 
-            losses = [parallel.get() for _ in ctx]
-            for ls in losses:
-                print("batch id", batch_id)
-                print("loss value", ls.asscalar())
-            step_loss = step_loss + sum([ls.asscalar() for ls in losses])
+            step_loss += ls.asscalar()
 
             if (batch_id + 1) % log_interval == 0:
                 toc = time.time()
@@ -508,7 +482,7 @@ def train():
         epoch_toc = time.time()
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
-        mx.nd.waitall()
+
     # net.save_parameters(os.path.join(output_dir, 'net.params'))
 
 
@@ -610,6 +584,6 @@ def evaluate():
 if __name__ == '__main__':
     if not only_predict:
         train()
-        #evaluate()
+        evaluate()
     elif model_parameters:
         evaluate()
