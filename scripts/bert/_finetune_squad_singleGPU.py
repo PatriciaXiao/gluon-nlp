@@ -57,8 +57,6 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from gluonnlp.utils import Parallel, Parallelizable
-
 np.random.seed(6)
 random.seed(6)
 mx.random.seed(6)
@@ -195,11 +193,16 @@ parser.add_argument('--null_score_diff_threshold',
                     help='If null_score - best_non_null is greater than the threshold predict null.'
                     'Typical values are between -1.0 and -5.0. default is -2.0')
 
+parser.add_argument('--gpu',
+                    type=int,
+                    default=None,
+                    help='which gpu to use for finetuning. CPU is used if not set.')
+'''
 parser.add_argument('--gpus',
                     type=str,
                     default=None,
                     help='list of gpus to run, e.g. 0 or 0,2,5. empty means using cpu.')
-
+'''
 parser.add_argument('--sentencepiece',
                     type=str,
                     default=None,
@@ -219,12 +222,6 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
                     help='apply self-attention to BERT\' output')
 
 args = parser.parse_args()
-
-ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
-          [mx.gpu(int(x)) for x in args.gpus.split(',')]
-os.environ['MXNET_GPU_MEM_POOL_TYPE'] = 'Round'
-os.environ['MXNET_CPU_PARALLEL_RAND_COPY'] = str(len(ctx))
-os.environ['MXNET_CPU_WORKER_NTHREADS'] = str(len(ctx))
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -253,10 +250,18 @@ if pretrained_bert_parameters and model_parameters:
 lower = args.uncased
 
 epochs = args.epochs
-batch_size = args.batch_size * len(ctx)
-test_batch_size = args.test_batch_size * len(ctx)
+batch_size = args.batch_size
+test_batch_size = args.test_batch_size
 lr = args.lr
 
+ctx = mx.cpu() if args.gpu is None else mx.gpu(args.gpu)
+# ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
+#           [mx.gpu(int(x)) for x in args.gpus.split(',')]
+'''
+os.environ['MXNET_GPU_MEM_POOL_TYPE'] = 'Round'
+os.environ['MXNET_CPU_PARALLEL_RAND_COPY'] = str(len(ctx))
+os.environ['MXNET_CPU_WORKER_NTHREADS'] = str(len(ctx))
+'''
 accumulate = args.accumulate
 log_interval = args.log_interval * accumulate if accumulate else args.log_interval
 if accumulate:
@@ -350,8 +355,6 @@ net.hybridize(static_alloc=True)
 loss_function = BertForQALoss()
 loss_function.hybridize(static_alloc=True)
 
-print("safe throughout here")
-exit(0)
 
 def train():
     """Training function."""
