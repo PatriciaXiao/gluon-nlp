@@ -45,7 +45,7 @@ def mask_logits(x, mask):
         """
     return x + -1e30 * (1 - mask)
 
-class CoAttention(gluon.HybridBlock):
+class CoAttention(Block):
     r"""
     An implementation of co-attention block.
     """
