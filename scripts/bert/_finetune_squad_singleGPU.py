@@ -348,7 +348,7 @@ if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
 
 if args.apply_self_attention:
-    net.multi_head_attention.initialize(ctx=ctx)
+    net.multi_head_attention.collect_params().initialize(ctx=ctx)
 
 net.hybridize(static_alloc=True)
 
