@@ -374,8 +374,6 @@ def train():
 
     log.info('Start Training')
 
-    exit(0)
-
     optimizer_params = {'learning_rate': lr}
     try:
         trainer = mx.gluon.Trainer(net.collect_params(), optimizer,
@@ -453,6 +451,8 @@ def train():
                     ls = ls / accumulate
             ls.backward()
             # update
+
+            exit(0)
             if not accumulate or (batch_id + 1) % accumulate == 0:
                 trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(params, 1)
