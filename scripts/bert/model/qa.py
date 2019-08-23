@@ -49,8 +49,8 @@ class CoAttention(gluon.HybridBlock):
     An implementation of co-attention block.
     """
 
-    def __init__(self, **kwargs):
-        super(CoAttention, self).__init__(**kwargs)
+    def __init__(self, bert_out_dim, **kwargs):
+        super(CoAttention, self).__init__(bert_out_dim, **kwargs)
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
@@ -65,7 +65,7 @@ class CoAttention(gluon.HybridBlock):
                 use_bias=False
             )
             self.w4mlu = self.params.get(
-                'linear_kernel', shape=(1, 1, kwargs['EMB_ENCODER_CONV_CHANNELS']), init=mx.init.Xavier())
+                'linear_kernel', shape=(1, 1, bert_out_dim), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
@@ -176,7 +176,7 @@ class BertForQA(Block):
         self.apply_coattention = apply_coattention
         if self.apply_coattention:
             with self.name_scope():
-                self.co_attention = CoAttention(EMB_ENCODER_CONV_CHANNELS=bert_out_dim)
+                self.co_attention = CoAttention(bert_out_dim)
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
