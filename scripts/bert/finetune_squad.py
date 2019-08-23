@@ -59,6 +59,8 @@ from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
 from gluonnlp.utils import Parallel, Parallelizable
 
+from mxnet import gluon, init, autograd, nd
+
 np.random.seed(6)
 random.seed(6)
 mx.random.seed(6)
