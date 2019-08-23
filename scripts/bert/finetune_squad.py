@@ -471,6 +471,8 @@ def train():
             num_parallel = len(ctx)
 
             for pidx in range(num_parallel):
+                log_num += len(inputs[pidx])
+                total_num += len(inputs[pidx])
                 x = (inputs[pidx], 
                      token_types[pidx], 
                      valid_length[pidx], 
@@ -478,35 +480,13 @@ def train():
                      end_label[pidx])
                 parallel.put(x)
 
-            step_loss += sum([parallel.get().asscalar() for _ in ctx])
-
-            print(step_loss)
-            print("it is syntac legal")
-            exit(0)
-
-            with mx.autograd.record():
-
-                log_num += len(inputs)
-                total_num += len(inputs)
-
-                out = net(inputs.astype('float32').as_in_context(ctx),
-                          token_types.astype('float32').as_in_context(ctx),
-                          valid_length.astype('float32').as_in_context(ctx))
-
-                ls = loss_function(out, [
-                    start_label.astype('float32').as_in_context(ctx),
-                    end_label.astype('float32').as_in_context(ctx)]).mean()
-
-                if accumulate:
-                    ls = ls / accumulate
-            ls.backward()
             # update
             if not accumulate or (batch_id + 1) % accumulate == 0:
                 trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
 
-            step_loss += ls.asscalar()
+            step_loss += sum([parallel.get().asscalar() for _ in ctx])
 
             if (batch_id + 1) % log_interval == 0:
                 toc = time.time()
@@ -520,7 +500,7 @@ def train():
         epoch_toc = time.time()
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
-
+    mx.nd.waitall()
     # net.save_parameters(os.path.join(output_dir, 'net.params'))
 
 
@@ -622,6 +602,6 @@ def evaluate():
 if __name__ == '__main__':
     if not only_predict:
         train()
-        evaluate()
+        #evaluate()
     elif model_parameters:
         evaluate()
