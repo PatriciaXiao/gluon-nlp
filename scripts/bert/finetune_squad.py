@@ -487,7 +487,7 @@ def train():
                 trainer.update(1)
 
             losses = [parallel.get() for _ in ctx]
-            for ls in loss:
+            for ls in losses:
                 print(batch_id)
                 print(ls)
                 print(ls.asscalar())
