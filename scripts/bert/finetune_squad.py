@@ -350,9 +350,6 @@ net.hybridize(static_alloc=True)
 loss_function = BertForQALoss()
 loss_function.hybridize(static_alloc=True)
 
-print("safe throughout here")
-exit(0)
-
 def train():
     """Training function."""
     segment = 'train' if not args.debug else 'dev'
@@ -435,6 +432,10 @@ def train():
     epoch_tic = time.time()
     total_num = 0
     log_num = 0
+
+    print("safe throughout here")
+    exit(0)
+
     for epoch_id in range(epochs):
         step_loss = 0.0
         tic = time.time()
