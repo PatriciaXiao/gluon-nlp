@@ -374,6 +374,8 @@ def train():
 
     log.info('Start Training')
 
+    exit(0)
+
     optimizer_params = {'learning_rate': lr}
     try:
         trainer = mx.gluon.Trainer(net.collect_params(), optimizer,
