@@ -464,7 +464,7 @@ def train():
             # forward and backward
             _, inputs, token_types, valid_length, start_label, end_label = data
 
-            data_split = [gluon.utils.split_and_load(x, ctx), for x in data]
+            data_split = [gluon.utils.split_and_load(x, ctx) for x in data]
 
             print(data_split[0])
             print("it is syntac legal")
