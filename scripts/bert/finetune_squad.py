@@ -368,7 +368,7 @@ class ParallelNet(Parallelizable):
                             [start_label.astype('float32'), 
                              end_label.astype('float32')]).mean()
             if self.accumulate is not None:
-                loss /= self.accumulate
+                loss = loss / self.accumulate
         loss.backward()
         return loss
 
