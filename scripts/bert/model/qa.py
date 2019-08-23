@@ -50,7 +50,7 @@ class CoAttention(Block):
     """
 
     def __init__(self, **kwargs):
-        super(CoAttention, self).__init__(**kwargs)
+        # super(CoAttention, self).__init__(**kwargs)
         print(kwargs)
         print(**kwargs)
         exit(0)
