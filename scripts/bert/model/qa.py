@@ -98,10 +98,13 @@ class CoAttention(gluon.HybridBlock):
         print(context_mask)
         print(query)
         print(query_mask)
-        exit(0)
 
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
+
+        print(context_mask)
+        print(query_mask)
+        exit(0)
 
         context_max_len = int(context_max_len.asscalar())
         query_max_len = int(query_max_len.asscalar())
