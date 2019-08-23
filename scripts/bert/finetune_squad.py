@@ -350,6 +350,29 @@ net.hybridize(static_alloc=True)
 loss_function = BertForQALoss()
 loss_function.hybridize(static_alloc=True)
 
+# https://github.com/dmlc/gluon-nlp/blob/master/src/gluonnlp/utils/parallel.py
+class ParallelNet(Parallelizable):
+    def __init__(self, accumulate):
+        self._net = net
+        self._loss = loss_function
+        self.accumulate = accumulate
+    def forward_backward(self, x):
+        _, inputs, token_types, valid_length, start_label, end_label = x
+        with mx.autograd.record():
+            out = self._net(inputs.astype('float32'),
+                          token_types.astype('float32'),
+                          valid_length.astype('float32'))
+            loss = self._loss(out, 
+                            [start_label.astype('float32'), 
+                             end_label.astype('float32')]).mean() / self.accumulate
+        loss.backward()
+        return loss
+
+parallel = Parallel(len(ctx), ParallelNet(accumulate))
+
+print("safe here")
+exit(0)
+
 def train():
     """Training function."""
     segment = 'train' if not args.debug else 'dev'
