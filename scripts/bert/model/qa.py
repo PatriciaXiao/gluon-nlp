@@ -53,8 +53,6 @@ class CoAttention(gluon.HybridBlock):
 
     def __init__(self, **kwargs):
         super(CoAttention, self).__init__(**kwargs)
-        self.query_max_len = 0
-        self.context_max_len = 0
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
@@ -73,8 +71,8 @@ class CoAttention(gluon.HybridBlock):
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
-    def forward(self, context, query, context_mask, query_mask,
-                        query_max_len, context_max_len):
+    def forward(self, F, context, query, context_mask, query_mask,
+                       context_max_len, query_max_len, w4mlu, bias):
         """Implement forward computation.
 
         Parameters
@@ -95,21 +93,23 @@ class CoAttention(gluon.HybridBlock):
         return : NDArray
             output tensor with shape `(batch_size, context_sequence_length, 4*hidden_size)`
         """
-        context_mask = nd.expand_dims(context_mask, axis=-1)
-        query_mask = nd.expand_dims(query_mask, axis=1)
+        F = nd
+        context_mask = F.expand_dims(context_mask, axis=-1)
+        query_mask = F.expand_dims(query_mask, axis=1)
 
         similarity = self._calculate_trilinear_similarity(
-            context, query, context_max_len, query_max_len)
+            context, query, context_max_len, query_max_len, w4mlu, bias)
 
-        similarity_dash = nd.softmax(mask_logits(similarity, query_mask))
-        similarity_dash_trans = nd.transpose(F.softmax(
+        similarity_dash = F.softmax(mask_logits(similarity, query_mask))
+        similarity_dash_trans = F.transpose(F.softmax(
             mask_logits(similarity, context_mask), axis=1), axes=(0, 2, 1))
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
         return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
 
-    def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len):
+    def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
+                                        w4mlu, bias):
         """Implement the computation of trilinear similarity function.
 
             refer https://github.com/NLPLearn/QANet/blob/master/layers.py#L505
@@ -137,9 +137,9 @@ class CoAttention(gluon.HybridBlock):
         subres0 = nd.tile(self.w4c(context), [1, 1, query_max_len])
         subres1 = nd.tile(nd.transpose(
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
-        subres2 = nd.batch_dot(self.w4mlu * context,
+        subres2 = nd.batch_dot(w4mlu * context,
                                nd.transpose(query, axes=(0, 2, 1)))
-        similarity_mat = subres0 + subres1 + subres2 + self.bias
+        similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
 
