@@ -480,13 +480,13 @@ def train():
                      end_label[pidx])
                 parallel.put(x)
 
+            step_loss += sum([parallel.get().asscalar() for _ in ctx])
+            
             # update
             if not accumulate or (batch_id + 1) % accumulate == 0:
                 trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
-
-            step_loss += sum([parallel.get().asscalar() for _ in ctx])
 
             if (batch_id + 1) % log_interval == 0:
                 toc = time.time()
