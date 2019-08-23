@@ -502,7 +502,7 @@ def train():
         epoch_toc = time.time()
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
-        mx.nd.waitall()
+    # mx.nd.waitall()
     # net.save_parameters(os.path.join(output_dir, 'net.params'))
 
 
