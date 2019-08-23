@@ -359,7 +359,6 @@ class ParallelNet(Parallelizable):
         self._loss = loss_function
         self.accumulate = accumulate
     def forward_backward(self, x):
-        print("self.accumulate={}".format(self.accumulate))
         with mx.autograd.record():
             inputs, token_types, valid_length, start_label, end_label = x
             out = self._net(inputs.astype('float32'),
@@ -367,7 +366,9 @@ class ParallelNet(Parallelizable):
                           valid_length.astype('float32'))
             loss = self._loss(out, 
                             [start_label.astype('float32'), 
-                             end_label.astype('float32')]).mean() / self.accumulate
+                             end_label.astype('float32')]).mean()
+            if self.accumulate is not None:
+                loss /= self.accumulate
         loss.backward()
         return loss
 
