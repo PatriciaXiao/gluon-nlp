@@ -25,6 +25,7 @@ from mxnet.gluon.loss import Loss
 from mxnet import gluon, nd
 import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
+from mxnet import symbol
 
 EMB_ENCODER_CONV_CHANNELS = 128
 
@@ -70,7 +71,7 @@ class CoAttention(Block):
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
-    def hybrid_forward(self, F, context, query, context_mask, query_mask,
+    def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, w4mlu, bias):
         """Implement forward computation.
 
@@ -99,8 +100,8 @@ class CoAttention(Block):
         print(query)
         print(query_mask)
 
-        context_mask = F.expand_dims(context_mask, axis=-1)
-        query_mask = F.expand_dims(query_mask, axis=1)
+        context_mask = context_mask.expand_dims(axis=-1)
+        query_mask = query_mask.expand_dims(axis=1)
 
         print(context_mask)
         print(query_mask)
