@@ -179,7 +179,7 @@ class BertForQA(Block):
         self.apply_coattention = apply_coattention
         if self.apply_coattention:
             with self.name_scope():
-                self.co_attention = CoAttention() #bert_out_dim
+                self.co_attention = CoAttention(bert_out_dim=bert_out_dim)
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
