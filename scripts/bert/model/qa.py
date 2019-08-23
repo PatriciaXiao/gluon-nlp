@@ -95,8 +95,8 @@ class CoAttention(gluon.HybridBlock):
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
-        context_max_len = int(context_mask_len.asscalar())
-        query_max_len = int(query_mask_len.asscalar())
+        context_max_len = int(context_max_len.asscalar())
+        query_max_len = int(query_max_len.asscalar())
 
         similarity = self._calculate_trilinear_similarity(
             context, query, context_max_len, query_max_len, w4mlu, bias)
