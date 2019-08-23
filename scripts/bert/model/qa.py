@@ -96,7 +96,7 @@ class CoAttention(gluon.HybridBlock):
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
-        similarity = self._calculate_trilinear_similarity(
+        similarity = self._calculate_trilinear_similarity( F, # F for mxnet.symbol
             context, query, context_max_len, query_max_len, w4mlu, bias)
 
         similarity_dash = F.softmax(mask_logits(similarity, query_mask))
@@ -107,7 +107,7 @@ class CoAttention(gluon.HybridBlock):
             similarity_dash, similarity_dash_trans), context)
         return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
 
-    def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
+    def _calculate_trilinear_similarity(self, F, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
         """Implement the computation of trilinear similarity function.
 
@@ -133,11 +133,11 @@ class CoAttention(gluon.HybridBlock):
             output tensor with shape `(batch_size, context_sequence_length, query_sequence_length)`
         """
 
-        subres0 = nd.tile(self.w4c(context), [1, 1, query_max_len])
-        subres1 = nd.tile(nd.transpose(
+        subres0 = F.tile(self.w4c(context), [1, 1, query_max_len])
+        subres1 = F.tile(F.transpose(
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
-        subres2 = nd.batch_dot(w4mlu * context,
-                               nd.transpose(query, axes=(0, 2, 1)))
+        subres2 = F.batch_dot(w4mlu * context,
+                               F.transpose(query, axes=(0, 2, 1)))
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
