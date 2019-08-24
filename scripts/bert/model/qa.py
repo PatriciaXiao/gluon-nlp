@@ -143,9 +143,6 @@ class CoAttention(Block):
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
         subres2 = nd.batch_dot(w4mlu * context,
                                nd.transpose(query, axes=(0, 2, 1)))
-        # the problem is here, the final step
-        print(subres0.shape, subres1.shape, subres2.shape)
-        exit(0)
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
