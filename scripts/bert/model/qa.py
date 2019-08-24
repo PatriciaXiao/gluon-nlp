@@ -227,7 +227,7 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
-            context_max_len = int(context_mask.sum(axis=1).max().asscalar())
+            context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = int(query_mask.sum(axis=1).max().asscalar())
             context_raw = mx.nd.multiply(context_mask, o)
             context_raw = mx.ndarray.expand_dims(context_raw, 0)
@@ -243,9 +243,9 @@ class BertForQA(Block):
             context_mask = BilinearSampler(context_mask, grid)
             context_mask = mx.ndarray.squeeze(context_mask, axis=(0, 1))
             # get the two encodings separated
-            context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0)[:,:,:context_max_len], axes=(1,2,0))
+            context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o)[:,:,:query_max_len], axes=(1,2,0))
-            context_mask = context_mask[:,:context_max_len]
+            # context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
@@ -263,6 +263,8 @@ class BertForQA(Block):
         return output
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
+        if self.apply_coattention:
+            return 
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
 
@@ -298,3 +300,60 @@ class BertForQALoss(Loss):
         end_label = label[1]
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
+
+class QANet_SoftmaxCrossEntropy(Loss):
+    r"""Caluate the sum of softmax cross entropy.
+
+    Reference:
+    http://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SoftmaxCrossEntropyLoss
+
+    Parameters
+    ----------
+    axis : int, default -1
+        The axis to sum over when computing softmax and entropy.
+    sparse_label : bool, default True
+        Whether label is an integer array instead of probalbility distribution.
+    from_logits : bool, default False
+        Whether input is a log probability (usually from log_softmax) instead of
+        unnormalized numbers.
+    weight : float or None
+        Global scalar weight for loss.
+    batch_axis : int, default 0
+        The axis that represents mini-batch.
+    """
+
+    def __init__(self, axis=-1, sparse_label=True, from_logits=False, weight=None, batch_axis=0,
+                 **kwargs):
+        super(QANet_SoftmaxCrossEntropy, self).__init__(
+            weight, batch_axis, **kwargs)
+        self.loss = gluon.loss.SoftmaxCrossEntropyLoss(axis=axis,
+                                                       sparse_label=sparse_label,
+                                                       from_logits=from_logits,
+                                                       weight=weight,
+                                                       batch_axis=batch_axis)
+
+    def forward(self, predict_begin, predict_end, label_begin, label_end):
+        r"""Implement forward computation.
+
+        Parameters
+        -----------
+        predict_begin : NDArray
+            Predicted probability distribution of answer begin position,
+            input tensor with shape `(batch_size, sequence_length)`
+        predict_end : NDArray
+            Predicted probability distribution of answer end position,
+            input tensor with shape `(batch_size, sequence_length)`
+        label_begin : NDArray
+            True label of the answer begin position,
+            input tensor with shape `(batch_size, )`
+        label_end : NDArray
+            True label of the answer end position,
+            input tensor with shape `(batch_size, )`
+
+        Returns
+        --------
+        out: NDArray
+            output tensor with shape `(batch_size, )`
+        """
+        return self.loss(predict_begin, label_begin) + self.loss(predict_end, label_end)
+
