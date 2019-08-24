@@ -223,10 +223,17 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
+            o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
-            context_max_len = query_max_len = bert_output.shape[1]
-            attended_output = self.co_attention(bert_output, bert_output, context_mask, query_mask, query_max_len, context_max_len)
+            print(context_mask)
+            exit(0)
+            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
+            context_max_len = int(context_mask.sum(axis=1).max().asscalar())
+            query_max_len = int(query_mask.sum(axis=1).max().asscalar())
+            attended_output = self.co_attention(bert_output, query_emb_encoded, 
+                                                context_mask, query_mask, 
+                                                context_max_len, query_max_len)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
         if self.add_query or self.apply_coattention or self.apply_self_attention:
