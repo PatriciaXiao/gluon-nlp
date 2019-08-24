@@ -250,8 +250,6 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o)[:,:,:query_max_len], axes=(1,2,0))
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
-            print("safe here")
-            exit(0)
             attended_output = self.co_attention(bert_output, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
