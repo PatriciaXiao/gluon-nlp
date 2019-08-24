@@ -25,6 +25,7 @@ from mxnet.gluon.loss import Loss
 from mxnet import gluon, nd
 import mxnet as mx
 from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
+from mxnet.ndarray import GridGenerator, BilinearSampler
 
 import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
