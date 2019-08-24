@@ -249,9 +249,7 @@ class BertForQA(Block):
             # get the two encodings separated
             a = mx.ndarray.squeeze(warpped_out, axis=0)
             context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0)[:,:,:context_max_len], axes=(1,2,0))
-            print("safe here")
-            exit(0)
-            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))[:,:,query_max_len]
+            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o)[:,:,query_max_len], axes=(1,2,0))
             attended_output = self.co_attention(bert_output, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
