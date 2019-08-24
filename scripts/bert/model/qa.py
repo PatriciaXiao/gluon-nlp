@@ -226,8 +226,19 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
-            print(context_mask)
-            exit(0)
+            context_raw = mx.nd.multiply(context_mask, o)
+            context_raw = mx.ndarray.expand_dims(context_raw, 0)
+            # to get the offset to shift
+            raw_offset = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
+            warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, mx.nd.zeros(raw_offset.shape)), 0)
+            grid = GridGenerator(data=warp_matrix, transform_type='warp')
+            warpped_out = BilinearSampler(context_raw, grid)
+            context_mask = mx.ndarray.expand_dims(context_mask, 0)
+            context_mask = mx.ndarray.expand_dims(context_mask, 0)
+            context_mask = BilinearSampler(context_mask, grid)
+            context_mask = mx.ndarray.squeeze(context_mask, axis=(0, 1))
+            # get the two encodings separated
+            context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_max_len = int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = int(query_mask.sum(axis=1).max().asscalar())
