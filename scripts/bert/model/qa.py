@@ -252,11 +252,18 @@ class BertForQA(Block):
                                                 context_max_len, query_max_len)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
-        if self.add_query or self.apply_coattention or self.apply_self_attention:
+        if self.add_query or self.apply_self_attention:
             output = self.span_classifier(attended_output)
+        elif self.apply_coattention:
+            # special way to treat the output
+            print("working on implementing it")
+            exit(0)
         else:
             output = self.span_classifier(bert_output)
         return output
+
+    def loss(self, weight=None, batch_axis=0, **kwargs):
+        return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
 
 class BertForQALoss(Loss):
