@@ -228,11 +228,12 @@ class BertForQA(Block):
             query_mask = 1 - context_mask
             context_raw = mx.nd.multiply(context_mask, o)
             context_raw = mx.ndarray.expand_dims(context_raw, 0)
-            # to get the offset to shift
+            # to get the offset to shift using gridgenerator and bilinear-sampler
             raw_offset = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
             warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, mx.nd.zeros(raw_offset.shape)), 0)
             grid = GridGenerator(data=warp_matrix, transform_type='warp')
             warpped_out = BilinearSampler(context_raw, grid)
+            # the context mask also needs to be shifted
             context_mask = mx.ndarray.expand_dims(context_mask, 0)
             context_mask = mx.ndarray.expand_dims(context_mask, 0)
             context_mask = BilinearSampler(context_mask, grid)
