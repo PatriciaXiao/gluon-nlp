@@ -256,6 +256,7 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         elif self.apply_coattention:
             # special way to treat the output
+            print(attended_output)
             print("working on implementing it")
             exit(0)
         else:
