@@ -264,8 +264,8 @@ class BertForQA(Block):
         return output
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
-        if self.apply_coattention:
-            return 
+        # if self.apply_coattention:
+        #     return QANet_SoftmaxCrossEntropy
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
 
