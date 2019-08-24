@@ -256,9 +256,14 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         elif self.apply_coattention:
             # special way to treat the output
-            print(attended_output)
+            o = mx.ndarray.transpose(attended_output, axes=(2,0,1))
+            o = mx.ndarray.expand_dims(o, 0)
+            grid = GridGenerator(data=-warp_matrix, transform_type='warp')
+            warpped_out = BilinearSampler(o, grid)
+            print(warpped_out)
             print("working on implementing it")
             exit(0)
+            output = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
         else:
             output = self.span_classifier(bert_output)
         return output
