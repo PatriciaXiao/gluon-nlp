@@ -225,7 +225,7 @@ class BertForQA(Block):
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
-            print(o[0,0,0,:])
+            print(o[0,0,:])
             context_mask = token_types
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
