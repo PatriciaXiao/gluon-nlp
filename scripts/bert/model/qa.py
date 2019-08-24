@@ -143,6 +143,9 @@ class CoAttention(Block):
             self.w4q(query), axes=(0, 2, 1)), [1, context_max_len, 1])
         subres2 = nd.batch_dot(w4mlu * context,
                                nd.transpose(query, axes=(0, 2, 1)))
+        # the problem is here, the final step
+        print(subres0.shape, subres1.shape, subres2.shape)
+        exit(0)
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
@@ -245,8 +248,6 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_max_len = int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = int(query_mask.sum(axis=1).max().asscalar())
-            print(bert_output.shape, query_emb_encoded.shape, context_mask.shape, query_mask.shape, context_max_len, query_max_len)
-            exit(0)
             attended_output = self.co_attention(bert_output, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
