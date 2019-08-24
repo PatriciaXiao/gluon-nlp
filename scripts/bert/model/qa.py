@@ -259,7 +259,7 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(attended_output, axes=(2,0,1))
             o = mx.ndarray.expand_dims(o, 0)
             grid = GridGenerator(data=-warp_matrix, transform_type='warp')
-            print(o)
+            print(-warp_matrix)
             warpped_out = BilinearSampler(o, grid)
             print(warpped_out)
             print("working on implementing it")
