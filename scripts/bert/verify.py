@@ -21,10 +21,8 @@ class AnswerVerify(object):
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
-            results = PredResult(start=start, end=end)
+            results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
-            print(results.start, results.end)
-            exit(0)
             prediction, _ = predict(
                 features=features,
                 results=results,
