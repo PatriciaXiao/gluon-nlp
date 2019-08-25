@@ -57,6 +57,8 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
+from verify import AnswerVerify
+
 np.random.seed(6)
 random.seed(6)
 mx.random.seed(6)
@@ -355,6 +357,7 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
 
+verifier = AnswerVerify()
 
 def train():
     """Training function."""
@@ -493,6 +496,7 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out
+            verifier.train(train_features, example_ids, out)
 
             step_loss += ls.asscalar()
 
