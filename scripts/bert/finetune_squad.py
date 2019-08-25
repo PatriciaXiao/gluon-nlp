@@ -465,7 +465,7 @@ def train():
             step_num = set_new_lr(step_num, batch_id)
             # forward and backward
             with mx.autograd.record():
-                _, inputs, token_types, valid_length, start_label, end_label = data
+                example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
                 log_num += len(inputs)
                 total_num += len(inputs)

@@ -253,7 +253,7 @@ class BertForQA(Block):
             '''
             #################################
             # get the two encodings separated
-            # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
+            context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             # context_mask = context_mask[:,:context_max_len]
             # query_mask = query_mask[:,:query_max_len]
