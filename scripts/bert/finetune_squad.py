@@ -352,7 +352,7 @@ if args.apply_self_attention:
 
 net.hybridize(static_alloc=True)
 
-loss_function = net.loss()
+loss_function = BertForQALoss() # net.loss()
 loss_function.hybridize(static_alloc=True)
 
 
