@@ -390,12 +390,12 @@ def train():
         len(train_data_transform)))
 
     # refer to evaluation process
-    for feat in train_dataset:
-        print(feat[0].example_id)
-        print(feat[0].tokens)
-        print(feat[0].token_to_orig_map)
-        input()
-    exit(0)
+    # for feat in train_dataset:
+    #     print(feat[0].example_id)
+    #     print(feat[0].tokens)
+    #     print(feat[0].token_to_orig_map)
+    #     input()
+    # exit(0)
 
     train_features = {features[0].example_id: features for features in train_dataset}
 
@@ -530,6 +530,13 @@ def evaluate():
             max_query_length=max_query_length,
             is_pad=False,
             is_training=False)._transform, lazy=False)
+
+    for feat in dev_dataset:
+        print(feat[0].example_id)
+        print(feat[0].tokens)
+        print(feat[0].token_to_orig_map)
+        input()
+    exit(0)
 
     dev_data_transform, _ = preprocess_dataset(
         dev_data, SQuADTransform(
