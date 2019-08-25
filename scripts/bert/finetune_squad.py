@@ -389,8 +389,8 @@ def train():
     log.info('The number of examples after preprocessing:{}'.format(
         len(train_data_transform)))
 
-    for feat in train_dataset:
-        print(feat[0])
+    for feat in enumerate(train_dataset):
+        print(feat)
     exit(0)
 
     #for line in train_data_transform:
