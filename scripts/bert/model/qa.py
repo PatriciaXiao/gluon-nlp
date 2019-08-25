@@ -231,7 +231,7 @@ class BertForQA(Block):
             query_max_len = int(query_mask.sum(axis=1).max().asscalar())
             context_raw = mx.nd.multiply(context_mask, o)
             context_raw = mx.ndarray.expand_dims(context_raw, 0)
-            print(context_raw[0,0,0,:])
+            # print(context_raw[0,0,0,:])
             # to get the offset to shift using gridgenerator and bilinear-sampler
             raw_offset = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
             warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
@@ -245,9 +245,9 @@ class BertForQA(Block):
             context_mask = mx.ndarray.squeeze(context_mask, axis=(0, 1))
             # get the two encodings separated
             context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
-            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o)[:,:,:query_max_len], axes=(1,2,0))
+            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             # context_mask = context_mask[:,:context_max_len]
-            query_mask = query_mask[:,:query_max_len]
+            # query_mask = query_mask[:,:query_max_len]
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
@@ -260,11 +260,11 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(attended_output, axes=(2,0,1))
             o = mx.ndarray.expand_dims(o, 0)
             grid = GridGenerator(data=-warp_matrix, transform_type='warp')
-            print(o[0,0,0,:])
+            # print(o[0,0,0,:])
             warpped_out = BilinearSampler(o, grid)
-            print(warpped_out[0,0,0,:])
-            print("working on implementing it")
-            exit(0)
+            # print(warpped_out[0,0,0,:])
+            # print("working on implementing it")
+            # exit(0)
             output = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
         else:
             output = self.span_classifier(bert_output)
