@@ -258,8 +258,6 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            # optionally: cuz I don't know which one is the better way out
-            attended_output = mx.nd.add(attended_output, query_emb_encoded)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
         if self.add_query or self.apply_self_attention or self.apply_coattention:
