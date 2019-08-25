@@ -257,9 +257,9 @@ class BertForQA(Block):
             grid = GridGenerator(data=-warp_matrix, transform_type='warp')
             # print(o[0,0,0,:])
             warpped_out = BilinearSampler(o, grid)
-            # print(warpped_out[0,0,0,:])
+            print(warpped_out[0,0,0,:])
             # print("working on implementing it")
-            # exit(0)
+            exit(0)
             attended_output = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
