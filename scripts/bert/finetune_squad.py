@@ -395,6 +395,10 @@ def train():
     #     print(feat[0].token_to_orig_map)
     # exit(0)
 
+    train_features = {features[0].example_id: features for features in train_dataset}
+    print(train_features)
+    exit(0)
+
     #for line in train_data_transform:
     #    print(line)
     #    input()
