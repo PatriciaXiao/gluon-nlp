@@ -32,5 +32,6 @@ class AnswerVerify(object):
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
             print(prediction)
+            print(features[0].tokens)
             print(features[0].is_impossible)
             exit(0)
