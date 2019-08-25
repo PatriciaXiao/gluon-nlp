@@ -231,6 +231,8 @@ class BertForQA(Block):
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             '''
             # not a good idea, this will cause index shift and thus cause bug
+            # but if we are going to use QANet's method for modeling and extracting the output, it'll be fine to do so
+            # so I just kept these lines here
             context_raw = mx.nd.multiply(context_mask, o)
             context_raw = mx.ndarray.expand_dims(context_raw, 0)
             # print(context_raw[0,0,0,:])
@@ -256,6 +258,8 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            # optionally: cuz I don't know which one is the better way out
+            attended_output = mx.nd.add(attended_output, query_emb_encoded)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
         if self.add_query or self.apply_self_attention or self.apply_coattention:
@@ -266,7 +270,7 @@ class BertForQA(Block):
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
         # if self.apply_coattention:
-        #     return QANet_SoftmaxCrossEntropy
+        #     return QANet_SoftmaxCrossEntropy()
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
 
