@@ -1,5 +1,7 @@
 import mxnet as mx
 
+from bert_qa_evaluate import PredResult
+
 class AnswerVerify(object):
     def __init__(self, name='simple'):
         self.name = name
@@ -9,7 +11,6 @@ class AnswerVerify(object):
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        print(pred_start)
-        print("*****************")
-        print(pred_end)
+        for example_id, start, end in zip(example_ids, pred_start, pred_end):
+            print(PredResult(start=start, end=end))
         exit(0)
