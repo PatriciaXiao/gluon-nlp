@@ -391,7 +391,8 @@ def train():
 
     # refer to evaluation process
     for feat in train_dataset:
-        print(feat.tokens, feat.token_to_orig_map)
+        print(feat.tokens)
+        print(feat.token_to_orig_map)
     exit(0)
 
     #for line in train_data_transform:
