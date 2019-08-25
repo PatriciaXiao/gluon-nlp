@@ -531,12 +531,12 @@ def evaluate():
             is_pad=False,
             is_training=False)._transform, lazy=False)
 
-    for feat in dev_dataset:
-        print(feat[0].example_id)
-        print(feat[0].tokens)
-        print(feat[0].token_to_orig_map)
-        input()
-    exit(0)
+    # for feat in dev_dataset:
+    #     print(feat[0].example_id)
+    #     print(feat[0].tokens)
+    #     print(feat[0].token_to_orig_map)
+    #     input()
+    # exit(0)
 
     dev_data_transform, _ = preprocess_dataset(
         dev_data, SQuADTransform(
