@@ -380,9 +380,13 @@ def train():
     log.info('The number of examples after preprocessing:{}'.format(
         len(train_data_transform)))
 
-    for line in train_data_transform:
+    for line in train_dataset:
         print(line)
         input()
+
+    #for line in train_data_transform:
+    #    print(line)
+    #    input()
 
     train_dataloader = mx.gluon.data.DataLoader(
         train_data_transform, batchify_fn=batchify_fn,
