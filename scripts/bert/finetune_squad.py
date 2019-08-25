@@ -491,6 +491,9 @@ def train():
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
 
+            # pass the information to verifier and train it here
+            # train_features # example_ids # out
+
             step_loss += ls.asscalar()
 
             if (batch_id + 1) % log_interval == 0:
