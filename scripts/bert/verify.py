@@ -4,7 +4,7 @@ import gluonnlp as nlp
 from bert_qa_evaluate import PredResult, predict
 
 class AnswerVerify(object):
-    def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+    def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=True),
                 max_answer_length=30,
                 null_score_diff_threshold=-2.0,
                 n_best_size=20,
@@ -26,10 +26,10 @@ class AnswerVerify(object):
             prediction, _ = predict(
                 features=features,
                 results=results,
-                tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
-                max_answer_length=max_answer_length,
-                null_score_diff_threshold=null_score_diff_threshold,
-                n_best_size=n_best_size,
-                version_2=True)
+                tokenizer=self.tokenizer,
+                max_answer_length=self.max_answer_length,
+                null_score_diff_threshold=self.null_score_diff_threshold,
+                n_best_size=self.n_best_size,
+                version_2=self.version_2)
             print(prediction)
             exit(0)
