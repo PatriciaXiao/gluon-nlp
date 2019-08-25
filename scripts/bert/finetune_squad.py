@@ -357,7 +357,11 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
 
-verifier = AnswerVerify()
+verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+                max_answer_length=max_answer_length,
+                null_score_diff_threshold=null_score_diff_threshold,
+                n_best_size=n_best_size,
+                version_2=version_2)
 
 def train():
     """Training function."""
