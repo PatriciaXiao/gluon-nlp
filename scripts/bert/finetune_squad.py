@@ -369,6 +369,15 @@ def train():
         train_data = mx.gluon.data.SimpleDataset(sampled_data)
     log.info('Number of records in Train data:{}'.format(len(train_data)))
 
+    train_dataset = train_data.transform(
+        SQuADTransform(
+            copy.copy(tokenizer),
+            max_seq_length=max_seq_length,
+            doc_stride=doc_stride,
+            max_query_length=max_query_length,
+            is_pad=True,
+            is_training=True)._transform, lazy=False)
+
     train_data_transform, _ = preprocess_dataset(
         train_data, SQuADTransform(
             copy.copy(tokenizer),
