@@ -34,4 +34,5 @@ class AnswerVerify(object):
             print(prediction)
             print(features[0].tokens)
             print(features[0].is_impossible)
-            exit(0)
+            if features[0].is_impossible:
+                exit(0)
