@@ -229,6 +229,7 @@ class BertForQA(Block):
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
+            #############################
             '''
             # not a good idea, this will cause index shift and thus cause bug
             # but if we are going to use QANet's method for modeling and extracting the output, it'll be fine to do so
@@ -250,8 +251,9 @@ class BertForQA(Block):
             # get the two encodings separated
             context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
             '''
+            #################################
             # get the two encodings separated
-            context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
+            # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             # context_mask = context_mask[:,:context_max_len]
             # query_mask = query_mask[:,:query_max_len]

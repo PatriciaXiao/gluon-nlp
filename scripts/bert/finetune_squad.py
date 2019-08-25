@@ -568,6 +568,7 @@ def evaluate():
             version_2=version_2)
 
         all_predictions[example_qas_id] = prediction
+        # the form of hashkey - answer string
 
     with io.open(os.path.join(output_dir, 'predictions.json'),
                  'w', encoding='utf-8') as fout:
