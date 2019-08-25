@@ -391,7 +391,7 @@ def train():
 
     for feat in train_dataset:
         print(feat[0])
-        input()
+    exit(0)
 
     #for line in train_data_transform:
     #    print(line)
