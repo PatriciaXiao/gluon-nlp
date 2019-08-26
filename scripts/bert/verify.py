@@ -151,7 +151,7 @@ class AnswerVerify(object):
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
             # debug
-            out = mx.nd.stack(out, out)
+            out = mx.nd.stack(out[0], out[0])
             pred = mx.ndarray.argmax(out, axis=1)
             print(out, pred, label)
         exit(0)
