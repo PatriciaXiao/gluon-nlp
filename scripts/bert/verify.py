@@ -40,6 +40,9 @@ class AnswerVerify(object):
         # The maximum length of an input sequence
         self.max_len = 128
 
+        self.lr = 5e-6
+        self.eps = 1e-9
+
         self.get_model(ctx)
         self.get_loss()
 
@@ -56,6 +59,10 @@ class AnswerVerify(object):
         self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.1)
         self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
         self.bert_classifier.hybridize(static_alloc=True)
+        self.trainer = mx.gluon.Trainer(self.bert_classifier.collect_params(), 'adam',
+                           {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+        # The gradients for these params are clipped later
+        self.params = [p for p in self.bert_classifier.collect_params().values() if p.grad_req != 'null']
 
     def get_loss(self):
         self.loss_function = mx.gluon.loss.SoftmaxCELoss()
@@ -71,8 +78,9 @@ class AnswerVerify(object):
 
     def train(self, train_features, example_ids, out):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
-        # print(len(dataset))
+        # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
+        batch_size = len(dataset_raw)
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):
