@@ -34,10 +34,10 @@ class AnswerVerify(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            print(prediction)
-            print(features[0].question_text)
-            print(' '.join(features[0].doc_tokens)) # the original context
-            print(features[0].is_impossible)
+            print("context:", ' '.join(features[0].doc_tokens)) # the original context
+            print("question:", features[0].question_text)
+            print("prediction:", prediction)
+            print("unanswerable:", features[0].is_impossible)
             if features[0].is_impossible:
                 exit(0)
 
