@@ -133,13 +133,13 @@ class AnswerVerify(object):
             step_loss = 0           
         # exit(0)
 
-    def evaluate(self, dev_features, prediction):
+    def evaluate(self, dev_feature, prediction):
         if not self.version_2:
             return True
         raw_data = []
-        for features in dev_features:
-            question_text = features[0].question_text
-            raw_data.append()
+        for feature in dev_feature:
+            question_text = feature.question_text
+            raw_data.append([question_text, prediction])
         dataset = VerifierDataset(raw_data)
         dataloader = mx.gluon.data.DataLoader(dataset)
         for i in dataloader:
