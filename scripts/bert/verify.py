@@ -36,7 +36,7 @@ class AnswerVerify(object):
                 version_2=self.version_2)
             print(prediction)
             print(features[0].tokens)
-            print(features[0].doc_tokens)
+            # print(features[0].doc_tokens) # the original context
             print(features[0].is_impossible)
             if features[0].is_impossible:
                 exit(0)
