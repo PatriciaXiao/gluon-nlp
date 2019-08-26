@@ -89,7 +89,7 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
-                                                    # num_buckets=2, # number of buckets (mini-batches), by default 10; 2 will cause oom
+                                                    num_buckets=20, # number of buckets (mini-batches), by default 10; 2 will cause oom
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
@@ -155,11 +155,13 @@ class AnswerVerify(object):
             # print("context:", ' '.join(features[0].doc_tokens)) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
-            print("answer:", features[0].orig_answer_text)
-            exit(0)
+            # print("answer:", features[0].orig_answer_text)
+            # exit(0)
             # print("unanswerable:", features[0].is_impossible)
             question_text = features[0].question_text
+            answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
             raw_data.append([question_text, prediction, label])
+            raw_data.append([question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
 
