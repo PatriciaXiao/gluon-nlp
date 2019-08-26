@@ -136,7 +136,7 @@ class AnswerVerify(object):
         raw_data = []
         for feature in dev_feature:
             question_text = feature.question_text
-            raw_data.append([question_text, prediction])
+            raw_data.append([question_text, prediction, 0])
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
         for i in dataset:
