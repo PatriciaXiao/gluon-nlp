@@ -139,7 +139,7 @@ parser.add_argument('--accumulate',
 
 parser.add_argument('--lr',
                     type=float,
-                    default=6e-5,
+                    default=5e-5, # 6e-5
                     help='Initial learning rate. default is 6e-5')
 
 parser.add_argument('--warmup_ratio',
