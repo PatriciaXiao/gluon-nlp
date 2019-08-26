@@ -271,6 +271,8 @@ def preprocess_data(tokenizer, task, batch_size, dev_batch_size, max_len, pad=Fa
     # data train
     # task.dataset_train returns (segment_name, dataset)
     train_tsv = task.dataset_train()[1]
+    print(train_tsv)
+    exit(0)
     data_train = mx.gluon.data.SimpleDataset(pool.map(trans, train_tsv))
     data_train_len = data_train.transform(
         lambda input_id, length, segment_id, label_id: length, lazy=False)
