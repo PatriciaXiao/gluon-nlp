@@ -149,8 +149,8 @@ class AnswerVerify(object):
             token_ids, valid_length, segment_ids, label = data
             out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
-            result = out.asnumpy().reshape(-1).tolist()
-            print(result, label)
+            # result = out.asnumpy().reshape(-1).tolist()
+            print(out, label)
         exit(0)
 
         eval_result = True
