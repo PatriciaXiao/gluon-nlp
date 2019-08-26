@@ -55,6 +55,8 @@ from data.classification import QNLITask, CoLATask, MNLITask, WNLITask, XNLITask
 from data.classification import LCQMCTask, ChnSentiCorpTask
 from data.transform import BERTDatasetTransform
 
+# python finetune_classifier.py --gpu 0
+
 tasks = {
     'MRPC': MRPCTask(),
     'QQP': QQPTask(),
