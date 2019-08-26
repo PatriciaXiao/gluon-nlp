@@ -117,9 +117,6 @@ class AnswerVerify(object):
                 nlp.utils.clip_grad_global_norm(self.params, 1)
                 self.trainer.update(1)
 
-                print(label, out)
-                exit(0)
-
                 if verbose:
                     # update the loss and metric
                     step_loss += ls.asscalar()
@@ -153,7 +150,8 @@ class AnswerVerify(object):
             out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
-            print(out, label)
+            pred = mx.ndarray.argmax(out, axis=1)
+            print(pred, label)
         exit(0)
 
         eval_result = True
