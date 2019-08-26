@@ -77,7 +77,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out):
+    def train(self, train_features, example_ids, out, num_epochs=3):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
@@ -89,29 +89,35 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
-                                                    # num_buckets=2, # number of buckets (mini-batches), by default 10
+                                                    # num_buckets=2, # number of buckets (mini-batches), by default 10; 2 will cause oom
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
-        for batch_id, data in enumerate(dataloader):
-            token_ids, valid_length, segment_ids, label = data
-            with mx.autograd.record():
 
-                # Load the data to the GPU (or CPU if GPU disabled)
-                token_ids = token_ids.as_in_context(self.ctx)
-                valid_length = valid_length.as_in_context(self.ctx)
-                segment_ids = segment_ids.as_in_context(self.ctx)
-                label = label.as_in_context(self.ctx)
+        for epoch_id in range(num_epochs):
+            metric.reset()
+            step_loss = 0
+            for batch_id, data in enumerate(dataloader):
+                token_ids, valid_length, segment_ids, label = data
+                with mx.autograd.record():
 
-                # Forward computation
-                out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
-                ls = self.loss_function(out, label).mean()
+                    # Load the data to the GPU (or CPU if GPU disabled)
+                    token_ids = token_ids.as_in_context(self.ctx)
+                    valid_length = valid_length.as_in_context(self.ctx)
+                    segment_ids = segment_ids.as_in_context(self.ctx)
+                    label = label.as_in_context(self.ctx)
 
-            # And backwards computation
-            ls.backward()
-            # Gradient clipping
-            self.trainer.allreduce_grads()
-            nlp.utils.clip_grad_global_norm(self.params, 1)
-            self.trainer.update(1)
+                    # Forward computation
+                    out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
+
+                    print(out.shape)
+                    ls = self.loss_function(out, label).mean()
+
+                # And backwards computation
+                ls.backward()
+                # Gradient clipping
+                self.trainer.allreduce_grads()
+                nlp.utils.clip_grad_global_norm(self.params, 1)
+                self.trainer.update(1)
             
         exit(0)
 
