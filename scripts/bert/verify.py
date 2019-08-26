@@ -136,7 +136,8 @@ class AnswerVerify(object):
         raw_data = []
         for feature in dev_feature:
             question_text = feature.question_text
-            raw_data.append([question_text, prediction, 0])
+            label = 0 if features[0].is_impossible else 1
+            raw_data.append([question_text, prediction, label])
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
@@ -144,8 +145,12 @@ class AnswerVerify(object):
                                                     num_buckets=1,
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
-        for i in dataloader:
-            print(i)
+        for data in dataloader:
+            token_ids, valid_length, segment_ids, _ = data
+            out = model(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
+                        valid_length.astype('float32').as_in_context(self.ctx))
+            result = out.asnumpy().reshape(-1).tolist()
+            print(result)
         exit(0)
 
         eval_result = True
