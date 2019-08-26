@@ -139,6 +139,9 @@ class AnswerVerify(object):
             raw_data.append([question_text, prediction])
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
+        for i in dataset:
+            print(i)
+        exit(0)
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=1,
                                                     num_buckets=1,
