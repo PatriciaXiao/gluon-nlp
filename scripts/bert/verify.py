@@ -77,7 +77,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, num_epochs=2):
+    def train(self, train_features, example_ids, out, num_epochs=2, verbose=False):
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
@@ -96,8 +96,9 @@ class AnswerVerify(object):
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
         for epoch_id in range(num_epochs):
-            self.metric.reset()
-            step_loss = 0
+            if verbose:
+                self.metric.reset()
+                step_loss = 0
             for batch_id, data in enumerate(dataloader):
                 token_ids, valid_length, segment_ids, label = data
                 with mx.autograd.record():
@@ -119,11 +120,12 @@ class AnswerVerify(object):
                 nlp.utils.clip_grad_global_norm(self.params, 1)
                 self.trainer.update(1)
 
-                # update the loss and metric
-                step_loss += ls.asscalar()
-                self.metric.update([label], [out])
-
-            print('[Epoch {}] loss={:.4f}, lr={:.7f}, acc={:.3f}'
+                if verbose:
+                    # update the loss and metric
+                    step_loss += ls.asscalar()
+                    self.metric.update([label], [out])
+            if verbose:
+                print('[Epoch {}] loss={:.4f}, lr={:.7f}, acc={:.3f}'
                          .format(epoch_id,
                                  step_loss / len(dataloader),
                                  self.trainer.learning_rate,  # TODO: add learning rate scheduler latter
@@ -134,9 +136,16 @@ class AnswerVerify(object):
     def evaluate(self, dev_features, prediction):
         if not self.version_2:
             return True
-        for feat in dev_features:
-            print(feat)
+        raw_data = []
+        for features in dev_features:
+            question_text = features[0].question_text
+            raw_data.append()
+        dataset = VerifierDataset(raw_data)
+        dataloader = mx.gluon.data.DataLoader(dataset)
+        for i in dataloader:
+            print(i)
         exit(0)
+
         eval_result = True
         return eval_result
 
@@ -168,7 +177,7 @@ class AnswerVerify(object):
             # print("unanswerable:", features[0].is_impossible)
             question_text = features[0].question_text
             answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
-            raw_data.append([question_text, prediction, label])
+            raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
             raw_data.append([question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
