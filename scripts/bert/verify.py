@@ -85,6 +85,11 @@ class AnswerVerify(object):
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
                                                     shuffle=True)
+        dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
+        for a in dataloader:
+            print(a)
+        input()
+        print(dataset)
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):
