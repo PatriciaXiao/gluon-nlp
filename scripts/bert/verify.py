@@ -77,7 +77,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, num_epochs=2, verbose=False):
+    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
