@@ -576,8 +576,7 @@ def evaluate():
 
     log.info('start prediction')
 
-    # all_results = collections.defaultdict(list)
-    all_predictions = collections.OrderedDict()
+    all_results = collections.defaultdict(list)
 
     epoch_tic = time.time()
     total_num = 0
@@ -601,6 +600,8 @@ def evaluate():
         epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
     log.info('Get prediction results...')
+
+    all_predictions = collections.OrderedDict()
 
     for features in dev_dataset:
         results = all_results[features[0].example_id]
