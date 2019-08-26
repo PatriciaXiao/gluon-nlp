@@ -138,7 +138,11 @@ class AnswerVerify(object):
             question_text = feature.question_text
             raw_data.append([question_text, prediction])
         dataset = VerifierDataset(raw_data)
-        dataloader = mx.gluon.data.DataLoader(dataset)
+        train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
+                                                    batch_size=self.batch_size,
+                                                    num_buckets=1,
+                                                    shuffle=True)
+        dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for i in dataloader:
             print(i)
         exit(0)
