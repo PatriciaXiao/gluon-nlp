@@ -364,7 +364,8 @@ verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                 max_answer_length=max_answer_length,
                 null_score_diff_threshold=null_score_diff_threshold,
                 n_best_size=n_best_size,
-                version_2=version_2)
+                version_2=version_2,
+                ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
 
 def train():
     """Training function."""
