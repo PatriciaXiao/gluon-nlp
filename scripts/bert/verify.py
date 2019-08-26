@@ -23,7 +23,7 @@ class AnswerVerify(object):
                 null_score_diff_threshold=-2.0,
                 n_best_size=20,
                 version_2=True,
-                ctx=ctx):
+                ctx=mx.cpu()):
         self.tokenizer=tokenizer
         self.max_answer_length=max_answer_length
         self.null_score_diff_threshold=null_score_diff_threshold
