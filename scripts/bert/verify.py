@@ -150,10 +150,7 @@ class AnswerVerify(object):
             out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
-            # debug
-            out = mx.nd.stack(out[0,:], out[0,:])
-            out[1, 0] = -100.
-            pred = mx.ndarray.argmax(out, axis=1)
+            pred = mx.ndarray.argmax(out, axis=1).astype(int)
             print(out, pred, label)
         exit(0)
 
