@@ -136,7 +136,7 @@ class AnswerVerify(object):
         raw_data = []
         for feature in dev_feature:
             question_text = feature.question_text
-            label = 0 if features[0].is_impossible else 1
+            label = 0 if feature.is_impossible else 1
             raw_data.append([question_text, prediction, label])
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
