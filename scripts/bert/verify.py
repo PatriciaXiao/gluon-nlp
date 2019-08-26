@@ -152,6 +152,7 @@ class AnswerVerify(object):
             # result = out.asnumpy().reshape(-1).tolist()
             # debug
             out = mx.nd.stack(out[0,:], out[0,:])
+            out[1, 0] = -100.
             pred = mx.ndarray.argmax(out, axis=1)
             print(out, pred, label)
         exit(0)
