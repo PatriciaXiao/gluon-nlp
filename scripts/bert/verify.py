@@ -89,7 +89,7 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
-                                                    num_buckets=2, # number of buckets (mini-batches), by default 10
+                                                    # num_buckets=2, # number of buckets (mini-batches), by default 10
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for batch_id, data in enumerate(dataloader):
