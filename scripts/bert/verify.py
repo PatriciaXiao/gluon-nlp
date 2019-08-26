@@ -184,8 +184,11 @@ class AnswerVerify(object):
             # print("answer:", features[0].orig_answer_text)
             # exit(0)
             # print("unanswerable:", features[0].is_impossible)
+            context_text = ' '.join(features[0].doc_tokens)
             question_text = features[0].question_text
             answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
+            if answer_text == '':
+                answer_text = context_text
             raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
             raw_data.append([question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)

@@ -618,9 +618,10 @@ def evaluate():
             version_2=version_2)
 
         if args.verify:
-            has_answer = verifier.evaluate(features, prediction)
-            if not has_answer:
-                prediction = ""
+            if len(prediction) > 0:
+                has_answer = verifier.evaluate(features, prediction)
+                if not has_answer:
+                    prediction = ""
 
         all_predictions[example_qas_id] = prediction
         # the form of hashkey - answer string
