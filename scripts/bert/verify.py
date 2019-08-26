@@ -108,8 +108,6 @@ class AnswerVerify(object):
 
                     # Forward computation
                     out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
-
-                    print(out.shape)
                     ls = self.loss_function(out, label).mean()
 
                 # And backwards computation
@@ -118,6 +116,16 @@ class AnswerVerify(object):
                 self.trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(self.params, 1)
                 self.trainer.update(1)
+
+                # update the loss and metric
+                step_loss += ls.asscalar()
+                self.metric.update([label], [out])
+
+            print('[Epoch {}] loss={:.4f}, lr={:.7f}, acc={:.3f}'
+                         .format(epoch_id,
+                                 step_loss / len(dataloader),
+                                 trainer.learning_rate, self.metric.get()[1]))
+            step_loss = 0
             
         exit(0)
 
