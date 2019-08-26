@@ -94,7 +94,7 @@ class AnswerVerify(object):
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
         for epoch_id in range(num_epochs):
-            metric.reset()
+            self.metric.reset()
             step_loss = 0
             for batch_id, data in enumerate(dataloader):
                 token_ids, valid_length, segment_ids, label = data
