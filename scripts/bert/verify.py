@@ -81,7 +81,7 @@ class AnswerVerify(object):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
-        batch_size = len(dataset_raw)
+        batch_size = 12 # len(dataset_raw)
 
         sample_id = 0
         vocabulary = self.vocabulary
@@ -89,7 +89,7 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
-                                                    num_buckets=20, # number of buckets (mini-batches), by default 10; 2 will cause oom
+                                                    # num_buckets=20, # number of buckets (mini-batches), by default 10; 2 will cause oom
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
