@@ -29,7 +29,10 @@ class AnswerVerify(object):
 
     def train(self, train_features, example_ids, out):
         dataset = self.parse_sentences(train_features, example_ids, out)
-        print(len(dataset))
+        i = 0
+        for data in dataset:
+            i+=1
+            print(i)
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):
