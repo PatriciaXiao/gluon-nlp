@@ -22,6 +22,7 @@ class AnswerVerify(object):
                 max_answer_length=30,
                 null_score_diff_threshold=-2.0,
                 n_best_size=20,
+                max_len=384,
                 version_2=True,
                 ctx=mx.cpu()):
         self.tokenizer=tokenizer
@@ -38,7 +39,7 @@ class AnswerVerify(object):
         # for inference without label available, set has_label=False
         self.pair = True
         # The maximum length of an input sequence
-        self.max_len = 128 # TODO: try to increase this size
+        self.max_len = max_len # TODO: try to increase this size
 
         self.lr = 5e-6
         self.eps = 1e-9

@@ -365,6 +365,7 @@ if args.verify:
                     max_answer_length=max_answer_length,
                     null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
+                    max_len=max_seq_length,
                     version_2=version_2,
                     ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
 
