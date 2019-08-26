@@ -124,7 +124,8 @@ class AnswerVerify(object):
             print('[Epoch {}] loss={:.4f}, lr={:.7f}, acc={:.3f}'
                          .format(epoch_id,
                                  step_loss / len(dataloader),
-                                 trainer.learning_rate, self.metric.get()[1]))
+                                 trainer.learning_rate,  # TODO: add learning rate scheduler latter
+                                 self.metric.get()[1]))
             step_loss = 0
             
         exit(0)
