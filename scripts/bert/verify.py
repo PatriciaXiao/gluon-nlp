@@ -62,8 +62,8 @@ class AnswerVerify(object):
         self.loss_function.hybridize(static_alloc=True)
 
     def get_data_transform(self):
-        self.bert_tokenizer = nlp.data.BERTTokenizer(self.vocabulary, lower=True)
-        self.transform = data.transform.BERTDatasetTransform(self.bert_tokenizer, self.max_len,
+        bert_tokenizer = nlp.data.BERTTokenizer(self.vocabulary, lower=True)
+        self.transform = data.transform.BERTDatasetTransform(bert_tokenizer, self.max_len,
                                                         class_labels=self.all_labels,
                                                         has_label=True,
                                                         pad=True,
