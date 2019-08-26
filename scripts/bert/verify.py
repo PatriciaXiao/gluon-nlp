@@ -49,7 +49,7 @@ class AnswerVerify(object):
 
 
     def get_model(self, ctx):
-        self.bert_base, self.vocabulary = nlp.model.get_model('bert_12_768_12',
+        bert_base, self.vocabulary = nlp.model.get_model('bert_12_768_12',
                                              dataset_name='book_corpus_wiki_en_uncased',
                                              pretrained=True, ctx=ctx, use_pooler=True,
                                              use_decoder=False, use_classifier=False)
