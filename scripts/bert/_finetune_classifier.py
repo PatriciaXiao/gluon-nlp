@@ -73,7 +73,7 @@ tasks = {
 parser = argparse.ArgumentParser(
     description='BERT fine-tune examples for GLUE tasks.')
 parser.add_argument(
-    '--epochs', type=int, default=2, help='number of epochs, default is 2')
+    '--epochs', type=int, default=3, help='number of epochs, default is 3')
 parser.add_argument(
     '--batch_size',
     type=int,
