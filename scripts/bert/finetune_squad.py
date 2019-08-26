@@ -576,7 +576,7 @@ def evaluate():
 
     log.info('start prediction')
 
-    all_results = collections.defaultdict(list)
+    # all_results = collections.defaultdict(list)
     all_predictions = collections.OrderedDict()
 
     epoch_tic = time.time()
@@ -614,6 +614,11 @@ def evaluate():
             null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
+
+        if args.verify:
+            has_answer = verifier.evaluate(features, prediction)
+            if not has_answer:
+                prediction = ""
 
         all_predictions[example_qas_id] = prediction
         # the form of hashkey - answer string

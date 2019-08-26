@@ -129,8 +129,11 @@ class AnswerVerify(object):
             step_loss = 0           
         # exit(0)
 
-    def evaluate(self):
-        pass
+    def evaluate(self, dev_features, prediction):
+        for feat in dev_features:
+            print(feat)
+        eval_result = True
+        return eval_result
 
     def parse_sentences(self, train_features, example_ids, out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
