@@ -81,7 +81,7 @@ class AnswerVerify(object):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
-        batch_size = 12 # len(dataset_raw)
+        batch_size = 2 # len(dataset_raw)
 
         sample_id = 0
         vocabulary = self.vocabulary
