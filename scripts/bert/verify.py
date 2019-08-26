@@ -81,10 +81,19 @@ class AnswerVerify(object):
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
         batch_size = len(dataset_raw)
-        for item in dataset:
-            print(item)
-            break
-        input()
+
+        sample_id = 0
+        vocabulary = self.vocabulary
+        data_train = dataset
+        print('vocabulary used for tokenization = \n%s'%vocabulary)
+        print('%s token id = %s'%(vocabulary.padding_token, vocabulary[vocabulary.padding_token]))
+        print('%s token id = %s'%(vocabulary.cls_token, vocabulary[vocabulary.cls_token]))
+        print('%s token id = %s'%(vocabulary.sep_token, vocabulary[vocabulary.sep_token]))
+        print('token ids = \n%s'%data_train[sample_id][0])
+        print('valid length = \n%s'%data_train[sample_id][1])
+        print('segment ids = \n%s'%data_train[sample_id][2])
+        print('label = \n%s'%data_train[sample_id][3])
+        exit(0)
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
