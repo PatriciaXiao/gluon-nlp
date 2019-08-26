@@ -56,6 +56,7 @@ class AnswerVerify(object):
                                              dataset_name='book_corpus_wiki_en_uncased',
                                              pretrained=True, ctx=ctx, use_pooler=True,
                                              use_decoder=False, use_classifier=False)
+        self.ctx = ctx
         self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.1)
         self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
         self.bert_classifier.hybridize(static_alloc=True)
@@ -91,7 +92,9 @@ class AnswerVerify(object):
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for batch_id, data in enumerate(dataloader):
-            print(data)
+            token_ids, valid_length, segment_ids, label = data
+            token_ids = token_ids.as_in_context(self.ctx)
+            print(token_ids)
             input()
         exit(0)
 
