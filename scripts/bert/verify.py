@@ -137,7 +137,8 @@ class AnswerVerify(object):
         for feature in dev_feature:
             question_text = feature.question_text
             raw_data.append([question_text, prediction])
-        dataset = VerifierDataset(raw_data)
+        dataset_raw = VerifierDataset(raw_data)
+        dataset = dataset_raw.transform(self.transform)
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=self.batch_size,
                                                     num_buckets=1,
