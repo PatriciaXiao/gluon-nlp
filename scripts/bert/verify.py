@@ -40,5 +40,6 @@ class AnswerVerify(object):
             print("unanswerable:", features[0].is_impossible)
             if features[0].is_impossible:
                 exit(0)
-
         return None, None, None
+
+

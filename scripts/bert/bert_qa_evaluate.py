@@ -288,6 +288,13 @@ def predict(features,
             if entry.text:
                 best_non_null_entry = entry
 
+    if best_non_null_entry is None:
+        # in very rare case will this problem occur and corrupt the program
+        best_non_null_entry = _NbestPrediction(
+                                    text='',
+                                    pred_start=null_pred_start,
+                                    pred_end=null_pred_end)
+
     probs = nd.softmax(nd.array(total_scores)).asnumpy()
 
     nbest_json = []
