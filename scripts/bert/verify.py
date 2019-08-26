@@ -89,13 +89,30 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
-                                                    num_buckets=1, # number of buckets (mini-batches), by default 10
+                                                    num_buckets=2, # number of buckets (mini-batches), by default 10
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for batch_id, data in enumerate(dataloader):
             token_ids, valid_length, segment_ids, label = data
-            token_ids = token_ids.as_in_context(self.ctx)
-            print(batch_id)
+            with mx.autograd.record():
+
+                # Load the data to the GPU (or CPU if GPU disabled)
+                token_ids = token_ids.as_in_context(self.ctx)
+                valid_length = valid_length.as_in_context(self.ctx)
+                segment_ids = segment_ids.as_in_context(self.ctx)
+                label = label.as_in_context(self.ctx)
+
+                # Forward computation
+                out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
+                ls = self.loss_function(out, label).mean()
+
+            # And backwards computation
+            ls.backward()
+            # Gradient clipping
+            self.trainer.allreduce_grads()
+            nlp.utils.clip_grad_global_norm(self.params, 1)
+            self.trainer.update(1)
+            
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):
