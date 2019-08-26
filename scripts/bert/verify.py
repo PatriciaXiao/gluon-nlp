@@ -16,7 +16,7 @@ class AnswerVerify(object):
         self.version_2=version_2
 
     def train(self, train_features, example_ids, out):
-        question, answer, context = self.parse_sentences(train_features, example_ids, out)
+        self.parse_sentences(train_features, example_ids, out)
 
     def parse_sentences(self, train_features, example_ids, out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
@@ -40,6 +40,5 @@ class AnswerVerify(object):
             print("unanswerable:", features[0].is_impossible)
             if features[0].is_impossible:
                 exit(0)
-        return None, None, None
 
 

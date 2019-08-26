@@ -132,6 +132,7 @@ parser.add_argument(
 parser.add_argument(
     '--task_name',
     type=str,
+    default='MRPC',
     choices=tasks.keys(),
     help='The name of the task to fine-tune. Choices include MRPC, QQP, '
          'QNLI, RTE, STS-B, CoLA, MNLI, WNLI, SST.')
