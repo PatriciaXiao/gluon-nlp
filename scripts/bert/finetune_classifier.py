@@ -546,3 +546,4 @@ def evaluate(loader_dev, metric, segment):
 
 if __name__ == '__main__':
     train(task.metrics)
+    

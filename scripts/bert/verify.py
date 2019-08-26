@@ -77,7 +77,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, num_epochs=3):
+    def train(self, train_features, example_ids, out, num_epochs=5):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
@@ -126,9 +126,11 @@ class AnswerVerify(object):
                                  step_loss / len(dataloader),
                                  self.trainer.learning_rate,  # TODO: add learning rate scheduler latter
                                  self.metric.get()[1]))
-            step_loss = 0
-            
-        exit(0)
+            step_loss = 0           
+        # exit(0)
+
+    def evaluate(self):
+        pass
 
     def parse_sentences(self, train_features, example_ids, out):
         output = mx.nd.split(out, axis=2, num_outputs=2)

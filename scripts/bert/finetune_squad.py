@@ -360,12 +360,13 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
 
-verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
-                max_answer_length=max_answer_length,
-                null_score_diff_threshold=null_score_diff_threshold,
-                n_best_size=n_best_size,
-                version_2=version_2,
-                ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
+if args.verify:
+    verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+                    max_answer_length=max_answer_length,
+                    null_score_diff_threshold=null_score_diff_threshold,
+                    n_best_size=n_best_size,
+                    version_2=version_2,
+                    ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
 
 def train():
     """Training function."""
@@ -554,6 +555,8 @@ def evaluate():
     #     input()
     # exit(0)
 
+    dev_features = {features[0].example_id: features for features in dev_dataset}
+
     dev_data_transform, _ = preprocess_dataset(
         dev_data, SQuADTransform(
             copy.copy(tokenizer),
@@ -574,6 +577,7 @@ def evaluate():
     log.info('start prediction')
 
     all_results = collections.defaultdict(list)
+    all_predictions = collections.OrderedDict()
 
     epoch_tic = time.time()
     total_num = 0
@@ -597,8 +601,6 @@ def evaluate():
         epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
     log.info('Get prediction results...')
-
-    all_predictions = collections.OrderedDict()
 
     for features in dev_dataset:
         results = all_results[features[0].example_id]
