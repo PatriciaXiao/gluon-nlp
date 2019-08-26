@@ -151,7 +151,7 @@ class AnswerVerify(object):
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
             pred = mx.ndarray.argmax(out, axis=1)
-            print(pred, label)
+            print(out, pred, label)
         exit(0)
 
         eval_result = True
