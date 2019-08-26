@@ -223,6 +223,9 @@ parser.add_argument('--apply_coattention', action='store_true', default=False,
 parser.add_argument('--apply_self_attention', action='store_true', default=False,
                     help='apply self-attention to BERT\' output')
 
+parser.add_argument('--verify', action='store_true', default=False,
+                    help='verify the answers with verifiers')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -500,7 +503,8 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out
-            verifier.train(train_features, example_ids, out)
+            if args.verify:
+                verifier.train(train_features, example_ids, out)
 
             step_loss += ls.asscalar()
 

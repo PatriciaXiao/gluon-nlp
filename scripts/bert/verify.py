@@ -16,6 +16,9 @@ class AnswerVerify(object):
         self.version_2=version_2
 
     def train(self, train_features, example_ids, out):
+        question, answer, context = self.parse_sentences(train_features, example_ids, out)
+
+    def parse_sentences(self, train_features, example_ids, out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
@@ -33,6 +36,9 @@ class AnswerVerify(object):
                 version_2=self.version_2)
             print(prediction)
             print(features[0].tokens)
+            print(features[0].doc_tokens)
             print(features[0].is_impossible)
             if features[0].is_impossible:
                 exit(0)
+
+        return None, None, None
