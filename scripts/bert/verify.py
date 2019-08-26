@@ -150,11 +150,11 @@ class AnswerVerify(object):
             out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
-            pred = mx.ndarray.argmax(out, axis=1).astype(int)
-            print(out, pred, label)
-        exit(0)
+            pred = mx.ndarray.argmax(out, axis=1).astype(int)[0]
+            # print(out, pred, label)
+        # exit(0)
 
-        eval_result = True
+        eval_result = pred == 1 # True
         return eval_result
 
     def parse_sentences(self, train_features, example_ids, out):
