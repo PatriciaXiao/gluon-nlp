@@ -38,10 +38,11 @@ class AnswerVerify(object):
         # for inference without label available, set has_label=False
         self.pair = True
         # The maximum length of an input sequence
-        self.max_len = 128
+        self.max_len = 128 # TODO: try to increase this size
 
         self.lr = 5e-6
         self.eps = 1e-9
+        self.batch_size = 2
 
         self.get_model(ctx)
         self.get_loss()
@@ -83,14 +84,10 @@ class AnswerVerify(object):
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
-        batch_size = 2 # len(dataset_raw)
 
-        sample_id = 0
-        vocabulary = self.vocabulary
-        data_train = dataset
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
-                                                    batch_size=batch_size,
+                                                    batch_size=self.batch_size,
                                                     num_buckets=1, # number of buckets (mini-batches), by default 10; 2 will cause oom
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
