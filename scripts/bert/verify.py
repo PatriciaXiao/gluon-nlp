@@ -89,13 +89,13 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=batch_size,
+                                                    num_buckets=1, # number of buckets (mini-batches), by default 10
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for batch_id, data in enumerate(dataloader):
             token_ids, valid_length, segment_ids, label = data
             token_ids = token_ids.as_in_context(self.ctx)
-            print(token_ids)
-            input()
+            print(batch_id)
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):

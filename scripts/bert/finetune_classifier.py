@@ -281,7 +281,7 @@ def preprocess_data(tokenizer, task, batch_size, dev_batch_size, max_len, pad=Fa
     batch_sampler = nlp.data.sampler.FixedBucketSampler(
         data_train_len,
         batch_size=batch_size,
-        num_buckets=10,
+        num_buckets=10, # number of buckets (mini-batches)
         ratio=0,
         shuffle=True)
     # data loader for training
