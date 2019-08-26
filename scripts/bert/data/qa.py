@@ -97,6 +97,7 @@ class SQuADFeature(object):
                  doc_tokens,
                  doc_span_index,
                  question_text,
+                 orig_answer_text,
                  tokens,
                  token_to_orig_map,
                  token_is_max_context,
@@ -111,6 +112,7 @@ class SQuADFeature(object):
         self.doc_tokens = doc_tokens
         self.doc_span_index = doc_span_index
         self.question_text = question_text
+        self.orig_answer_text = orig_answer_text
         self.tokens = tokens
         self.token_to_orig_map = token_to_orig_map
         self.token_is_max_context = token_is_max_context
@@ -418,6 +420,7 @@ class SQuADTransform(object):
                                          doc_tokens=example.doc_tokens,
                                          doc_span_index=doc_span_index,
                                          question_text=example.question_text,
+                                         orig_answer_text=example.orig_answer_text,
                                          tokens=tokens,
                                          token_to_orig_map=token_to_orig_map,
                                          token_is_max_context=token_is_max_context,

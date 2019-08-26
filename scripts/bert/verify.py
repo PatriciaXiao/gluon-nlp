@@ -155,6 +155,8 @@ class AnswerVerify(object):
             # print("context:", ' '.join(features[0].doc_tokens)) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
+            print("answer:", features[0].orig_answer_text)
+            exit(0)
             # print("unanswerable:", features[0].is_impossible)
             question_text = features[0].question_text
             raw_data.append([question_text, prediction, label])
