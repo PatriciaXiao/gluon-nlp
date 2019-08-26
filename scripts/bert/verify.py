@@ -81,6 +81,10 @@ class AnswerVerify(object):
         # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
         batch_size = len(dataset_raw)
+        # The FixedBucketSampler and the DataLoader for making the mini-batches
+        train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
+                                                    batch_size=batch_size,
+                                                    shuffle=True)
         exit(0)
 
     def parse_sentences(self, train_features, example_ids, out):
