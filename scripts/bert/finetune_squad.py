@@ -377,7 +377,7 @@ def train():
     else:
         train_data = SQuAD(segment, version='1.1')
     if args.debug:
-        sampled_data = [train_data[i] for i in range(1000)]
+        sampled_data = [train_data[i] for i in range(60)] # 1000
         train_data = mx.gluon.data.SimpleDataset(sampled_data)
     log.info('Number of records in Train data:{}'.format(len(train_data)))
 
