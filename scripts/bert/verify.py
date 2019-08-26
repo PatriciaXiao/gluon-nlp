@@ -120,6 +120,8 @@ class AnswerVerify(object):
                 if verbose:
                     # update the loss and metric
                     step_loss += ls.asscalar()
+                    print(label, out)
+                    exit(0)
                     self.metric.update([label], [out])
             if verbose:
                 print('[Epoch {}] loss={:.4f}, lr={:.7f}, acc={:.3f}'
