@@ -535,7 +535,7 @@ def evaluate():
     else:
         dev_data = SQuAD('dev', version='1.1')
     if args.debug:
-        sampled_data = [dev_data[0], dev_data[1], dev_data[2]]
+        sampled_data = dev_data[:10] # [dev_data[0], dev_data[1], dev_data[2]]
         dev_data = mx.gluon.data.SimpleDataset(sampled_data)
     log.info('Number of records in dev data:{}'.format(len(dev_data)))
 
