@@ -147,7 +147,7 @@ class AnswerVerify(object):
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
         for data in dataloader:
             token_ids, valid_length, segment_ids, _ = data
-            out = model(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
+            out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
             result = out.asnumpy().reshape(-1).tolist()
             print(result)
