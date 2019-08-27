@@ -72,7 +72,7 @@ class AnswerVerify2(object):
         for epoch_id in range(num_epochs):
             with mx.autograd.record():
                 class_out = self.classifier(out)
-                ls = self.loss_function(class_out, label).mean()
+                ls = self.loss_function(class_out, labels).mean()
             ls.backward()
             # Gradient clipping
             self.trainer.allreduce_grads()
