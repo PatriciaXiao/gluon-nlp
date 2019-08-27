@@ -182,8 +182,8 @@ class AnswerVerify(object):
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
             print("answer:", features[0].orig_answer_text)
+            print("unanswerable:", features[0].is_impossible)
             exit(0)
-            # print("unanswerable:", features[0].is_impossible)
             context_text = ' '.join(features[0].doc_tokens)
             question_text = features[0].question_text
             answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
