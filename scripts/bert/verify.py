@@ -60,17 +60,29 @@ class AnswerVerify2(object):
 
         self.trainer = mx.gluon.Trainer(self.classifier.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+        self.params = [p for p in self.classifier.collect_params().values() if p.grad_req != 'null']
+        self.loss_function = mx.gluon.loss.SoftmaxCELoss()
+        self.loss_function.hybridize(static_alloc=True)
 
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         if not self.version_2:
             return
         example_ids = example_ids.asnumpy().tolist()
-        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids])
-        print(labels)
-        exit(0)
+        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
         for epoch_id in range(num_epochs):
-            class_out = self.classifier(out)
+            with mx.autograd.record():
+                class_out = self.classifier(out)
+                ls = self.loss_function(class_out, label).mean()
+            ls.backward()
+            # Gradient clipping
+            self.trainer.allreduce_grads()
+            nlp.utils.clip_grad_global_norm(self.params, 1)
+            self.trainer.update(1)
 
+            if True: #verbose:
+                print("epoch {0} in verifier2, loss {1}".format(epoch_id, ls.asscalar()))
+
+        exit(0)
 
     def evaluate(self, dev_feature, prediction):
         if not self.version_2:
