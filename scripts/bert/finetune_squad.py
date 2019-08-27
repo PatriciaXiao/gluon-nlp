@@ -627,7 +627,7 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
-    if args.verify and VERIFIER_ID == 2:
+    if args.verify and VERIFIER_ID in [2, 3]:
         all_pre_na_prob = collections.defaultdict(list)
 
     epoch_tic = time.time()
@@ -649,7 +649,7 @@ def evaluate():
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
-        if args.verify and VERIFIER_ID == 2:
+        if args.verify and VERIFIER_ID in [2, 3]:
             for example_id, has_ans_prob in zip(example_ids, has_answer_tmp):
                 all_pre_na_prob[example_id].append(has_ans_prob)
 
