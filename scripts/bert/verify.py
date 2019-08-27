@@ -25,7 +25,7 @@ class VerifierDataset(Dataset):
         return len(self.data)
 
 class verifier_layers(Block):
-    def __init__(self, dropout=0.0, num_classes=2, in_units=None, prefix=None, params=None):
+    def __init__(self, dropout=0.0, num_classes=2, in_units=768, prefix=None, params=None):
         super(verifier_layers, self).__init__(prefix=prefix, params=params)
         with self.name_scope():
             self.classifier = nn.HybridSequential(prefix=prefix)
