@@ -120,8 +120,127 @@ def get_final_text(pred_text, orig_text, tokenizer):
     output_text = orig_text[orig_start_position:(orig_end_position + 1)]
     return output_text
 
-
 def predict(features,
+            results,
+            tokenizer,
+            max_answer_length=64,
+            n_best_size=10,
+            version_2=False):
+    """Get prediction results.
+
+    Parameters
+    ----------
+    features : list of SQuADFeature
+        List of squad features for the example.
+    results : list of data.qa.PredResult
+        List of model predictions for span start and span end.
+    tokenizer: callable
+        Tokenizer function.
+    max_answer_length: int, default 64
+        Maximum length of the answer tokens.
+    n_best_size: int, default 10
+        The total number of n-best predictions.
+    version_2: bool, default False
+        If true, the SQuAD examples contain some that do not have an answer.
+
+    Returns
+    -------
+    prediction: str
+        The final prediction.
+    nbest : list of (str, float)
+        n-best predictions with their probabilities.
+    """
+
+    _PrelimPrediction = namedtuple('PrelimPrediction',
+                                   ['feature_index', 'start_index', 'end_index',
+                                    'pred_start', 'pred_end'])
+    _NbestPrediction = namedtuple(
+        'NbestPrediction', ['text', 'pred_start', 'pred_end'])
+    prelim_predictions = []
+    for features_id, (result, feature) in enumerate(zip(results, features)):
+        start_indexes = _get_best_indexes(result.start, n_best_size)
+        end_indexes = _get_best_indexes(result.end, n_best_size)
+        for start_index in start_indexes:
+            for end_index in end_indexes:
+                # We could hypothetically create invalid predictions, e.g., predict
+                # that the start of the span is in the question. We throw out all
+                # invalid predictions.
+                if start_index >= len(feature.tokens):
+                    continue
+                if end_index >= len(feature.tokens):
+                    continue
+                if start_index not in feature.token_to_orig_map:
+                    continue
+                if end_index not in feature.token_to_orig_map:
+                    continue
+                if not feature.token_is_max_context.get(start_index, False):
+                    continue
+                if end_index < start_index:
+                    continue
+                length = end_index - start_index + 1
+                if length > max_answer_length:
+                    continue
+                prelim_predictions.append(
+                    _PrelimPrediction(
+                        feature_index=features_id,
+                        start_index=start_index,
+                        end_index=end_index,
+                        pred_start=result.start[start_index],
+                        pred_end=result.end[end_index]))
+
+    prelim_predictions = sorted(
+        prelim_predictions,
+        key=lambda x: (x.pred_start + x.pred_end),
+        reverse=True)
+
+    nbest = []
+    for pred in prelim_predictions:
+        if len(nbest) >= n_best_size:
+            break
+        feature = features[pred.feature_index]
+        if pred.start_index > 0:  # this is a non-null prediction
+            tok_tokens = feature.tokens[pred.start_index:(
+                pred.end_index + 1)]
+            orig_doc_start = feature.token_to_orig_map[pred.start_index]
+            orig_doc_end = feature.token_to_orig_map[pred.end_index]
+            orig_tokens = feature.doc_tokens[orig_doc_start:(
+                orig_doc_end + 1)]
+            tok_text = ' '.join(tok_tokens)
+            # De-tokenize WordPieces that have been split off.
+            tok_text = tok_text.replace(' ##', '')
+            tok_text = tok_text.replace('##', '')
+            # Clean whitespace
+            tok_text = tok_text.strip()
+            tok_text = ' '.join(tok_text.split())
+            orig_text = ' '.join(orig_tokens)
+            final_text = get_final_text(tok_text, orig_text, tokenizer)
+        else:
+            final_text = ''
+        nbest.append(
+            _NbestPrediction(
+                text=final_text,
+                pred_start=pred.pred_start,
+                pred_end=pred.pred_end))
+
+    # In very rare edge cases we could have no valid predictions. So we
+    # just create a nonce prediction in this case to avoid failure.
+    if not nbest:
+        nbest.append(
+            _NbestPrediction(text=features[0].doc_tokens[0], pred_start=0.0, pred_end=0.0))
+    assert len(nbest) >= 1
+    total_scores = []
+    for entry in nbest:
+        total_scores.append(entry.pred_start + entry.pred_end)
+    probs = nd.softmax(nd.array(total_scores)).asnumpy()
+    nbest_json = []
+    for (i, entry) in enumerate(nbest):
+        nbest_json.append((entry.text, float(probs[i])))
+    prediction = nbest_json[0][0]
+    return prediction, nbest_json
+
+
+
+def predict_with_empty(features,
             results,
             tokenizer,
             max_answer_length=64,
@@ -305,7 +424,7 @@ def predict(features,
     if not version_2:
         prediction = nbest_json[0][0]
     else:
-        # predict '' iff the null score - the score of best non-null > threshold
+        # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
             best_non_null_entry.pred_end
 

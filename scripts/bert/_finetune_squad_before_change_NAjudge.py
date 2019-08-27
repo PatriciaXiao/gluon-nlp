@@ -174,7 +174,7 @@ parser.add_argument('--max_query_length',
 
 parser.add_argument('--n_best_size',
                     type=int,
-                    default=20, # 20
+                    default=30, # used to be 20
                     help='The total number of n-best predictions to generate in the '
                     'nbest_predictions.json output file. default is 20')
 
@@ -191,7 +191,7 @@ parser.add_argument('--version_2',
 
 parser.add_argument('--null_score_diff_threshold',
                     type=float,
-                    default=0.0,
+                    default=-2.0,
                     help='If null_score - best_non_null is greater than the threshold predict null.'
                     'Typical values are between -1.0 and -5.0. default is -2.0')
 
