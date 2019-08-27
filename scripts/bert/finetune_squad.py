@@ -233,9 +233,9 @@ parser.add_argument('--verify', action='store_true', default=False,
 parser.add_argument('--verifier_type', type=int, default=2, choices=[1, 2],
                     help='the id of the verifier to use')
 
-VERIFIER_ID = args.verifier_type # 2 # 1
-
 args = parser.parse_args()
+
+VERIFIER_ID = args.verifier_type # 2 # 1
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
