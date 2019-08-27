@@ -9,6 +9,10 @@ from mxnet.gluon.data.dataset import Dataset
 
 import model, data
 
+# https://blog.csdn.net/HappyRocking/article/details/80900890
+import re
+pattern = r'\?|\.|\!|;'
+
 class VerifierDataset(Dataset):
     def __init__(self, data):
         self.data = data
@@ -181,17 +185,27 @@ class AnswerVerify(object):
             print("context:", ' '.join(features[0].doc_tokens)) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
-            print("answer:", features[0].orig_answer_text)
+            answer_text = features[0].orig_answer_text
+            sentences = re.split(pattern, context)
+            sentence_text = ''
+            for s in sentences:
+                if s.find(answer_text) != -1:
+                    sentence_text = s
+                    break
+            print("sentence:", sentence_text)
+            print("answer:", answer_text)
             print("unanswerable:", features[0].is_impossible)
             print("label", label)
             # exit(0)
             context_text = ' '.join(features[0].doc_tokens)
+            sentences = context_text.strip
             question_text = features[0].question_text
             answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
             if answer_text == '':
                 answer_text = context_text
-            raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
-            raw_data.append([question_text, answer_text, label])
+            # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
+            # raw_data.append([question_text, answer_text, label])
+             raw_data.append([question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         exit(0)
         return dataset
