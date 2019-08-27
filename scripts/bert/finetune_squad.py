@@ -57,7 +57,7 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from verify import AnswerVerify, AnswerVerify2
+from verify import AnswerVerify, AnswerVerify2, AnswerVerify3
 
 np.random.seed(6)
 random.seed(6)
@@ -230,12 +230,12 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
 parser.add_argument('--verify', action='store_true', default=False,
                     help='verify the answers with verifiers')
 
-parser.add_argument('--verifier_type', type=int, default=2, choices=[1, 2],
+parser.add_argument('--verifier_type', type=int, default=2, choices=[1, 2, 3],
                     help='the id of the verifier to use')
 
 args = parser.parse_args()
 
-VERIFIER_ID = args.verifier_type # 2 # 1
+VERIFIER_ID = args.verifier_type
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -375,6 +375,9 @@ if args.verify:
                     ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerify2(version_2=version_2,
+                    ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
+    elif VERIFIER_ID == 3:
+        verifier = AnswerVerify3(version_2=version_2,
                     ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
 
 def train():

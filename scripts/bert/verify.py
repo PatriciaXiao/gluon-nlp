@@ -45,7 +45,7 @@ class AnswerVerify3(object):
     regression version
     '''
     def __init__(self, version_2=True, ctx=mx.cpu(), dropout=0.0, in_units=768, prefix=None, params=None):
-        self.classifier = verifier_layers(dropout=dropout, 
+        self.regression = verifier_layers(dropout=dropout, 
                                         num_classes=1, 
                                         in_units=in_units, 
                                         prefix=prefix, 
@@ -56,11 +56,11 @@ class AnswerVerify3(object):
         self.lr = 3e-5
         self.eps = 5e-9
 
-        self.classifier.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
+        self.regression.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
 
-        self.trainer = mx.gluon.Trainer(self.classifier.collect_params(), 'adam',
+        self.trainer = mx.gluon.Trainer(self.regression.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
-        self.params = [p for p in self.classifier.collect_params().values() if p.grad_req != 'null']
+        self.params = [p for p in self.regression.collect_params().values() if p.grad_req != 'null']
         self.loss_function = mx.gluon.loss.L2Loss()
         self.loss_function.hybridize(static_alloc=True)
 
@@ -72,7 +72,7 @@ class AnswerVerify3(object):
         out = out.as_in_context(self.ctx)
         for epoch_id in range(num_epochs):
             with mx.autograd.record():
-                reg_out = self.classifier(out)
+                reg_out = self.regression(out)
                 ls = self.loss_function(reg_out, labels).mean()
             ls.backward()
             # Gradient clipping
@@ -88,7 +88,7 @@ class AnswerVerify3(object):
             return mx.nd.ones(example_ids.shape)
         example_ids = example_ids.asnumpy().tolist()
         labels = mx.nd.array([[0 if dev_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
-        reg_out = self.classifier(out)
+        reg_out = self.regression(out)
         print(reg_out)
         exit(0)
         return reg_out
