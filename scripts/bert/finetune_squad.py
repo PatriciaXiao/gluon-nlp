@@ -635,7 +635,7 @@ def evaluate():
                   valid_length.astype('float32').as_in_context(ctx))
 
         if args.verify and VERIFIER_ID == 2:
-            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out)
+            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out).asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
@@ -644,6 +644,9 @@ def evaluate():
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
+        if args.verify and VERIFIER_ID == 2:
+            for example_id, has_ans_prob in zip(example_ids, has_answer_tmp):
+                all_pre_na_prob[example_id].append(has_ans_prob)
 
     epoch_toc = time.time()
     log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
@@ -656,6 +659,10 @@ def evaluate():
     for features in dev_dataset:
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
+
+        if args.verify and VERIFIER_ID == 2:
+            has_ans_prob = all_pre_na_prob[features[0].example_id]
+            print(has_ans_prob)
 
         prediction, _ = predict(
             features=features,
