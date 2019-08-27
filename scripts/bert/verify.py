@@ -64,7 +64,7 @@ class AnswerVerify2(object):
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         if not self.version_2:
             return
-        labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids])
+        labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids[:,0]])
         exit(0)
         for epoch_id in range(num_epochs):
             class_out = self.classifier(out)
