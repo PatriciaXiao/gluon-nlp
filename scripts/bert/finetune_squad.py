@@ -597,13 +597,13 @@ def evaluate():
                   token_types.astype('float32').as_in_context(ctx),
                   valid_length.astype('float32').as_in_context(ctx))
 
+        if args.verify and VERIFIER_ID == 2:
+            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out)
+
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-
-        if args.verify and VERIFIER_ID == 2:
-            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out)
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
