@@ -585,6 +585,9 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
+    if args.verify and VERIFIER_ID == 2:
+        all_pre_na_prob = collections.defaultdict(list)
+
     epoch_tic = time.time()
     total_num = 0
     for data in dev_dataloader:
@@ -598,6 +601,9 @@ def evaluate():
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
+
+        if args.verify and VERIFIER_ID == 2:
+            has_answer_tmp = verifier.evaluate(dev_feature, example_ids, out)
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
@@ -623,7 +629,7 @@ def evaluate():
             n_best_size=n_best_size,
             version_2=version_2)
 
-        if args.verify:
+        if args.verify and VERIFIER_ID == 1:
             if len(prediction) > 0:
                 has_answer = verifier.evaluate(features, prediction)
                 if not has_answer:

@@ -79,14 +79,18 @@ class AnswerVerify2(object):
             nlp.utils.clip_grad_global_norm(self.params, 1)
             self.trainer.update(1)
 
-            if True: #verbose:
+            if verbose:
                 print("epoch {0} in verifier2, loss {1}".format(epoch_id, ls.asscalar()))
 
-        exit(0)
-
-    def evaluate(self, dev_feature, prediction):
+    def evaluate(self, dev_feature, example_ids, out):
         if not self.version_2:
             return True
+        example_ids = example_ids.asnumpy().tolist()
+        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
+        class_out = self.classifier(out)
+        pred = mx.ndarray.argmax(class_out, axis=1)
+        print(pred)
+        exit(0)
 
 
 class AnswerVerify(object):
