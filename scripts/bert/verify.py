@@ -53,6 +53,9 @@ class AnswerVerify2(object):
         self.version_2 = version_2
         self.ctx = ctx
 
+        self.lr = 3e-5
+        self.eps = 5e-9
+
         self.classifier.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
 
         self.trainer = mx.gluon.Trainer(self.classifier.collect_params(), 'adam',
