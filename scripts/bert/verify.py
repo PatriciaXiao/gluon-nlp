@@ -9,6 +9,9 @@ from mxnet.gluon.data.dataset import Dataset
 
 import model, data
 
+from mxnet.gluon import Block
+from mxnet.gluon import nn
+
 # https://blog.csdn.net/HappyRocking/article/details/80900890
 import re
 pattern = r'\?|\.|\!|;'
@@ -21,12 +24,28 @@ class VerifierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+class verifier_layers(Block):
+    def __init__(self, dropout=0.0, num_classes=2, prefix=None, params=None):
+        super(verifier_layers, self).__init__(prefix=prefix, params=params)
+        with self.name_scope():
+            self.classifier = nn.HybridSequential(prefix=prefix)
+            self.classifier.add(nn.Dense(flatten=False, activation='tanh'))
+            if dropout:
+                self.classifier.add(nn.Dropout(rate=dropout))
+            self.classifier.add(nn.Dense(units=num_classes))
+    def forward(self, inputs):
+        '''
+        inputs are bert outputs
+        '''
+        return self.classifier(inputs)
+
+
 class AnswerVerify2(object):
     '''
     add additional pooling layer on top of traditional bert output
     '''
-    def __init__(self):
-        pass
+    def __init__(self, dropout=0.0, num_classes=2, prefix=None, params=None):
+        self.classifier = verifier_layers(dropout=dropout, num_classes=num_classes, prefix=prefix, params=params)
     def train(self):
         pass
     def evaluate(self, dev_feature, prediction):
@@ -68,7 +87,6 @@ class AnswerVerify(object):
 
         self.get_data_transform()
 
-
     def get_model(self, ctx):
         bert_base, self.vocabulary = nlp.model.get_model('bert_12_768_12',
                                              dataset_name='book_corpus_wiki_en_uncased',
@@ -96,6 +114,13 @@ class AnswerVerify(object):
                                                         pair=self.pair)
 
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
+        #########debug#########
+        # debug
+        debug = verifier_layers()
+        debug_out = debug(out)
+        print(debug_out)
+        exit(0)
+        #######################
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
@@ -126,10 +151,6 @@ class AnswerVerify(object):
                     # Forward computation
                     out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
                     ls = self.loss_function(out, label).mean()
-
-                    print(out)
-                    print(self.bert_classifier)
-                    exit(0)
 
                 # And backwards computation
                 ls.backward()
