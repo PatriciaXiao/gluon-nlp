@@ -73,8 +73,6 @@ class AnswerVerify3(object):
         for epoch_id in range(num_epochs):
             with mx.autograd.record():
                 reg_out = self.regression(out)
-                print(reg_out)
-                exit(0)
                 ls = self.loss_function(reg_out, labels).mean()
             ls.backward()
             # Gradient clipping
