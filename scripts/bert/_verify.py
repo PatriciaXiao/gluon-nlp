@@ -21,18 +21,6 @@ class VerifierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-class AnswerVerify2(object):
-    '''
-    add additional pooling layer on top of traditional bert output
-    '''
-    def __init__(self):
-        pass
-    def train(self):
-        pass
-    def evaluate(self, dev_feature, prediction):
-        return True
-
-
 class AnswerVerify(object):
     def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=True),
                 max_answer_length=30,
@@ -126,10 +114,6 @@ class AnswerVerify(object):
                     # Forward computation
                     out = self.bert_classifier(token_ids, segment_ids, valid_length.astype('float32'))
                     ls = self.loss_function(out, label).mean()
-
-                    print(out)
-                    print(self.bert_classifier)
-                    exit(0)
 
                 # And backwards computation
                 ls.backward()
