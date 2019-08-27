@@ -178,11 +178,11 @@ class AnswerVerify(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            # print("context:", ' '.join(features[0].doc_tokens)) # the original context
+            print("context:", ' '.join(features[0].doc_tokens)) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
-            # print("answer:", features[0].orig_answer_text)
-            # exit(0)
+            print("answer:", features[0].orig_answer_text)
+            exit(0)
             # print("unanswerable:", features[0].is_impossible)
             context_text = ' '.join(features[0].doc_tokens)
             question_text = features[0].question_text
