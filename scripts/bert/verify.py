@@ -189,10 +189,11 @@ class AnswerVerify(object):
             answer_text = features[0].orig_answer_text
             sentences = re.split(pattern, context_text)
             sentence_text = ''
-            for s in sentences:
-                if s.find(answer_text) != -1:
-                    sentence_text = s
-                    break
+            if label == 1:
+                for s in sentences:
+                    if s.find(answer_text) != -1:
+                        sentence_text = s
+                        break
             print("sentence:", sentence_text)
             print("answer:", answer_text)
             print("unanswerable:", features[0].is_impossible)
