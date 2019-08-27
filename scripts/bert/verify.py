@@ -115,7 +115,7 @@ class AnswerVerify(object):
         # for inference without label available, set has_label=False
         self.pair = True
         # The maximum length of an input sequence
-        self.max_len = min(max_len, 128) # TODO: try to increase this size
+        self.max_len = min(max_len, 256) # TODO: try to increase this size
 
         self.lr = 5e-6
         self.eps = 1e-9
