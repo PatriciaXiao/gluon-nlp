@@ -552,6 +552,43 @@ def evaluate():
             max_seq_length=max_seq_length,
             doc_stride=doc_stride,
             max_query_length=max_query_length,
+            is_pad=True,
+            is_training=True)._transform, lazy=False)
+
+    dev_data_transform, _ = preprocess_dataset(
+        dev_data, SQuADTransform(
+            copy.copy(tokenizer),
+            max_seq_length=max_seq_length,
+            doc_stride=doc_stride,
+            max_query_length=max_query_length,
+            is_pad=True,
+            is_training=True))
+
+    # refer to evaluation process
+    # for feat in train_dataset:
+    #     print(feat[0].example_id)
+    #     print(feat[0].tokens)
+    #     print(feat[0].token_to_orig_map)
+    #     input()
+    # exit(0)
+
+    dev_features = {features[0].example_id: features for features in dev_dataset}
+
+    #for line in train_data_transform:
+    #    print(line)
+    #    input()
+
+    dev_dataloader = mx.gluon.data.DataLoader(
+        dev_data_transform, batchify_fn=batchify_fn,
+        batch_size=test_batch_size, num_workers=4, shuffle=True)
+    '''
+
+    dev_dataset = dev_data.transform(
+        SQuADTransform(
+            copy.copy(tokenizer),
+            max_seq_length=max_seq_length,
+            doc_stride=doc_stride,
+            max_query_length=max_query_length,
             is_pad=False,
             is_training=False)._transform, lazy=False)
 
@@ -580,7 +617,7 @@ def evaluate():
         batchify_fn=batchify_fn,
         num_workers=4, batch_size=test_batch_size,
         shuffle=False, last_batch='keep')
-
+    '''
     log.info('start prediction')
 
     all_results = collections.defaultdict(list)
