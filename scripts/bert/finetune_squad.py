@@ -199,6 +199,10 @@ parser.add_argument('--gpu',
                     type=int,
                     default=None,
                     help='which gpu to use for finetuning. CPU is used if not set.')
+parser.add_argument('--verify_gpu',
+                    type=int,
+                    default=None,
+                    help='which gpu to use for training the verifier. CPU is used if not set.')
 '''
 parser.add_argument('--gpus',
                     type=str,
@@ -262,6 +266,7 @@ test_batch_size = args.test_batch_size
 lr = args.lr
 
 ctx = mx.cpu() if args.gpu is None else mx.gpu(args.gpu)
+verify_ctx = mx.cpu() if args.verify_gpu is None else mx.gpu(args.gpu)
 # ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
 #           [mx.gpu(int(x)) for x in args.gpus.split(',')]
 '''
@@ -373,7 +378,7 @@ if args.verify:
                     ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerify2(version_2=version_2,
-                    ctx=ctx, in_units=BERT_DIM[args.bert_model])
+                    ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
 
 def train():
     """Training function."""

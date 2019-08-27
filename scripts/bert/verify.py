@@ -69,6 +69,7 @@ class AnswerVerify2(object):
             return
         example_ids = example_ids.asnumpy().tolist()
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
+        out = out.as_in_context(self.ctx)
         for epoch_id in range(num_epochs):
             with mx.autograd.record():
                 class_out = self.classifier(out)
