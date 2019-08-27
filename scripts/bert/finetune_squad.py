@@ -681,6 +681,8 @@ def evaluate():
             version_2=version_2)
 
         if args.verify and VERIFIER_ID == 1:
+            #debug
+            has_answer = verifier.evaluate(features, prediction)
             if len(prediction) > 0:
                 has_answer = verifier.evaluate(features, prediction)
                 if not has_answer:
