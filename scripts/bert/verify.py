@@ -59,7 +59,7 @@ class AnswerVerify(object):
                                              pretrained=True, ctx=ctx, use_pooler=True,
                                              use_decoder=False, use_classifier=False)
         self.ctx = ctx
-        self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.1)
+        self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.0)
         self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
         self.bert_classifier.hybridize(static_alloc=True)
         self.trainer = mx.gluon.Trainer(self.bert_classifier.collect_params(), 'adam',
