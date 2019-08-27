@@ -187,7 +187,6 @@ class AnswerVerify(object):
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
             answer_text = features[0].orig_answer_text
-            print(pattern, context_text)
             sentences = re.split(pattern, context_text)
             sentence_text = ''
             for s in sentences:
