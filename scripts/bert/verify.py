@@ -67,7 +67,7 @@ class AnswerVerify2(object):
         raw_labels = []
         for eid in example_ids:
             print(eid)
-            print(eid[0])
+            print(eid[0,:])
         exit(0)
         labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids[:,0]])
         exit(0)
