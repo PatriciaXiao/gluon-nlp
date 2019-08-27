@@ -326,8 +326,8 @@ class AnswerVerify(object):
             question_text = features[0].question_text
             answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
             sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-            sentence_text = ''
             if label == 1:
+                sentence_text = ''
                 for s in sentences:
                     if s.find(answer_text) != -1:
                         sentence_text = s
