@@ -603,7 +603,7 @@ def evaluate():
         pred_end = output[1].reshape((0, -3)).asnumpy()
 
         if args.verify and VERIFIER_ID == 2:
-            has_answer_tmp = verifier.evaluate(dev_feature, example_ids, out)
+            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out)
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
