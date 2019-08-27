@@ -85,7 +85,7 @@ class AnswerVerify2(object):
 
     def evaluate(self, dev_features, example_ids, out):
         if not self.version_2:
-            return True
+            return mx.nd.ones(example_ids.shape)
         example_ids = example_ids.asnumpy().tolist()
         labels = mx.nd.array([[0 if dev_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
         class_out = self.classifier(out)
