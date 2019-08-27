@@ -664,6 +664,7 @@ def evaluate():
     all_predictions = collections.OrderedDict()
 
     for features in dev_dataset:
+        print(features)
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
 
