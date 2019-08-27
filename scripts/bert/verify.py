@@ -205,7 +205,9 @@ class AnswerVerify(object):
                 answer_text = context_text
             # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
             # raw_data.append([question_text, answer_text, label])
-             raw_data.append([question_text, answer_text, label])
+            first_part = sentence_text+question_text
+            second_part = answer_text
+            raw_data.append([first_part, second_part, label])
         dataset = VerifierDataset(raw_data)
         exit(0)
         return dataset
