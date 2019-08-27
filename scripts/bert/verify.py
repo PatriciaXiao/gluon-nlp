@@ -11,7 +11,7 @@ import model, data
 
 # https://blog.csdn.net/HappyRocking/article/details/80900890
 import re
-pattern = r'\?|\.|,|\!|;'
+pattern = r'\?|\.|\!|;'
 
 class VerifierDataset(Dataset):
     def __init__(self, data):
@@ -217,7 +217,7 @@ class AnswerVerify(object):
             first_part = sentence_text+question_text
             second_part = answer_text
             raw_data.append([first_part, second_part, label])
-            print("sentence_text,", sentence_text)
+            print("sentence_text", sentence_text)
             print("question_text", question_text)
             print("answer_text", answer_text)
             print("label", label)
