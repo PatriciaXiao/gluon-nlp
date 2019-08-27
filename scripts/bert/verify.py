@@ -39,6 +39,60 @@ class verifier_layers(Block):
         '''
         return self.classifier(inputs)
 
+class AnswerVerify3(object):
+    '''
+    add additional pooling layer on top of traditional bert output
+    regression version
+    '''
+    def __init__(self, version_2=True, ctx=mx.cpu(), dropout=0.0, in_units=768, prefix=None, params=None):
+        self.classifier = verifier_layers(dropout=dropout, 
+                                        num_classes=1, 
+                                        in_units=in_units, 
+                                        prefix=prefix, 
+                                        params=params)
+        self.version_2 = version_2
+        self.ctx = ctx
+
+        self.lr = 3e-5
+        self.eps = 5e-9
+
+        self.classifier.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
+
+        self.trainer = mx.gluon.Trainer(self.classifier.collect_params(), 'adam',
+                           {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+        self.params = [p for p in self.classifier.collect_params().values() if p.grad_req != 'null']
+        self.loss_function = mx.gluon.loss.L2Loss()
+        self.loss_function.hybridize(static_alloc=True)
+
+    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
+        if not self.version_2:
+            return
+        example_ids = example_ids.asnumpy().tolist()
+        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
+        out = out.as_in_context(self.ctx)
+        for epoch_id in range(num_epochs):
+            with mx.autograd.record():
+                reg_out = self.classifier(out)
+                ls = self.loss_function(reg_out, labels).mean()
+            ls.backward()
+            # Gradient clipping
+            self.trainer.allreduce_grads()
+            nlp.utils.clip_grad_global_norm(self.params, 1)
+            self.trainer.update(1)
+
+            if verbose:
+                print("epoch {0} in verifier3, loss {1}".format(epoch_id, ls.asscalar()))
+
+    def evaluate(self, dev_features, example_ids, out):
+        if not self.version_2:
+            return mx.nd.ones(example_ids.shape)
+        example_ids = example_ids.asnumpy().tolist()
+        labels = mx.nd.array([[0 if dev_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(self.ctx)
+        reg_out = self.classifier(out)
+        print(reg_out)
+        exit(0)
+        return reg_out
+
 
 class AnswerVerify2(object):
     '''
