@@ -182,11 +182,12 @@ class AnswerVerify(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            print("context:", ' '.join(features[0].doc_tokens)) # the original context
+            context_text = features[0].doc_tokens
+            print("context:", ' '.join(context_text)) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
             answer_text = features[0].orig_answer_text
-            sentences = re.split(pattern, context)
+            sentences = re.split(pattern, context_text)
             sentence_text = ''
             for s in sentences:
                 if s.find(answer_text) != -1:
