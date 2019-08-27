@@ -65,7 +65,7 @@ class AnswerVerify2(object):
         if not self.version_2:
             return
         raw_labels = []
-        for eid in range(example_ids):
+        for eid in example_ids:
             print(eid)
             print(eid[0])
         exit(0)
