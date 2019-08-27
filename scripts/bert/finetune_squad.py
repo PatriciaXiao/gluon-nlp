@@ -230,7 +230,7 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
 parser.add_argument('--verify', action='store_true', default=False,
                     help='verify the answers with verifiers')
 
-VERIFIER_ID = 2 # 1
+VERIFIER_ID = 1 # 2 # 1
 
 args = parser.parse_args()
 
