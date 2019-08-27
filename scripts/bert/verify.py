@@ -117,6 +117,7 @@ class AnswerVerify(object):
         #########debug#########
         # debug
         debug = verifier_layers()
+        debug.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
         debug_out = debug(out)
         print(debug_out)
         exit(0)
