@@ -269,14 +269,8 @@ test_batch_size = args.test_batch_size
 lr = args.lr
 
 ctx = mx.cpu() if args.gpu is None else mx.gpu(args.gpu)
-verify_ctx = mx.cpu() if args.verify_gpu is None else mx.gpu(args.gpu)
-# ctx = [mx.cpu()] if args.gpus is None or args.gpus == '' else \
-#           [mx.gpu(int(x)) for x in args.gpus.split(',')]
-'''
-os.environ['MXNET_GPU_MEM_POOL_TYPE'] = 'Round'
-os.environ['MXNET_CPU_PARALLEL_RAND_COPY'] = str(len(ctx))
-os.environ['MXNET_CPU_WORKER_NTHREADS'] = str(len(ctx))
-'''
+verify_ctx = ctx if args.verify_gpu is None else mx.gpu(args.gpu)
+
 accumulate = args.accumulate
 log_interval = args.log_interval * accumulate if accumulate else args.log_interval
 if accumulate:
