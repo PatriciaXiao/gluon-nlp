@@ -121,21 +121,21 @@ class AnswerVerify(object):
         self.eps = 1e-9
         self.batch_size = 2
 
-        self.get_model(ctx)
+        self.get_model()
         self.get_loss()
 
         self.metric = mx.metric.Accuracy()
 
         self.get_data_transform()
 
-    def get_model(self, ctx):
+    def get_model(self):
         bert_base, self.vocabulary = nlp.model.get_model('bert_12_768_12',
                                              dataset_name='book_corpus_wiki_en_uncased',
-                                             pretrained=True, ctx=ctx, use_pooler=True,
+                                             pretrained=True, use_pooler=True,
                                              use_decoder=False, use_classifier=False)
         self.ctx = ctx
         self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.0)
-        self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
+        self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
         self.bert_classifier.hybridize(static_alloc=True)
         self.trainer = mx.gluon.Trainer(self.bert_classifier.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
