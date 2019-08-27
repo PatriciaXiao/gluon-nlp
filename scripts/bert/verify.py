@@ -65,7 +65,7 @@ class AnswerVerify2(object):
         if not self.version_2:
             return
         example_ids = example_ids.asnumpy().tolist()
-        labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids])
+        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids])
         print(labels)
         exit(0)
         for epoch_id in range(num_epochs):
