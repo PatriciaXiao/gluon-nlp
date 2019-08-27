@@ -639,7 +639,7 @@ def evaluate():
                   token_types.astype('float32').as_in_context(ctx),
                   valid_length.astype('float32').as_in_context(ctx))
 
-        if args.verify and VERIFIER_ID == 2:
+        if args.verify and VERIFIER_ID in [2, 3]:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out).asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
