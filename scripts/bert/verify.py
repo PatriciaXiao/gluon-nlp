@@ -136,13 +136,25 @@ class AnswerVerify(object):
         # exit(0)
 
     def evaluate(self, dev_feature, prediction):
+        # asserted that prediction is not null
         if not self.version_2:
             return True
         raw_data = []
         for feature in dev_feature:
+            context_text = ' '.join(features.doc_tokens)
             question_text = feature.question_text
             label = 0 if feature.is_impossible else 1
-            raw_data.append([question_text, prediction, label])
+            sentences = re.split(pattern, context_text)
+            sentence_text = ''
+            if label == 1:
+                for s in sentences:
+                    if s.find(prediction) != -1:
+                        sentence_text = s
+                        break
+            # raw_data.append([question_text, prediction, label])
+            first_part = sentence_text+question_text
+            second_part = prediction
+            raw_data.append([first_part, second_part, label])
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
@@ -174,6 +186,7 @@ class AnswerVerify(object):
             label = 0 if features[0].is_impossible else 1
             # if features[0].is_impossible:
             #     prediction = ""
+            '''
             prediction, _ = predict(
                 features=features,
                 results=results,
@@ -182,23 +195,7 @@ class AnswerVerify(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            # context_text = ' '.join(features[0].doc_tokens)
-            # print("context:", context_text) # the original context
-            # print("question:", features[0].question_text)
-            # print("prediction:", prediction)
-            # answer_text = features[0].orig_answer_text
-            # sentences = re.split(pattern, context_text)
-            # sentence_text = ''
-            # if label == 1:
-            #     for s in sentences:
-            #         if s.find(answer_text) != -1:
-            #             sentence_text = s
-            #             break
-            # print("sentence:", sentence_text)
-            # print("answer:", answer_text)
-            # print("unanswerable:", features[0].is_impossible)
-            # print("label", label)
-            # exit(0)
+            '''
             context_text = ' '.join(features[0].doc_tokens)
             sentences = context_text.strip
             question_text = features[0].question_text
