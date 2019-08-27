@@ -11,7 +11,7 @@ import model, data
 
 # https://blog.csdn.net/HappyRocking/article/details/80900890
 import re
-pattern = r'\?|\.|\!|;'
+pattern = r'\?|\.|\!|;|,'
 
 class VerifierDataset(Dataset):
     def __init__(self, data):
@@ -182,11 +182,27 @@ class AnswerVerify(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            context_text = ' '.join(features[0].doc_tokens)
-            print("context:", context_text) # the original context
+            # context_text = ' '.join(features[0].doc_tokens)
+            # print("context:", context_text) # the original context
             # print("question:", features[0].question_text)
             # print("prediction:", prediction)
-            answer_text = features[0].orig_answer_text
+            # answer_text = features[0].orig_answer_text
+            # sentences = re.split(pattern, context_text)
+            # sentence_text = ''
+            # if label == 1:
+            #     for s in sentences:
+            #         if s.find(answer_text) != -1:
+            #             sentence_text = s
+            #             break
+            # print("sentence:", sentence_text)
+            # print("answer:", answer_text)
+            # print("unanswerable:", features[0].is_impossible)
+            # print("label", label)
+            # exit(0)
+            context_text = ' '.join(features[0].doc_tokens)
+            sentences = context_text.strip
+            question_text = features[0].question_text
+            answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
             sentences = re.split(pattern, context_text)
             sentence_text = ''
             if label == 1:
@@ -194,15 +210,6 @@ class AnswerVerify(object):
                     if s.find(answer_text) != -1:
                         sentence_text = s
                         break
-            print("sentence:", sentence_text)
-            print("answer:", answer_text)
-            print("unanswerable:", features[0].is_impossible)
-            print("label", label)
-            # exit(0)
-            context_text = ' '.join(features[0].doc_tokens)
-            sentences = context_text.strip
-            question_text = features[0].question_text
-            answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
             if answer_text == '':
                 answer_text = context_text
             # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
