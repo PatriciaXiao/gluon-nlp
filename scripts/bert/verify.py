@@ -11,7 +11,7 @@ import model, data
 
 # https://blog.csdn.net/HappyRocking/article/details/80900890
 import re
-pattern = r'\?|\.|\!|;|\,'
+pattern = r'\?|\.|,|\!|;'
 
 class VerifierDataset(Dataset):
     def __init__(self, data):
