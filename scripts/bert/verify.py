@@ -64,10 +64,11 @@ class AnswerVerify2(object):
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         if not self.version_2:
             return
+        example_ids = example_ids.asnumpy().tolist()
         raw_labels = []
         for eid in example_ids:
             print(eid)
-            print(eid[0,:])
+            print(eid[0])
         exit(0)
         labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids[:,0]])
         exit(0)
