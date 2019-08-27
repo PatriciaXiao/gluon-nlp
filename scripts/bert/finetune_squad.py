@@ -57,7 +57,7 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from verify import AnswerVerify
+from verify import AnswerVerify, AnswerVerify2
 
 np.random.seed(6)
 random.seed(6)
@@ -226,6 +226,8 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
 parser.add_argument('--verify', action='store_true', default=False,
                     help='verify the answers with verifiers')
 
+VERIFIER_ID = 2 # 1
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -361,13 +363,17 @@ loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
 
 if args.verify:
-    verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+    if VERIFIER_ID == 1:
+        verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
                     null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
                     ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
+    elif VERIFIER_ID == 2:
+        verifier = AnswerVerify2(version_2=version_2,
+                    ctx=ctx, in_units=BERT_DIM[args.bert_model])
 
 def train():
     """Training function."""

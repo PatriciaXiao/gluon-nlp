@@ -44,12 +44,32 @@ class AnswerVerify2(object):
     '''
     add additional pooling layer on top of traditional bert output
     '''
-    def __init__(self, dropout=0.0, num_classes=2, prefix=None, params=None):
-        self.classifier = verifier_layers(dropout=dropout, num_classes=num_classes, prefix=prefix, params=params)
-    def train(self):
-        pass
+    def __init__(self, version_2=True, ctx=mx.cpu(), dropout=0.0, num_classes=2, in_units=768, prefix=None, params=None):
+        self.classifier = verifier_layers(dropout=dropout, 
+                                        num_classes=num_classes, 
+                                        in_units=in_units, 
+                                        prefix=prefix, 
+                                        params=params)
+        self.version_2 = version_2
+        self.ctx = ctx
+
+        self.classifier.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
+
+        self.trainer = mx.gluon.Trainer(self.classifier.collect_params(), 'adam',
+                           {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+
+    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
+        if not self.version_2:
+            return
+        labels = mx.nd.array([[0 if train_features[eid].is_impossible else 1] for eid in example_ids])
+        exit(0)
+        for epoch_id in range(num_epochs):
+            class_out = self.classifier(out)
+
+
     def evaluate(self, dev_feature, prediction):
-        return True
+        if not self.version_2:
+            return True
 
 
 class AnswerVerify(object):
@@ -114,14 +134,6 @@ class AnswerVerify(object):
                                                         pair=self.pair)
 
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
-        #########debug#########
-        # debug
-        debug = verifier_layers()
-        debug.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
-        debug_out = debug(out)
-        print(debug_out)
-        exit(0)
-        #######################
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
