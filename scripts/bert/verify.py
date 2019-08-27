@@ -212,7 +212,7 @@ class AnswerVerify(object):
             return True
         raw_data = []
         for feature in dev_feature:
-            context_text = ' '.join(features.doc_tokens)
+            context_text = ' '.join(feature.doc_tokens)
             question_text = feature.question_text
             label = 0 if feature.is_impossible else 1
             sentences = re.split(pattern, context_text)
