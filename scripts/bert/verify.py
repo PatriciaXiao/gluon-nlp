@@ -312,7 +312,7 @@ class AnswerVerify(object):
             # if features[0].is_impossible:
             #     prediction = ""
             '''
-            prediction, _ = predict(
+            prediction, _ = predict( # TODO: use this more wisely, for example, GAN
                 features=features,
                 results=results,
                 tokenizer=self.tokenizer,
@@ -324,7 +324,7 @@ class AnswerVerify(object):
             context_text = ' '.join(features[0].doc_tokens)
             sentences = context_text.strip
             question_text = features[0].question_text
-            answer_text = features[0].orig_answer_text # TODO: use this more wisely, for example, GAN
+            answer_text = features[0].orig_answer_text
             sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
             if label == 1:
                 sentence_text = ''
