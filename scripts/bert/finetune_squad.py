@@ -378,7 +378,7 @@ if args.verify:
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
-                    ctx=ctx) # debug: to be moved onto another GPU latter if space issue happens
+                    ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerify2(version_2=version_2,
                     ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
