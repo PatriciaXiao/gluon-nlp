@@ -5,6 +5,8 @@ from bert_qa_evaluate import PredResult, predict
 
 from mxnet.gluon.data.dataset import Dataset
 
+import random
+
 # https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html
 
 import model, data
@@ -330,8 +332,9 @@ class AnswerVerify(object):
                     if s.find(answer_text) != -1:
                         sentence_text = s
                         break
-            if answer_text == '':
-                answer_text = context_text
+            else:
+                sentence_text = random.choice(sentences)
+                answer_text = random.choice(sentence_text.split())
             # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
             # raw_data.append([question_text, answer_text, label])
             first_part = sentence_text + ' ' + question_text
