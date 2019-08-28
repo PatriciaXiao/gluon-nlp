@@ -124,7 +124,9 @@ def predict(features,
             results,
             tokenizer,
             max_answer_length=64,
-            n_best_size=10):
+            null_score_diff_threshold=0.0,
+            n_best_size=10,
+            version_2=False):
     """Get prediction results.
 
     Parameters
@@ -137,8 +139,12 @@ def predict(features,
         Tokenizer function.
     max_answer_length: int, default 64
         Maximum length of the answer tokens.
+    null_score_diff_threshold: float, default 0.0
+        If null_score - best_non_null is greater than the threshold predict null.
     n_best_size: int, default 10
         The total number of n-best predictions.
+    version_2: bool, default False
+        If true, the SQuAD examples contain some that do not have an answer.
 
     Returns
     -------
@@ -151,12 +157,31 @@ def predict(features,
     _PrelimPrediction = namedtuple('PrelimPrediction',
                                    ['feature_index', 'start_index', 'end_index',
                                     'pred_start', 'pred_end'])
+
     _NbestPrediction = namedtuple(
         'NbestPrediction', ['text', 'pred_start', 'pred_end'])
+
     prelim_predictions = []
+    score_diff = None
+
+    score_null = 1000000  # large and positive
+    min_null_feature_index = 0  # the paragraph slice with min mull score
+    null_pred_start = 0  # the start logit at the slice with min null score
+    null_pred_end = 0  # the end logit at the slice with min null score
+
     for features_id, (result, feature) in enumerate(zip(results, features)):
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
+
+        if version_2:
+            feature_null_score = result.start[0] + \
+                result.end[0]
+            if feature_null_score < score_null:
+                score_null = feature_null_score
+                min_null_feature_index = features_id
+                null_pred_start = result.start[0]
+                null_pred_end = result.end[0]
+
         for start_index in start_indexes:
             for end_index in end_indexes:
                 # We could hypothetically create invalid predictions, e.g., predict
@@ -185,11 +210,21 @@ def predict(features,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
 
+    if version_2:
+        prelim_predictions.append(
+            _PrelimPrediction(
+                feature_index=min_null_feature_index,
+                start_index=0,
+                end_index=0,
+                pred_start=null_pred_start,
+                pred_end=null_pred_end))
+
     prelim_predictions = sorted(
         prelim_predictions,
         key=lambda x: (x.pred_start + x.pred_end),
         reverse=True)
 
+    seen_predictions = {}
     nbest = []
     for pred in prelim_predictions:
         if len(nbest) >= n_best_size:
@@ -203,35 +238,81 @@ def predict(features,
             orig_tokens = feature.doc_tokens[orig_doc_start:(
                 orig_doc_end + 1)]
             tok_text = ' '.join(tok_tokens)
+
             # De-tokenize WordPieces that have been split off.
             tok_text = tok_text.replace(' ##', '')
             tok_text = tok_text.replace('##', '')
+
             # Clean whitespace
             tok_text = tok_text.strip()
             tok_text = ' '.join(tok_text.split())
             orig_text = ' '.join(orig_tokens)
+
             final_text = get_final_text(tok_text, orig_text, tokenizer)
+            if final_text in seen_predictions:
+                continue
+
+            seen_predictions[final_text] = True
         else:
             final_text = ''
+            seen_predictions[final_text] = True
+
         nbest.append(
             _NbestPrediction(
                 text=final_text,
                 pred_start=pred.pred_start,
                 pred_end=pred.pred_end))
 
+    # if we didn't inlude the empty option in the n-best, inlcude it
+    if version_2:
+        if '' not in seen_predictions:
+            nbest.append(
+                _NbestPrediction(
+                    text='',
+                    pred_start=null_pred_start,
+                    pred_end=null_pred_end))
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
         nbest.append(
             _NbestPrediction(text=features[0].doc_tokens[0], pred_start=0.0, pred_end=0.0))
+
     assert len(nbest) >= 1
+
     total_scores = []
+    best_non_null_entry = None
     for entry in nbest:
         total_scores.append(entry.pred_start + entry.pred_end)
+        if not best_non_null_entry:
+            if entry.text:
+                best_non_null_entry = entry
+
+    if best_non_null_entry is None:
+        # in very rare case will this problem occur and corrupt the program
+        best_non_null_entry = _NbestPrediction(
+                                    text='',
+                                    pred_start=null_pred_start,
+                                    pred_end=null_pred_end)
+
     probs = nd.softmax(nd.array(total_scores)).asnumpy()
+
     nbest_json = []
+
     for (i, entry) in enumerate(nbest):
         nbest_json.append((entry.text, float(probs[i])))
+
+    if not version_2:
+        prediction = nbest_json[0][0]
+    else:
+        # predict '' iff (the null score - the score of best non-null) > threshold
+        score_diff = score_null - best_non_null_entry.pred_start - \
+            best_non_null_entry.pred_end
+
+        if score_diff > null_score_diff_threshold:
+            prediction = ''
+        else:
+            prediction = best_non_null_entry.text
+
     prediction = nbest_json[0][0]
     return prediction, nbest_json
 

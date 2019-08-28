@@ -26,6 +26,14 @@ class VerifierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+class AnswerVerifyDense(object):
+    def __init__(self):
+        pass
+    def train(self):
+        pass
+    def evaluate(self):
+        pass
+
 
 class AnswerVerify(object):
     def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=True),

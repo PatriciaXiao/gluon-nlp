@@ -175,8 +175,7 @@ class BertForQA(Block):
                     n_rnn_layers=0, rnn_hidden_size=200, n_dense_layers=0, units_dense=200, \
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
-                    apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,\
-                    add_na_score=False, na_layer_dropout=0.0, na_score_dim=2):
+                    apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
@@ -193,14 +192,6 @@ class BertForQA(Block):
             with self.name_scope():
                 self.multi_head_attention = MultiHeadAttentionCell(DotProductAttentionCell(), \
                         self_attention_dimension, self_attention_dimension, self_attention_dimension, n_attention_heads)
-        if self.add_na_score:
-            with self.name_scope():
-                self.na_prob = nn.HybridSequential()
-                # add pooling layer
-                self.na_prob.add(nn.Dense(units=bert_out_dim, flatten=False, activation='tanh'))
-                if na_layer_dropout:
-                    self.na_prob.add(nn.Dropout(rate=na_layer_dropout))
-                self.na_prob.add(nn.Dense(units=na_score_dim)) # 2 for classification, 1 for regression
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
@@ -293,25 +284,11 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)
-        # decide whether or not including another part of the output
-        if self.add_na_score:
-            na_prob_output = self.na_prob(bert_output)
-            return output, na_prob_output
         return output
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
-    def na_loss(self):
-        if self.na_score_dim == 2:
-            return mx.gluon.loss.SoftmaxCELoss()
-        elif self.na_score_dim == 1:
-            return mx.gluon.loss.L2Loss()
-
-    def na_score(self, na_prob_out):
-        if self.na_score_dim == 2:
-            return mx.ndarray.argmax(na_prob_out, axis=1)
-        return na_prob_out.reshape(-1)
 
 class BertForQALoss(Loss):
     """Loss for SQuAD task with BERT.

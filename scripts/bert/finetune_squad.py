@@ -53,11 +53,11 @@ import mxnet as mx
 
 import gluonnlp as nlp
 from gluonnlp.data import SQuAD
-from model.qa import BertForQALoss, BertForQA
+from model.qa import BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from verify import AnswerVerify
+from verify import AnswerVerify, AnswerVerifyDense
 
 np.random.seed(6)
 random.seed(6)
@@ -215,10 +215,13 @@ parser.add_argument('--apply_coattention', action='store_true', default=False,
 parser.add_argument('--apply_self_attention', action='store_true', default=False,
                     help='apply self-attention to BERT\' output')
 
-parser.add_argument('--add_na_score', action='store_true', default=False,
-                    help='If the reader includes an NA score as part of its output.')
+parser.add_argument('--null_score_diff_threshold',
+                    type=float,
+                    default=-2.0,
+                    help='If null_score - best_non_null is greater than the threshold predict null.'
+                    'Typical values are between -1.0 and -5.0. default is -2.0')
 
-parser.add_argument('--verifier', type=int, default=None, choices=[1],
+parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
                     help='the id of the verifier to use')
 
 args = parser.parse_args()
@@ -247,6 +250,7 @@ dataset_name = args.bert_dataset
 only_predict = args.only_predict
 model_parameters = args.model_parameters
 pretrained_bert_parameters = args.pretrained_bert_parameters
+
 if pretrained_bert_parameters and model_parameters:
     raise ValueError('Cannot provide both pre-trained BERT parameters and '
                      'BertForQA model parameters.')
@@ -271,7 +275,7 @@ warmup_ratio = args.warmup_ratio
 
 
 version_2 = args.version_2
-
+null_score_diff_threshold = args.null_score_diff_threshold
 max_seq_length = args.max_seq_length
 doc_stride = args.doc_stride
 max_query_length = args.max_query_length
@@ -325,8 +329,7 @@ BERT_DIM = {
 net = BertForQA(bert=bert, \
     add_query=args.add_query, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
-    apply_self_attention=args.apply_self_attention, \
-    add_na_score=args.add_na_score)
+    apply_self_attention=args.apply_self_attention)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -348,9 +351,6 @@ if args.apply_coattention:
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)
 
-if args.add_na_score:
-    net.na_prob.collect_params().initialize(init=mx.init.Normal(0.02), ctx=ctx)
-
 net.hybridize(static_alloc=True)
 
 loss_function = net.loss()
@@ -364,7 +364,7 @@ if verify:
     if VERIFIER_ID == 1:
         verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
-                    # null_score_diff_threshold=null_score_diff_threshold,
+                    null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
@@ -480,24 +480,13 @@ def train():
                 log_num += len(inputs)
                 total_num += len(inputs)
 
-                if not args.add_na_score:
-                    out = net(inputs.astype('float32').as_in_context(ctx),
-                              token_types.astype('float32').as_in_context(ctx),
-                              valid_length.astype('float32').as_in_context(ctx))
-                else:
-                    out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
-                              token_types.astype('float32').as_in_context(ctx),
-                              valid_length.astype('float32').as_in_context(ctx))
+                out = net(inputs.astype('float32').as_in_context(ctx),
+                          token_types.astype('float32').as_in_context(ctx),
+                          valid_length.astype('float32').as_in_context(ctx))
 
                 ls = loss_function(out, [
                     start_label.astype('float32').as_in_context(ctx),
                     end_label.astype('float32').as_in_context(ctx)]).mean()
-
-                if args.add_na_score:
-                    labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
-                                        for eid in example_ids.asnumpy().tolist()]).as_in_context(ctx)
-                    na_ls = na_loss_function(na_prob, labels).mean()
-                    ls = ls + na_ls
 
                 if accumulate:
                     ls = ls / accumulate
@@ -581,15 +570,11 @@ def evaluate():
         example_ids, inputs, token_types, valid_length, _, _ = data
         total_num += len(inputs)
 
-        if not args.add_na_score:
-            out = net(inputs.astype('float32').as_in_context(ctx),
-                      token_types.astype('float32').as_in_context(ctx),
-                      valid_length.astype('float32').as_in_context(ctx))
-        else:
-            out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
-                      token_types.astype('float32').as_in_context(ctx),
-                      valid_length.astype('float32').as_in_context(ctx))
-            has_answer_tmp = net.na_score(na_prob).asnumpy().tolist()
+        out = net(inputs.astype('float32').as_in_context(ctx),
+                  token_types.astype('float32').as_in_context(ctx),
+                  valid_length.astype('float32').as_in_context(ctx))
+        
+        # if verifier 2: has_answer_tmp = verifier.evaluate(...).asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
@@ -621,7 +606,6 @@ def evaluate():
                 prediction = ""
                 all_predictions[example_qas_id] = prediction
                 continue
-        '''
         prediction, _ = predict(
             features=features,
             results=results,
@@ -630,13 +614,6 @@ def evaluate():
             null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
-        '''
-        prediction, _ = predict(
-            features=features,
-            results=results,
-            tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
-            max_answer_length=max_answer_length,
-            n_best_size=n_best_size)
 
         if verify and VERIFIER_ID == 1:
             if len(prediction) > 0:
