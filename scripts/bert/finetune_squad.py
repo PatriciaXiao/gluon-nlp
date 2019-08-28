@@ -57,7 +57,7 @@ from model.qa import BertForQALoss, BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from verify import AnswerVerify, AnswerVerify2, AnswerVerify3
+from verify import AnswerVerify
 
 np.random.seed(6)
 random.seed(6)
@@ -215,18 +215,16 @@ parser.add_argument('--apply_coattention', action='store_true', default=False,
 parser.add_argument('--apply_self_attention', action='store_true', default=False,
                     help='apply self-attention to BERT\' output')
 
-parser.add_argument('--verify', action='store_true', default=False,
-                    help='verify the answers with verifiers')
-
 parser.add_argument('--add_na_score', action='store_true', default=False,
                     help='If the reader includes an NA score as part of its output.')
 
-parser.add_argument('--verifier_type', type=int, default=None, choices=[1, 2, 3],
+parser.add_argument('--verifier', type=int, default=None, choices=[1],
                     help='the id of the verifier to use')
 
 args = parser.parse_args()
 
-VERIFIER_ID = args.verifier_type
+verify = args.verifier is not None
+VERIFIER_ID = args.verifier
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -362,7 +360,7 @@ if args.add_na_score:
     na_loss_function = net.na_loss()
     na_loss_function.hybridize(static_alloc=True)
 
-if args.verify:
+if verify:
     if VERIFIER_ID == 1:
         verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
@@ -514,7 +512,7 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out
-            if args.verify:
+            if verify:
                 verifier.train(train_features, example_ids, out)
 
             step_loss += ls.asscalar()
@@ -642,7 +640,7 @@ def evaluate():
             max_answer_length=max_answer_length,
             n_best_size=n_best_size)
 
-        if args.verify and VERIFIER_ID == 1:
+        if verify and VERIFIER_ID == 1:
             if len(prediction) > 0:
                 has_answer = verifier.evaluate(features, prediction)
                 if not has_answer:
