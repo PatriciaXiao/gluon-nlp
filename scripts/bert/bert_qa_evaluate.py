@@ -353,15 +353,17 @@ def predict_span(features,
                                     'pred_start', 'pred_end'])
 
     _NbestPrediction = namedtuple(
-        'NbestPrediction', ['pred_start', 'pred_end'])
+        'NbestPrediction', ['pred_start', 'pred_end', 'start_index', 'end_index'])
 
     prelim_predictions = []
     score_diff = None
 
     score_null = 1000000  # large and positive
-    min_null_feature_index = 0  # the paragraph slice with min mull score
+    min_null_feature_index = 0  # the paragraph slice with min null score
     null_pred_start = 0  # the start logit at the slice with min null score
     null_pred_end = 0  # the end logit at the slice with min null score
+    null_pred_start_index = -1
+    null_pred_end_index = -1
 
     for features_id, (result, feature) in enumerate(zip(results, features)):
         start_indexes = _get_best_indexes(result.start, n_best_size)
@@ -403,8 +405,6 @@ def predict_span(features,
                         end_index=end_index,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
-                print(start_index, end_index)
-                exit(0)
 
     if version_2:
         prelim_predictions.append(
@@ -428,19 +428,25 @@ def predict_span(features,
             nbest.append(
                 _NbestPrediction(
                     pred_start=pred.pred_start,
-                    pred_end=pred.pred_end))
+                    pred_end=pred.pred_end,
+                    start_index=pred.start_index,
+                    end_index=pred.end_index))
 
     # if we didn't inlude the empty option in the n-best, inlcude it
     if version_2:
         nbest.append(
             _NbestPrediction(
                     pred_start=null_pred_start,
-                    pred_end=null_pred_end))
+                    pred_end=null_pred_end,
+                    start_index=null_pred_start_index,
+                    end_index=null_pred_end_index))
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
         nbest.append(
-            _NbestPrediction(pred_start=0, pred_end=0))
+            _NbestPrediction(pred_start=0, pred_end=0,
+                start_index=0,
+                end_index=0))
 
     assert len(nbest) >= 1
 
@@ -456,14 +462,16 @@ def predict_span(features,
         # in very rare case will this problem occur and corrupt the program
         best_non_null_entry = _NbestPrediction(
                                     pred_start=null_pred_start,
-                                    pred_end=null_pred_end)
+                                    pred_end=null_pred_end,
+                                    start_index=null_pred_start_index,
+                                    end_index=null_pred_end_index)
 
     probs = nd.softmax(nd.array(total_scores)).asnumpy()
 
     nbest_json = []
 
     for (i, entry) in enumerate(nbest):
-        nbest_json.append((entry.pred_start, entry.pred_end, float(probs[i])))
+        nbest_json.append((entry.start_index, entry.end_index, float(probs[i])))
 
     prediction = (nbest_json[0][0], nbest_json[0][1])
     if version_2:
