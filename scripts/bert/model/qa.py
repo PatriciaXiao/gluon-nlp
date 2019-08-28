@@ -309,6 +309,7 @@ class BertForQA(Block):
 
     def na_score(self, na_prob_out):
         if self.na_score_dim == 2:
+            print(mx.ndarray.argmax(na_prob_out, axis=1))
             return mx.ndarray.argmax(na_prob_out, axis=1)
         return na_prob_out.reshape(-1)
 
