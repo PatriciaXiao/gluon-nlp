@@ -44,13 +44,13 @@ class AnswerVerifyDense(object):
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        embedding_results = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
+        verifier_input = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
         for example_id, start, end, token in zip(example_ids, pred_start, pred_end, token_types):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
-            prediction, answerable, nbest_json = predict_span( # TODO: use this more wisely, for example, GAN
+            prediction, answerable, _ = predict_span( # TODO: use this more wisely, for example, GAN
                 features=features,
                 results=results,
                 max_answer_length=self.max_answer_length,
@@ -65,10 +65,11 @@ class AnswerVerifyDense(object):
             print(int(token.sum().max().asscalar())) # maximum contex length
             print(int((1 - token).sum().max().asscalar())) # query length + 2
             print(answerable)
-            print(nbest_json)
             print(token)
-            input()
-        exit(0)
+            
+            # verifier_input[]
+            print(example_id)
+        input() #exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
     def evaluate(self):
@@ -136,7 +137,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
+    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
