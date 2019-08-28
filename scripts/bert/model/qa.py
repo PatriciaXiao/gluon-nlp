@@ -200,14 +200,14 @@ class BertForQA(Block):
                 self.na_prob.add(nn.Dense(units=bert_out_dim, flatten=False, activation='tanh'))
                 if na_layer_dropout:
                     self.na_prob.add(nn.Dropout(rate=na_layer_dropout))
-                self.na_prob.add(nn.Dense(units=2)) # 2 for classification, 1 for regression
+                self.na_prob.add(nn.Dense(units=na_score_dim)) # 2 for classification, 1 for regression
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
                 self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
             for i in range(n_dense_layers):
                 self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-            self.span_classifier.add(nn.Dense(units=na_score_dim, flatten=False))
+            self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.

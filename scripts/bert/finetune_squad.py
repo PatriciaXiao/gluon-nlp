@@ -368,6 +368,7 @@ if verify:
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
+                    na_score_dim=1, # debug: see if regression works better
                     ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
