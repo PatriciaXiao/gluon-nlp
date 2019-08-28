@@ -61,8 +61,10 @@ class AnswerVerifyDense(object):
             num_total_tokens = len(features[0].tokens)
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
-            print(features[0].tokens)
-            print(num_total_tokens, num_query_tokens, num_contx_tokens)
+            verifier_input[idx, 0, :] = bert_out[idx, 0, :]
+            verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
+            print(verifier_input)
+            exit(0)
             '''
             print(features[0].orig_answer_text)
             print(features[0].is_impossible)
@@ -72,7 +74,6 @@ class AnswerVerifyDense(object):
             print(token)
             '''
             input()
-            # verifier_input[]
         exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
