@@ -497,6 +497,11 @@ def train():
                     start_label.astype('float32').as_in_context(ctx),
                     end_label.astype('float32').as_in_context(ctx)]).mean()
 
+                if args.add_na_score:
+                    labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] for eid in example_ids]).as_in_context(ctx)
+                    na_ls = na_loss_function(na_prob, labels).mean()
+                    ls = ls + na_ls
+
                 if accumulate:
                     ls = ls / accumulate
             ls.backward()
