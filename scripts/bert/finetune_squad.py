@@ -221,7 +221,7 @@ parser.add_argument('--verify', action='store_true', default=False,
 parser.add_argument('--add_na_score', action='store_true', default=False,
                     help='If the reader includes an NA score as part of its output.')
 
-parser.add_argument('--verifier_type', type=int, default=2, choices=[1, 2, 3],
+parser.add_argument('--verifier_type', type=int, default=None, choices=[1, 2, 3],
                     help='the id of the verifier to use')
 
 args = parser.parse_args()
@@ -576,10 +576,8 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
-    if args.verify and VERIFIER_ID in [2, 3]:
+    if args.add_na_score:
         all_pre_na_prob = collections.defaultdict(list)
-    else:
-        all_pre_na_prob = None
 
     epoch_tic = time.time()
     total_num = 0
@@ -595,9 +593,7 @@ def evaluate():
             out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
                       token_types.astype('float32').as_in_context(ctx),
                       valid_length.astype('float32').as_in_context(ctx))
-
-        if all_pre_na_prob is not None:
-            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out).asnumpy().tolist()
+            has_answer_tmp = na_prob.asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
