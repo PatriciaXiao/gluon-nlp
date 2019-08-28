@@ -358,16 +358,22 @@ loss_function.hybridize(static_alloc=True)
 
 if verify:
     if VERIFIER_ID == 1:
-        verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+        verifier = AnswerVerify(
+                    tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
                     null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
-                    na_score_dim=2, # debug: see if regression (1) works better
                     ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
-        verifier = AnswerVerifyDense()
+        verifier = AnswerVerifyDense(
+                    max_answer_length=max_answer_length,
+                    null_score_diff_threshold=null_score_diff_threshold,
+                    n_best_size=n_best_size,
+                    max_len=max_seq_length,
+                    version_2=version_2,
+                    ctx=verify_ctx)
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
         exit(0)
