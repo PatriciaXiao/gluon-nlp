@@ -431,15 +431,6 @@ def predict_span(features,
                     pred_end=pred.pred_end,
                     start_index=pred.start_index,
                     end_index=pred.end_index))
-
-    # if we didn't inlude the empty option in the n-best, inlcude it
-    if version_2:
-        nbest.append(
-            _NbestPrediction(
-                    pred_start=null_pred_start,
-                    pred_end=null_pred_end,
-                    start_index=null_pred_start_index,
-                    end_index=null_pred_end_index))
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
@@ -453,10 +444,12 @@ def predict_span(features,
     total_scores = []
     best_non_null_entry = None
     for entry in nbest:
+        print(entry)
         total_scores.append(entry.pred_start + entry.pred_end)
         if not best_non_null_entry:
             if not (entry.pred_start == null_pred_start and entry.pred_end == null_pred_end):
                 best_non_null_entry = entry
+    exit(0)
 
     if best_non_null_entry is None:
         # in very rare case will this problem occur and corrupt the program
@@ -480,13 +473,10 @@ def predict_span(features,
             best_non_null_entry.pred_end
         if score_diff > null_score_diff_threshold:
             answerable = 0.0
+            prediction = (null_pred_start_index, null_pred_end_index)
         else:
             answerable = 1.0
-    # test
-    if prediction == (null_pred_start_index, null_pred_end_index):
-        answerable = 0.0
-    else:
-        answerable = 1.0
+            prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
     return prediction, answerable, nbest_json
 
 
