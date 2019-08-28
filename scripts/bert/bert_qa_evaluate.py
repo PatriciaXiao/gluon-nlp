@@ -403,6 +403,8 @@ def predict_span(features,
                         end_index=end_index,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
+                print(start_index, end_index)
+                exit(0)
 
     if version_2:
         prelim_predictions.append(
