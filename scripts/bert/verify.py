@@ -56,9 +56,9 @@ class AnswerVerifyDense(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            print(feature[0].tokens)
-            print(feature[0].orig_answer_text)
-            print(feature[0].is_impossible)
+            print(features[0].tokens)
+            print(features[0].orig_answer_text)
+            print(features[0].is_impossible)
             print(prediction)
             exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
