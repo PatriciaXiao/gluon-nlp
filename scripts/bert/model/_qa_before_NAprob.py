@@ -176,14 +176,12 @@ class BertForQA(Block):
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,\
-                    add_na_score=False, na_layer_dropout=0.0, na_score_dim=2):
+                    add_na_score=False, na_layer_dropout=0.0):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.apply_self_attention = apply_self_attention
         self.add_na_score = add_na_score
-        self.na_score_dim = na_score_dim
-        self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
                 self.co_attention = CoAttention(str(bert_out_dim))
@@ -200,13 +198,14 @@ class BertForQA(Block):
                 if na_layer_dropout:
                     self.na_prob.add(nn.Dropout(rate=na_layer_dropout))
                 self.na_prob.add(nn.Dense(units=2)) # 2 for classification, 1 for regression
+        self.bert = bert
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
                 self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
             for i in range(n_dense_layers):
                 self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-            self.span_classifier.add(nn.Dense(units=na_score_dim, flatten=False))
+            self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -292,20 +291,13 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)
-        # decide whether or not including another part of the output
-        if self.add_na_score:
-            na_prob_output = self.na_prob(bert_output)
-            return output, na_prob_output
         return output
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
+        # if self.apply_coattention:
+        #     return QANet_SoftmaxCrossEntropy()
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
 
-    def na_loss(self):
-        if self.na_score_dim == 2:
-            return mx.gluon.loss.SoftmaxCELoss()
-        elif self.na_score_dim == 1:
-            return mx.gluon.loss.L2Loss()
 
 class BertForQALoss(Loss):
     """Loss for SQuAD task with BERT.
@@ -339,4 +331,60 @@ class BertForQALoss(Loss):
         end_label = label[1]
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
+
+class QANet_SoftmaxCrossEntropy(Loss):
+    r"""Caluate the sum of softmax cross entropy.
+
+    Reference:
+    http://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SoftmaxCrossEntropyLoss
+
+    Parameters
+    ----------
+    axis : int, default -1
+        The axis to sum over when computing softmax and entropy.
+    sparse_label : bool, default True
+        Whether label is an integer array instead of probalbility distribution.
+    from_logits : bool, default False
+        Whether input is a log probability (usually from log_softmax) instead of
+        unnormalized numbers.
+    weight : float or None
+        Global scalar weight for loss.
+    batch_axis : int, default 0
+        The axis that represents mini-batch.
+    """
+
+    def __init__(self, axis=-1, sparse_label=True, from_logits=False, weight=None, batch_axis=0,
+                 **kwargs):
+        super(QANet_SoftmaxCrossEntropy, self).__init__(
+            weight, batch_axis, **kwargs)
+        self.loss = gluon.loss.SoftmaxCrossEntropyLoss(axis=axis,
+                                                       sparse_label=sparse_label,
+                                                       from_logits=from_logits,
+                                                       weight=weight,
+                                                       batch_axis=batch_axis)
+
+    def forward(self, predict_begin, predict_end, label_begin, label_end):
+        r"""Implement forward computation.
+
+        Parameters
+        -----------
+        predict_begin : NDArray
+            Predicted probability distribution of answer begin position,
+            input tensor with shape `(batch_size, sequence_length)`
+        predict_end : NDArray
+            Predicted probability distribution of answer end position,
+            input tensor with shape `(batch_size, sequence_length)`
+        label_begin : NDArray
+            True label of the answer begin position,
+            input tensor with shape `(batch_size, )`
+        label_end : NDArray
+            True label of the answer end position,
+            input tensor with shape `(batch_size, )`
+
+        Returns
+        --------
+        out: NDArray
+            output tensor with shape `(batch_size, )`
+        """
+        return self.loss(predict_begin, label_begin) + self.loss(predict_end, label_end)
 

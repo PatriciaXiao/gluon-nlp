@@ -124,8 +124,7 @@ def predict(features,
             results,
             tokenizer,
             max_answer_length=64,
-            n_best_size=10,
-            version_2=False):
+            n_best_size=10):
     """Get prediction results.
 
     Parameters
@@ -140,8 +139,6 @@ def predict(features,
         Maximum length of the answer tokens.
     n_best_size: int, default 10
         The total number of n-best predictions.
-    version_2: bool, default False
-        If true, the SQuAD examples contain some that do not have an answer.
 
     Returns
     -------

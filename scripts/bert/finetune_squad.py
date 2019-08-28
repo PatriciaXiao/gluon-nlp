@@ -189,26 +189,14 @@ parser.add_argument('--version_2',
                     action='store_true',
                     help='SQuAD examples whether contain some that do not have an answer.')
 
-parser.add_argument('--null_score_diff_threshold',
-                    type=float,
-                    default=0.0,
-                    help='If null_score - best_non_null is greater than the threshold predict null.'
-                    'Typical values are between -1.0 and -5.0. default is -2.0')
-
 parser.add_argument('--gpu',
                     type=int,
                     default=None,
-                    help='which gpu to use for finetuning. CPU is used if not set.')
+                    help='Which gpu to use for finetuning. CPU is used if not set.')
 parser.add_argument('--verify_gpu',
                     type=int,
                     default=None,
-                    help='which gpu to use for training the verifier. CPU is used if not set.')
-'''
-parser.add_argument('--gpus',
-                    type=str,
-                    default=None,
-                    help='list of gpus to run, e.g. 0 or 0,2,5. empty means using cpu.')
-'''
+                    help='Which gpu to use for training the verifier. The same context with reader model is used if not set.')
 parser.add_argument('--sentencepiece',
                     type=str,
                     default=None,
@@ -229,6 +217,9 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
 
 parser.add_argument('--verify', action='store_true', default=False,
                     help='verify the answers with verifiers')
+
+parser.add_argument('--add_na_score', action='store_true', default=False,
+                    help='If the reader includes an NA score as part of its output.')
 
 parser.add_argument('--verifier_type', type=int, default=2, choices=[1, 2, 3],
                     help='the id of the verifier to use')
@@ -337,7 +328,8 @@ BERT_DIM = {
 net = BertForQA(bert=bert, \
     add_query=args.add_query, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
-    apply_self_attention=args.apply_self_attention)
+    apply_self_attention=args.apply_self_attention, \
+    add_na_score=args.add_na_score)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -359,10 +351,17 @@ if args.apply_coattention:
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)
 
+if args.add_na_score:
+    net.na_prob.collect_params().initialize(init=mx.init.Normal(0.02), ctx=ctx)
+
 net.hybridize(static_alloc=True)
 
 loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
+
+if args.add_na_score:
+    na_loss_function = net.na_loss()
+    na_loss_function.hybridize(static_alloc=True)
 
 if args.verify:
     if VERIFIER_ID == 1:
@@ -413,19 +412,7 @@ def train():
     log.info('The number of examples after preprocessing:{}'.format(
         len(train_data_transform)))
 
-    # refer to evaluation process
-    # for feat in train_dataset:
-    #     print(feat[0].example_id)
-    #     print(feat[0].tokens)
-    #     print(feat[0].token_to_orig_map)
-    #     input()
-    # exit(0)
-
     train_features = {features[0].example_id: features for features in train_dataset}
-
-    #for line in train_data_transform:
-    #    print(line)
-    #    input()
 
     train_dataloader = mx.gluon.data.DataLoader(
         train_data_transform, batchify_fn=batchify_fn,
@@ -498,9 +485,14 @@ def train():
                 log_num += len(inputs)
                 total_num += len(inputs)
 
-                out = net(inputs.astype('float32').as_in_context(ctx),
-                          token_types.astype('float32').as_in_context(ctx),
-                          valid_length.astype('float32').as_in_context(ctx))
+                if not args.add_na_score:
+                    out = net(inputs.astype('float32').as_in_context(ctx),
+                              token_types.astype('float32').as_in_context(ctx),
+                              valid_length.astype('float32').as_in_context(ctx))
+                else:
+                    out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
+                              token_types.astype('float32').as_in_context(ctx),
+                              valid_length.astype('float32').as_in_context(ctx))
 
                 ls = loss_function(out, [
                     start_label.astype('float32').as_in_context(ctx),
@@ -569,60 +561,12 @@ def evaluate():
             is_pad=True,
             is_training=True))
 
-    # refer to evaluation process
-    # for feat in train_dataset:
-    #     print(feat[0].example_id)
-    #     print(feat[0].tokens)
-    #     print(feat[0].token_to_orig_map)
-    #     input()
-    # exit(0)
-
     dev_features = {features[0].example_id: features for features in dev_dataset}
-
-    #for line in train_data_transform:
-    #    print(line)
-    #    input()
 
     dev_dataloader = mx.gluon.data.DataLoader(
         dev_data_transform, batchify_fn=batchify_fn,
         batch_size=test_batch_size, num_workers=4, shuffle=True)
-    '''
 
-    dev_dataset = dev_data.transform(
-        SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=False,
-            is_training=False)._transform, lazy=False)
-
-    # for feat in dev_dataset:
-    #     print(feat[0].example_id)
-    #     print(feat[0].tokens)
-    #     print(feat[0].token_to_orig_map)
-    #     input()
-    # exit(0)
-
-    dev_features = {features[0].example_id: features for features in dev_dataset}
-
-    dev_data_transform, _ = preprocess_dataset(
-        dev_data, SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=False,
-            is_training=False))
-    log.info('The number of examples after preprocessing:{}'.format(
-        len(dev_data_transform)))
-
-    dev_dataloader = mx.gluon.data.DataLoader(
-        dev_data_transform,
-        batchify_fn=batchify_fn,
-        num_workers=4, batch_size=test_batch_size,
-        shuffle=False, last_batch='keep')
-    '''
     log.info('start prediction')
 
     all_results = collections.defaultdict(list)
@@ -637,9 +581,15 @@ def evaluate():
     for data in dev_dataloader:
         example_ids, inputs, token_types, valid_length, _, _ = data
         total_num += len(inputs)
-        out = net(inputs.astype('float32').as_in_context(ctx),
-                  token_types.astype('float32').as_in_context(ctx),
-                  valid_length.astype('float32').as_in_context(ctx))
+
+        if not args.add_na_score:
+            out = net(inputs.astype('float32').as_in_context(ctx),
+                      token_types.astype('float32').as_in_context(ctx),
+                      valid_length.astype('float32').as_in_context(ctx))
+        else:
+            out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
+                      token_types.astype('float32').as_in_context(ctx),
+                      valid_length.astype('float32').as_in_context(ctx))
 
         if all_pre_na_prob is not None:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out).asnumpy().tolist()
@@ -674,7 +624,7 @@ def evaluate():
                 prediction = ""
                 all_predictions[example_qas_id] = prediction
                 continue
-
+        '''
         prediction, _ = predict(
             features=features,
             results=results,
@@ -683,6 +633,13 @@ def evaluate():
             null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
+        '''
+        prediction, _ = predict(
+            features=features,
+            results=results,
+            tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+            max_answer_length=max_answer_length,
+            n_best_size=n_best_size)
 
         if args.verify and VERIFIER_ID == 1:
             if len(prediction) > 0:
