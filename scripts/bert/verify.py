@@ -63,11 +63,21 @@ class AnswerVerifyDense(object):
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
             num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
+            # the beginning
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
+            # the context embedding
             verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
+            # the query embedding
             verifier_input[idx, num_contx_tokens+1: num_query_tokens+num_contx_tokens+1, :] \
                                 = bert_out[idx, 1:num_query_tokens+1, :]
-
+            # the separater
+            verifier_input[idx, num_query_tokens+num_contx_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
+            # the answer
+            verifier_input[idx, num_query_tokens+num_contx_tokens+2:num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
+                                = bert_out[idx, prediction[0]:prediction[1]+1,:]
+            # the ending
+            verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
+                                = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
             print(verifier_input[idx])
             exit(0)
             '''
