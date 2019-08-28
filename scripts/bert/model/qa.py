@@ -196,6 +196,7 @@ class BertForQA(Block):
         if self.add_na_score:
             with self.name_scope():
                 self.na_prob = nn.HybridSequential()
+                # add pooling layer
                 self.na_prob.add(nn.Dense(units=bert_out_dim, flatten=False, activation='tanh'))
                 if na_layer_dropout:
                     self.na_prob.add(nn.Dropout(rate=na_layer_dropout))
