@@ -63,6 +63,7 @@ class AnswerVerifyDense(object):
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
             verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
+            print(bert_out[idx])
             print(verifier_input[idx])
             exit(0)
             '''
