@@ -44,10 +44,7 @@ class AnswerVerifyDense(object):
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        verifier_input_shape = bert_out.shape
-        verifier_input_shape[1] = self.max_answer_length + verifier_input_shape[1]
-        print(verifier_input_shape)
-        exit(0)
+        verifier_input_shape = (bert_out.shape[0], bert_out.shape[1] + self.max_answer_length, bert_out.shape[2])
         verifier_input = mx.nd.zeros(verifier_input_shape, ctx=self.ctx)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
