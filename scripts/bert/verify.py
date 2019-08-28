@@ -81,7 +81,7 @@ class AnswerVerifyDense(object):
                                 = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
             # the predicted answerability
             labels_pred[idx] = answerable
-        print(answerable)
+        print(labels_pred)
         exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
