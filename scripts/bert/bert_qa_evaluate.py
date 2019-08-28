@@ -447,7 +447,7 @@ def predict_span(features,
     for entry in nbest:
         total_scores.append(entry.pred_start + entry.pred_end)
         if not best_non_null_entry:
-            if entry.text:
+            if not (entry.pred_start == null_pred_start and entry.pred_end == null_pred_end):
                 best_non_null_entry = entry
 
     if best_non_null_entry is None:
