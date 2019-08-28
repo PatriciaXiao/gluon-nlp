@@ -45,8 +45,6 @@ class AnswerVerifyDense(object):
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
         embedding_results = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
-        print(embedding_results.shape)
-        exit(0)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
         for example_id, start, end, token in zip(example_ids, pred_start, pred_end, token_types):
