@@ -34,6 +34,8 @@ class AnswerVerifyDense(object):
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
+        print(pred_start)
+        exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out)
     def evaluate(self):

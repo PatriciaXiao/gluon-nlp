@@ -366,6 +366,8 @@ if verify:
                     version_2=version_2,
                     na_score_dim=2, # debug: see if regression (1) works better
                     ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
+    elif VERIFIER_ID == 2:
+        verifier = AnswerVerifyDense()
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
         exit(0)
