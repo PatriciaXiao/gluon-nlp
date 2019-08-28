@@ -450,12 +450,11 @@ def predict_span(features,
             best_non_null_entry.pred_end
         if score_diff > null_score_diff_threshold:
             answerable = 0.0
-            prediction = (null_pred_start_index, null_pred_end_index)
+            # prediction = (null_pred_start_index, null_pred_end_index)
         else:
             answerable = 1.0
-            prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
-    else:
-        prediction = nbest_json[0][0]
+            # prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
+    prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
 
 
