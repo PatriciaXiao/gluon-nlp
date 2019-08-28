@@ -444,6 +444,7 @@ def predict_span(features,
     for (i, entry) in enumerate(nbest):
         nbest_json.append(((entry.start_index, entry.end_index), float(probs[i])))
 
+    prediction = nbest_json[0][0]
     if version_2:
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
@@ -454,7 +455,6 @@ def predict_span(features,
         else:
             answerable = 1.0
             # prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
-    prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
 
 
