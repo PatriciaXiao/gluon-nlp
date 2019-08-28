@@ -356,10 +356,6 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss()
 loss_function.hybridize(static_alloc=True)
 
-if args.add_na_score:
-    na_loss_function = net.na_loss()
-    na_loss_function.hybridize(static_alloc=True)
-
 if verify:
     if VERIFIER_ID == 1:
         verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
@@ -561,7 +557,7 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
-    if args.add_na_score:
+    if VERIFIER_ID == 2:
         all_pre_na_prob = collections.defaultdict(list)
 
     epoch_tic = time.time()
