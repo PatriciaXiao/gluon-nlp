@@ -313,12 +313,170 @@ def predict(features,
         else:
             prediction = best_non_null_entry.text
 
-    prediction = nbest_json[0][0]
+    # prediction = nbest_json[0][0]
     return prediction, nbest_json
 
 
+def predict_span(features,
+            results,
+            max_answer_length=64,
+            null_score_diff_threshold=0.0,
+            n_best_size=10,
+            version_2=False):
+    """Get prediction results.
 
-def predict_with_empty(features,
+    Parameters
+    ----------
+    features : list of SQuADFeature
+        List of squad features for the example.
+    results : list of data.qa.PredResult
+        List of model predictions for span start and span end.
+    max_answer_length: int, default 64
+        Maximum length of the answer tokens.
+    null_score_diff_threshold: float, default 0.0
+        If null_score - best_non_null is greater than the threshold predict null.
+    n_best_size: int, default 10
+        The total number of n-best predictions.
+    version_2: bool, default False
+        If true, the SQuAD examples contain some that do not have an answer.
+
+    Returns
+    -------
+    prediction: str
+        The final prediction.
+    nbest : list of (str, float)
+        n-best predictions with their probabilities.
+    """
+
+    _PrelimPrediction = namedtuple('PrelimPrediction',
+                                   ['feature_index', 'start_index', 'end_index',
+                                    'pred_start', 'pred_end'])
+
+    _NbestPrediction = namedtuple(
+        'NbestPrediction', ['pred_start', 'pred_end'])
+
+    prelim_predictions = []
+    score_diff = None
+
+    score_null = 1000000  # large and positive
+    min_null_feature_index = 0  # the paragraph slice with min mull score
+    null_pred_start = 0  # the start logit at the slice with min null score
+    null_pred_end = 0  # the end logit at the slice with min null score
+
+    for features_id, (result, feature) in enumerate(zip(results, features)):
+        start_indexes = _get_best_indexes(result.start, n_best_size)
+        end_indexes = _get_best_indexes(result.end, n_best_size)
+
+        if version_2:
+            feature_null_score = result.start[0] + \
+                result.end[0]
+            if feature_null_score < score_null:
+                score_null = feature_null_score
+                min_null_feature_index = features_id
+                null_pred_start = result.start[0]
+                null_pred_end = result.end[0]
+
+        for start_index in start_indexes:
+            for end_index in end_indexes:
+                # We could hypothetically create invalid predictions, e.g., predict
+                # that the start of the span is in the question. We throw out all
+                # invalid predictions.
+                if start_index >= len(feature.tokens):
+                    continue
+                if end_index >= len(feature.tokens):
+                    continue
+                if start_index not in feature.token_to_orig_map:
+                    continue
+                if end_index not in feature.token_to_orig_map:
+                    continue
+                if not feature.token_is_max_context.get(start_index, False):
+                    continue
+                if end_index < start_index:
+                    continue
+                length = end_index - start_index + 1
+                if length > max_answer_length:
+                    continue
+                prelim_predictions.append(
+                    _PrelimPrediction(
+                        feature_index=features_id,
+                        start_index=start_index,
+                        end_index=end_index,
+                        pred_start=result.start[start_index],
+                        pred_end=result.end[end_index]))
+
+    if version_2:
+        prelim_predictions.append(
+            _PrelimPrediction(
+                feature_index=min_null_feature_index,
+                start_index=0,
+                end_index=0,
+                pred_start=null_pred_start,
+                pred_end=null_pred_end))
+
+    prelim_predictions = sorted(
+        prelim_predictions,
+        key=lambda x: (x.pred_start + x.pred_end),
+        reverse=True)
+
+    nbest = []
+    for pred in prelim_predictions:
+        if len(nbest) >= n_best_size:
+            break
+        if pred.start_index > 0:  # this is a non-null prediction
+            nbest.append(
+                _NbestPrediction(
+                    pred_start=pred.pred_start,
+                    pred_end=pred.pred_end))
+
+    # if we didn't inlude the empty option in the n-best, inlcude it
+    if version_2:
+        nbest.append(
+            _NbestPrediction(
+                    pred_start=null_pred_start,
+                    pred_end=null_pred_end))
+    # In very rare edge cases we could have no valid predictions. So we
+    # just create a nonce prediction in this case to avoid failure.
+    if not nbest:
+        nbest.append(
+            _NbestPrediction(pred_start=0, pred_end=0))
+
+    assert len(nbest) >= 1
+
+    total_scores = []
+    best_non_null_entry = None
+    for entry in nbest:
+        total_scores.append(entry.pred_start + entry.pred_end)
+        if not best_non_null_entry:
+            if entry.text:
+                best_non_null_entry = entry
+
+    if best_non_null_entry is None:
+        # in very rare case will this problem occur and corrupt the program
+        best_non_null_entry = _NbestPrediction(
+                                    pred_start=null_pred_start,
+                                    pred_end=null_pred_end)
+
+    probs = nd.softmax(nd.array(total_scores)).asnumpy()
+
+    nbest_json = []
+
+    for (i, entry) in enumerate(nbest):
+        nbest_json.append((entry.pred_start, entry.pred_end, float(probs[i])))
+
+    prediction = (nbest_json[0][0], nbest_json[0][1])
+    if version_2:
+        # predict '' iff (the null score - the score of best non-null) > threshold
+        score_diff = score_null - best_non_null_entry.pred_start - \
+            best_non_null_entry.pred_end
+
+        if score_diff > null_score_diff_threshold:
+            answerable = 0.0
+        else:
+            answerable = 1.0
+    return prediction, answerable, nbest_json
+
+
+def predict_original(features,
             results,
             tokenizer,
             max_answer_length=64,

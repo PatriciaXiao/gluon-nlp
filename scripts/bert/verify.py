@@ -1,7 +1,7 @@
 import mxnet as mx
 import gluonnlp as nlp
 
-from bert_qa_evaluate import PredResult, predict
+from bert_qa_evaluate import PredResult, predict, predict_span
 
 from mxnet.gluon.data.dataset import Dataset
 
@@ -27,15 +27,37 @@ class VerifierDataset(Dataset):
         return len(self.data)
 
 class AnswerVerifyDense(object):
-    def __init__(self):
-        pass
+    def __init__(self,
+                max_answer_length=30,
+                null_score_diff_threshold=-2.0,
+                n_best_size=20,
+                max_len=384,
+                version_2=True,
+                ctx=mx.cpu()):
+        self.max_answer_length=max_answer_length
+        self.null_score_diff_threshold=null_score_diff_threshold
+        self.n_best_size=n_best_size
+        self.version_2=version_2
     def parse_sentences(self, train_features, example_ids, out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        print(pred_start)
-        exit(0)
+        for example_id, start, end in zip(example_ids, pred_start, pred_end):
+            results = [PredResult(start=start, end=end)]
+            features = train_features[example_id]
+            label = 0 if features[0].is_impossible else 1
+            # if features[0].is_impossible:
+            #     prediction = ""
+            prediction, _, _ = predict_span( # TODO: use this more wisely, for example, GAN
+                features=features,
+                results=results,
+                max_answer_length=self.max_answer_length,
+                null_score_diff_threshold=self.null_score_diff_threshold,
+                n_best_size=self.n_best_size,
+                version_2=self.version_2)
+            print(prediction)
+            exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out)
     def evaluate(self):
