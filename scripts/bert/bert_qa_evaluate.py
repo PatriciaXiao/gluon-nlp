@@ -483,7 +483,7 @@ def predict_span(features,
         else:
             answerable = 1.0
     # test
-    if (prediction.start_index, prediction.end_index) == (null_pred_start_index, null_pred_end_index):
+    if prediction == (null_pred_start_index, null_pred_end_index):
         answerable = 0.0
     else:
         answerable = 1.0
