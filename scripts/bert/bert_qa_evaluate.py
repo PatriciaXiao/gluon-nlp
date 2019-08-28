@@ -455,7 +455,6 @@ def predict_span(features,
             answerable = 1.0
             prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
         print(prediction)
-        exit(0)
     else:
         prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
