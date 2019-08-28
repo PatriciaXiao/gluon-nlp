@@ -502,9 +502,9 @@ def train():
                 trainer.update(1)
 
             # pass the information to verifier and train it here
-            # train_features # example_ids # out
+            # train_features # example_ids # out # token_types
             if verify:
-                verifier.train(train_features, example_ids, out)
+                verifier.train(train_features, example_ids, out, token_types)
 
             step_loss += ls.asscalar()
 

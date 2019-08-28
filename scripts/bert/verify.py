@@ -38,12 +38,12 @@ class AnswerVerifyDense(object):
         self.null_score_diff_threshold=null_score_diff_threshold
         self.n_best_size=n_best_size
         self.version_2=version_2
-    def parse_sentences(self, train_features, example_ids, out):
+    def parse_sentences(self, train_features, example_ids, out, token_types):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        for example_id, start, end in zip(example_ids, pred_start, pred_end):
+        for example_id, start, end, token in zip(example_ids, pred_start, pred_end, token_types):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
             label = 0 if features[0].is_impossible else 1
@@ -62,6 +62,8 @@ class AnswerVerifyDense(object):
             print(features[0].tokens[prediction[0]:prediction[1]+1])
             print(answerable)
             print(nbest_json)
+            print(token)
+            print(token_types)
             exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out)
@@ -130,7 +132,7 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
+    def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
