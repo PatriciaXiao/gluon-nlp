@@ -484,7 +484,7 @@ def train():
                 log_num += len(inputs)
                 total_num += len(inputs)
 
-                out = net(inputs.astype('float32').as_in_context(ctx),
+                out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
                           token_types.astype('float32').as_in_context(ctx),
                           valid_length.astype('float32').as_in_context(ctx))
 
@@ -504,7 +504,7 @@ def train():
             # pass the information to verifier and train it here
             # train_features # example_ids # out # token_types
             if verify:
-                verifier.train(train_features, example_ids, out, token_types)
+                verifier.train(train_features, example_ids, out, token_types, bert_out)
 
             step_loss += ls.asscalar()
 
@@ -576,7 +576,7 @@ def evaluate():
         example_ids, inputs, token_types, valid_length, _, _ = data
         total_num += len(inputs)
 
-        out = net(inputs.astype('float32').as_in_context(ctx),
+        out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
                   token_types.astype('float32').as_in_context(ctx),
                   valid_length.astype('float32').as_in_context(ctx))
         

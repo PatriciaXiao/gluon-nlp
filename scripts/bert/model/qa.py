@@ -282,7 +282,7 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)
-        return output
+        return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, **kwargs):
         return BertForQALoss(weight=weight, batch_axis=batch_axis, **kwargs)
