@@ -60,11 +60,14 @@ class AnswerVerifyDense(object):
             print(features[0].is_impossible)
             print(prediction)
             print(features[0].tokens[prediction[0]:prediction[1]+1])
+            print(len(features[0].tokens))
+            print(sum(token)) # maximum contex length
+            print(sum(1 - token)) # query length + 2
             print(answerable)
             print(nbest_json)
             print(token)
-            print(token_types[0])
-            exit(0)
+            input()
+        exit(0)
     def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types)
     def evaluate(self):
