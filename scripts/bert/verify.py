@@ -39,12 +39,12 @@ class AnswerVerifyDense(object):
         self.n_best_size=n_best_size
         self.version_2=version_2
         self.ctx = ctx
-    def parse_sentences(self, train_features, example_ids, out, token_types):
+    def parse_sentences(self, train_features, example_ids, out, token_types, bert_out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        embedding_results = mx.nd.zeros(out.shape, ctx=self.ctx)
+        embedding_results = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
         print(embedding_results.shape)
         exit(0)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
@@ -71,8 +71,8 @@ class AnswerVerifyDense(object):
             print(token)
             input()
         exit(0)
-    def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
-        data = self.parse_sentences(train_features, example_ids, out, token_types)
+    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
+        data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
     def evaluate(self):
         pass
 
