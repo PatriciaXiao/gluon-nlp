@@ -405,6 +405,14 @@ def predict_span(features,
                         end_index=end_index,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
+    if version_2:
+        prelim_predictions.append(
+            _PrelimPrediction(
+                feature_index=min_null_feature_index,
+                start_index=0,
+                end_index=0,
+                pred_start=null_pred_start,
+                pred_end=null_pred_end))
 
     prelim_predictions = sorted(
         prelim_predictions,
