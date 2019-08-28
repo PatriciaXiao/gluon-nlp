@@ -71,7 +71,7 @@ class AnswerVerifyDense(object):
             print(answerable)
             print(token)
             '''
-            exit(0)
+            input()
             # verifier_input[]
         exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
