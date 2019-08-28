@@ -227,7 +227,7 @@ parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
 args = parser.parse_args()
 
 verify = args.verifier is not None
-VERIFIER_ID = args.verifier
+VERIFIER_ID = args.verifier if verify else -1
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
