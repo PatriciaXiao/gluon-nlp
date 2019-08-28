@@ -273,7 +273,6 @@ warmup_ratio = args.warmup_ratio
 
 
 version_2 = args.version_2
-null_score_diff_threshold = args.null_score_diff_threshold
 
 max_seq_length = args.max_seq_length
 doc_stride = args.doc_stride
@@ -367,7 +366,7 @@ if args.verify:
     if VERIFIER_ID == 1:
         verifier = AnswerVerify(tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
-                    null_score_diff_threshold=null_score_diff_threshold,
+                    # null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
