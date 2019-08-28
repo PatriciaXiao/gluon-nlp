@@ -369,12 +369,9 @@ if verify:
                     max_len=max_seq_length,
                     version_2=version_2,
                     ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
-    elif VERIFIER_ID == 2:
-        verifier = AnswerVerify2(version_2=version_2,
-                    ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
-    elif VERIFIER_ID == 3:
-        verifier = AnswerVerify3(version_2=version_2,
-                    ctx=verify_ctx, in_units=BERT_DIM[args.bert_model])
+    else:
+        print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
+        exit(0)
 
 def train():
     """Training function."""
