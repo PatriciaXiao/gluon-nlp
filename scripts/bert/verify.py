@@ -47,7 +47,8 @@ class AnswerVerifyDense(object):
         verifier_input = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
-        for example_id, start, end, token in zip(example_ids, pred_start, pred_end, token_types):
+        for idx, data in enumerate(zip(example_ids, pred_start, pred_end, token_types)):
+            example_id, start, end, token = data
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
             prediction, answerable, _ = predict_span( # TODO: use this more wisely, for example, GAN
@@ -66,7 +67,7 @@ class AnswerVerifyDense(object):
             print(int((1 - token).sum().max().asscalar())) # query length + 2
             print(answerable)
             print(token)
-            
+            exit(0)
             # verifier_input[]
         print(example_ids)
         input() #exit(0)
