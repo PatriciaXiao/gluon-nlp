@@ -69,8 +69,7 @@ class AnswerVerifyDense(object):
             print(token)
             exit(0)
             # verifier_input[]
-        print(example_ids)
-        input() #exit(0)
+        exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
     def evaluate(self):
