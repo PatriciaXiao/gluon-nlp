@@ -74,8 +74,13 @@ class AnswerVerifyDense(object):
             # the separater
             verifier_input[idx, num_query_tokens+num_contx_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
             # the answer
-            verifier_input[idx, num_query_tokens+num_contx_tokens+2:num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
+            if num_answr_tokens > 0:
+                verifier_input[idx, num_query_tokens+num_contx_tokens+2:num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
                                 = bert_out[idx, prediction[0]:prediction[1]+1,:]
+            else:
+                print(prediction)
+                exit(0)
+
             # the ending
             verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
                                 = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
