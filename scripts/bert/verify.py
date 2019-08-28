@@ -56,11 +56,10 @@ class AnswerVerifyDense(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
-            print(features[0].tokens)
             print(features[0].orig_answer_text)
             print(features[0].is_impossible)
             print(prediction)
-            print(features[0][prediction[0]:prediction[1]+1])
+            print(features[0].tokens[prediction[0]:prediction[1]+1])
             exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out)
