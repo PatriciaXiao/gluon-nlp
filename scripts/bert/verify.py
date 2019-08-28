@@ -38,17 +38,20 @@ class AnswerVerifyDense(object):
         self.null_score_diff_threshold=null_score_diff_threshold
         self.n_best_size=n_best_size
         self.version_2=version_2
+        self.ctx = ctx
     def parse_sentences(self, train_features, example_ids, out, token_types):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
+        embedding_results = mx.nd.zeros(out.shape, ctx=self.ctx)
+        print(embedding_results.shape)
+        exit(0)
+        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
+                                        for eid in example_ids]).as_in_context(self.ctx)
         for example_id, start, end, token in zip(example_ids, pred_start, pred_end, token_types):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
-            label = 0 if features[0].is_impossible else 1
-            # if features[0].is_impossible:
-            #     prediction = ""
             prediction, answerable, nbest_json = predict_span( # TODO: use this more wisely, for example, GAN
                 features=features,
                 results=results,
@@ -61,8 +64,8 @@ class AnswerVerifyDense(object):
             print(prediction)
             print(features[0].tokens[prediction[0]:prediction[1]+1])
             print(len(features[0].tokens))
-            print(token.sum().max().asscalar()) # maximum contex length
-            print((1 - token).sum().max().asscalar()) # query length + 2
+            print(int(token.sum().max().asscalar())) # maximum contex length
+            print(int((1 - token).sum().max().asscalar())) # query length + 2
             print(answerable)
             print(nbest_json)
             print(token)

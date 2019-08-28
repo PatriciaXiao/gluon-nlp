@@ -478,7 +478,6 @@ def predict_span(features,
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
             best_non_null_entry.pred_end
-
         if score_diff > null_score_diff_threshold:
             answerable = 0.0
         else:
