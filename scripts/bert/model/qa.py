@@ -307,6 +307,11 @@ class BertForQA(Block):
         elif self.na_score_dim == 1:
             return mx.gluon.loss.L2Loss()
 
+    def na_score(self, na_prob_out):
+        if self.na_score_dim == 2:
+            return mx.ndarray.argmax(class_out, axis=1)
+        return na_prob_out.reshape(-1)
+
 class BertForQALoss(Loss):
     """Loss for SQuAD task with BERT.
 

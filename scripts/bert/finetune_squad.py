@@ -593,7 +593,7 @@ def evaluate():
             out, na_prob = net(inputs.astype('float32').as_in_context(ctx),
                       token_types.astype('float32').as_in_context(ctx),
                       valid_length.astype('float32').as_in_context(ctx))
-            has_answer_tmp = na_prob.asnumpy().tolist()
+            has_answer_tmp = net.na_score(na_prob.asnumpy()).tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
@@ -620,7 +620,6 @@ def evaluate():
 
         if all_pre_na_prob is not None:
             has_ans_prob_list = all_pre_na_prob[features[0].example_id]
-            print(has_ans_prob_list)
             has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
             if has_ans_prob < 0.5:
                 prediction = ""
