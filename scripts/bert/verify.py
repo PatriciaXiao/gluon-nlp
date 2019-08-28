@@ -44,7 +44,11 @@ class AnswerVerifyDense(object):
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
-        verifier_input = mx.nd.zeros(bert_out.shape, ctx=self.ctx)
+        verifier_input_shape = bert_out.shape
+        verifier_input_shape[1] = self.max_answer_length + verifier_input_shape[1]
+        print(verifier_input_shape)
+        exit(0)
+        verifier_input = mx.nd.zeros(verifier_input_shape, ctx=self.ctx)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
         for idx, data in enumerate(zip(example_ids, pred_start, pred_end, token_types)):
@@ -61,9 +65,12 @@ class AnswerVerifyDense(object):
             num_total_tokens = len(features[0].tokens)
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
+            num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
             verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
-            print(bert_out[idx])
+            verifier_input[idx, num_contx_tokens+1: num_query_tokens+num_contx_tokens+1, :] \
+                                = bert_out[idx, 1:num_query_tokens+1, :]
+
             print(verifier_input[idx])
             exit(0)
             '''
