@@ -58,15 +58,19 @@ class AnswerVerifyDense(object):
                 null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
+            num_total_tokens = len(features[0].tokens)
+            num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
+            num_contx_tokens = num_total_tokens - num_query_tokens - 3
+            print(features[0].tokens)
+            print(num_total_tokens, num_query_tokens, num_contx_tokens)
+            '''
             print(features[0].orig_answer_text)
             print(features[0].is_impossible)
             print(prediction)
             print(features[0].tokens[prediction[0]:prediction[1]+1])
-            print(len(features[0].tokens))
-            print(int(token.sum().max().asscalar())) # maximum contex length
-            print(int((1 - token).sum().max().asscalar())) # query length + 2
             print(answerable)
             print(token)
+            '''
             exit(0)
             # verifier_input[]
         exit(0)
