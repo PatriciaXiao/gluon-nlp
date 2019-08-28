@@ -61,8 +61,8 @@ class AnswerVerifyDense(object):
             print(prediction)
             print(features[0].tokens[prediction[0]:prediction[1]+1])
             print(len(features[0].tokens))
-            print(sum(token)) # maximum contex length
-            print(sum(1 - token)) # query length + 2
+            print(token.sum().max().asscalar()) # maximum contex length
+            print((1 - token).sum().max().asscalar()) # query length + 2
             print(answerable)
             print(nbest_json)
             print(token)
