@@ -63,7 +63,7 @@ class AnswerVerifyDense(object):
             print(answerable)
             print(nbest_json)
             print(token)
-            print(token_types)
+            print(token_types[0])
             exit(0)
     def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types)
