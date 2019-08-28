@@ -180,7 +180,6 @@ class BertForQA(Block):
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.apply_self_attention = apply_self_attention
-        self.na_score_dim = na_score_dim
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
