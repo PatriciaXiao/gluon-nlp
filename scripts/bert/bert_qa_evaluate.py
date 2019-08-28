@@ -406,15 +406,6 @@ def predict_span(features,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
 
-    if version_2:
-        prelim_predictions.append(
-            _PrelimPrediction(
-                feature_index=min_null_feature_index,
-                start_index=0,
-                end_index=0,
-                pred_start=null_pred_start,
-                pred_end=null_pred_end))
-
     prelim_predictions = sorted(
         prelim_predictions,
         key=lambda x: (x.pred_start + x.pred_end),
@@ -442,22 +433,9 @@ def predict_span(features,
     assert len(nbest) >= 1
 
     total_scores = []
-    best_non_null_entry = None
+    best_non_null_entry = nbest[0]
     for entry in nbest:
-        print(entry.pred_start + entry.pred_end)
         total_scores.append(entry.pred_start + entry.pred_end)
-        if not best_non_null_entry:
-            if not (entry.pred_start == null_pred_start and entry.pred_end == null_pred_end):
-                best_non_null_entry = entry
-    exit(0)
-
-    if best_non_null_entry is None:
-        # in very rare case will this problem occur and corrupt the program
-        best_non_null_entry = _NbestPrediction(
-                                    pred_start=null_pred_start,
-                                    pred_end=null_pred_end,
-                                    start_index=null_pred_start_index,
-                                    end_index=null_pred_end_index)
 
     probs = nd.softmax(nd.array(total_scores)).asnumpy()
 
@@ -466,7 +444,6 @@ def predict_span(features,
     for (i, entry) in enumerate(nbest):
         nbest_json.append(((entry.start_index, entry.end_index), float(probs[i])))
 
-    prediction = nbest_json[0][0]
     if version_2:
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
@@ -477,6 +454,8 @@ def predict_span(features,
         else:
             answerable = 1.0
             prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
+    else:
+        prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
 
 
