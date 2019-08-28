@@ -49,7 +49,7 @@ class AnswerVerifyDense(object):
             label = 0 if features[0].is_impossible else 1
             # if features[0].is_impossible:
             #     prediction = ""
-            prediction, _, _ = predict_span( # TODO: use this more wisely, for example, GAN
+            prediction, answerable, nbest_json = predict_span( # TODO: use this more wisely, for example, GAN
                 features=features,
                 results=results,
                 max_answer_length=self.max_answer_length,
@@ -60,6 +60,8 @@ class AnswerVerifyDense(object):
             print(features[0].is_impossible)
             print(prediction)
             print(features[0].tokens[prediction[0]:prediction[1]+1])
+            print(answerable)
+            print(nbest_json)
             exit(0)
     def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out)
