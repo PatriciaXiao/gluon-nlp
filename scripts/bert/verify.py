@@ -65,8 +65,8 @@ class AnswerVerifyDense(object):
             print(token)
             print(token_types)
             exit(0)
-    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
-        data = self.parse_sentences(train_features, example_ids, out)
+    def train(self, train_features, example_ids, out, token_types=None, num_epochs=1, verbose=False):
+        data = self.parse_sentences(train_features, example_ids, out, token_types)
     def evaluate(self):
         pass
 
@@ -223,7 +223,7 @@ class AnswerVerify(object):
         eval_result = pred == 1 # True
         return eval_result
 
-    def parse_sentences(self, train_features, example_ids, out):
+    def parse_sentences(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
