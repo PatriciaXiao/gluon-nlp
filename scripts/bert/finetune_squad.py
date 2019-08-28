@@ -620,6 +620,7 @@ def evaluate():
 
         if all_pre_na_prob is not None:
             has_ans_prob_list = all_pre_na_prob[features[0].example_id]
+            print(has_ans_prob_list)
             has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
             if has_ans_prob < 0.5:
                 prediction = ""
