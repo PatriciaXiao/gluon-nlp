@@ -557,8 +557,10 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
-    if VERIFIER_ID == 2:
+    if verify and VERIFIER_ID in [2]:
         all_pre_na_prob = collections.defaultdict(list)
+    else:
+        all_pre_na_prob = None
 
     epoch_tic = time.time()
     total_num = 0

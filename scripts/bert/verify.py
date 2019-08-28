@@ -29,8 +29,13 @@ class VerifierDataset(Dataset):
 class AnswerVerifyDense(object):
     def __init__(self):
         pass
-    def train(self):
-        pass
+    def parse_sentences(self, train_features, example_ids, out):
+        output = mx.nd.split(out, axis=2, num_outputs=2)
+        example_ids = example_ids.asnumpy().tolist()
+        pred_start = output[0].reshape((0, -3)).asnumpy()
+        pred_end = output[1].reshape((0, -3)).asnumpy()
+    def train(self, train_features, example_ids, out, num_epochs=1, verbose=False):
+        data = self.parse_sentences(train_features, example_ids, out)
     def evaluate(self):
         pass
 
