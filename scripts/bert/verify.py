@@ -48,6 +48,7 @@ class AnswerVerifyDense(object):
         verifier_input = mx.nd.zeros(verifier_input_shape, ctx=self.ctx)
         labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
+        labels_pred = mx.nd.zeros(labels.shape, ctx=self.ctx)
         for idx, data in enumerate(zip(example_ids, pred_start, pred_end, token_types)):
             example_id, start, end, token = data
             results = [PredResult(start=start, end=end)]
@@ -78,17 +79,8 @@ class AnswerVerifyDense(object):
             # the ending
             verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
                                 = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
-            print(verifier_input[idx])
-            exit(0)
-            '''
-            print(features[0].orig_answer_text)
-            print(features[0].is_impossible)
-            print(prediction)
-            print(features[0].tokens[prediction[0]:prediction[1]+1])
-            print(answerable)
-            print(token)
-            '''
-            input()
+            # the predicted answerability
+            labels_pred[idx] = answerable
         exit(0)
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
