@@ -221,6 +221,11 @@ parser.add_argument('--null_score_diff_threshold',
                     help='If null_score - best_non_null is greater than the threshold predict null.'
                     'Typical values are between -1.0 and -5.0. default is -2.0')
 
+parser.add_argument('--answerable_threshold',
+                    type=float,
+                    default=-0.5,
+                    help='If unanswerable - between 0 and 1, 0.5 by default.')
+
 parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
                     help='the id of the verifier to use')
 
@@ -276,6 +281,7 @@ warmup_ratio = args.warmup_ratio
 
 version_2 = args.version_2
 null_score_diff_threshold = args.null_score_diff_threshold
+answerable_threshold = args.answerable_threshold
 max_seq_length = args.max_seq_length
 doc_stride = args.doc_stride
 max_query_length = args.max_query_length
