@@ -131,11 +131,11 @@ class AnswerVerifyDense(object):
                 begin_idxs = sorted(list(sentence_begins_included))
                 end_idxs = sorted(list(sentence_ends_included))
                 for i in range(len(begin_idxs) - 1):
-                    if begin_idx[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
+                    if begin_idxs[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
                         sentence_begin = begin_idx[i]
                         break 
                 for i in range(len(end_idxs) - 1):
-                    if end_idx[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
+                    if end_idxs[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
                         sentence_end = end_idxs[i]
                 sentence_idx = (sentence_begin, sentence_end)
                 num_sentc_tokens = sentence_end - sentence_begin + 1
