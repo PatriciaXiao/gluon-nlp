@@ -115,7 +115,8 @@ class AnswerVerifyDense(object):
             num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
             # the sentence
             sequence_tokens = features[0].tokens
-            sentence_ends_included = [t.find(pattern) for t in sequence_tokens]
+            sentence_ends_included = [t.find('.') > 0 or t.find('?') > 0 or t.find('!') > 0 \
+                                        for t in sequence_tokens]
             print(sequence_tokens)
             print(sentence_ends_included)
             exit(0)
