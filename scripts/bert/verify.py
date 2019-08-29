@@ -382,8 +382,8 @@ class AnswerVerify(object):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
             label = 0 if features[0].is_impossible else 1
+            context_text = ' '.join(features[0].doc_tokens)
             if self.extract_sentence:
-                context_text = ' '.join(features[0].doc_tokens)
                 sentences = context_text.strip
                 question_text = features[0].question_text
                 answer_text = features[0].orig_answer_text
@@ -411,8 +411,8 @@ class AnswerVerify(object):
                     null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
-                raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
-                raw_data.append([question_text, answer_text, label])
+                raw_data.append([context_text + ' ' + question_text, prediction, label]) # TODO: might should use whole context if answer not available
+                raw_data.append([context_text + ' ' + question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
 
