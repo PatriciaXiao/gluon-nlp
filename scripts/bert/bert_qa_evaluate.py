@@ -303,6 +303,7 @@ def predict(features,
 
     if not version_2:
         prediction = nbest_json[0][0]
+        answerable = 1.0
     else:
         prediction = best_non_null_entry.text
         # predict '' iff (the null score - the score of best non-null) > threshold
@@ -315,7 +316,6 @@ def predict(features,
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-
     # prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
 
