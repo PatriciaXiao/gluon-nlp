@@ -403,7 +403,7 @@ class AnswerVerify(object):
                 second_part = answer_text
                 raw_data.append([first_part, second_part, label])
             else:
-                prediction, _ = predict( # TODO: use this more wisely, for example, GAN
+                prediction, _, _ = predict( # TODO: use this more wisely, for example, GAN
                     features=features,
                     results=results,
                     tokenizer=self.tokenizer,
