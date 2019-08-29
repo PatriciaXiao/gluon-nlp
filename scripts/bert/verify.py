@@ -137,6 +137,7 @@ class AnswerVerifyDense(object):
                 for i in range(len(end_idxs) - 1):
                     if end_idxs[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
                         sentence_end = end_idxs[i]
+                        break
                 sentence_idx = (sentence_begin, sentence_end)
                 num_sentc_tokens = sentence_end - sentence_begin + 1
             # the beginning
