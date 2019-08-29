@@ -116,7 +116,7 @@ class AnswerVerifyDense(object):
             # the sentence
             sequence_tokens = features[0].tokens
             sentence_ends_included = { i \
-                                        for i in len(sequence_tokens) \
+                                        for i in range(len(sequence_tokens)) \
                                         if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
             print(sequence_tokens)
             print(sentence_ends_included)
