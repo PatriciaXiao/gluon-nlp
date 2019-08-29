@@ -383,10 +383,10 @@ class AnswerVerify(object):
             features = train_features[example_id]
             label = 0 if features[0].is_impossible else 1
             context_text = ' '.join(features[0].doc_tokens)
+            question_text = features[0].question_text
+            answer_text = features[0].orig_answer_text
             if self.extract_sentence:
                 sentences = context_text.strip
-                question_text = features[0].question_text
-                answer_text = features[0].orig_answer_text
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 if label == 1:
                     sentence_text = ''
