@@ -113,7 +113,11 @@ class AnswerVerifyDense(object):
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
             num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
-            print(features[0].tokens)
+            # the sentence
+            sequence_tokens = features[0].tokens
+            sentence_ends_included = [re.find(pattern, t) for t in sequence_tokens]
+            print(sequence_tokens)
+            print(sentence_ends_included)
             exit(0)
             # the beginning
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
