@@ -139,6 +139,7 @@ class AnswerVerifyDense(object):
                         sentence_end = end_idxs[i]
                         break
                 print(end_idxs)
+                print(prediction[1])
                 sentence_idx = (sentence_begin, sentence_end)
                 num_sentc_tokens = sentence_end - sentence_begin + 1
             # the beginning
