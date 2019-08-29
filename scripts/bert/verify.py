@@ -88,20 +88,20 @@ class AnswerVerifyDense(object):
         elif self.num_classes == 2:
             return mx.gluon.loss.SoftmaxCELoss()
 
-    def parse_sentences(self, train_features, example_ids, out, token_types, bert_out):
+    def parse_sentences(self, all_features, example_ids, out, token_types, bert_out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
         pred_start = output[0].reshape((0, -3)).asnumpy()
         pred_end = output[1].reshape((0, -3)).asnumpy()
         verifier_input_shape = (bert_out.shape[0], bert_out.shape[1] + self.max_answer_length, bert_out.shape[2])
         verifier_input = mx.nd.zeros(verifier_input_shape, ctx=self.ctx)
-        labels = mx.nd.array([[0 if train_features[eid][0].is_impossible else 1] \
+        labels = mx.nd.array([[0 if all_features[eid][0].is_impossible else 1] \
                                         for eid in example_ids]).as_in_context(self.ctx)
         labels_pred = mx.nd.zeros(labels.shape, ctx=self.ctx)
         for idx, data in enumerate(zip(example_ids, pred_start, pred_end, token_types)):
             example_id, start, end, token = data
             results = [PredResult(start=start, end=end)]
-            features = train_features[example_id]
+            features = all_features[example_id]
             prediction, answerable, _ = predict_span( # TODO: use this more wisely, for example, GAN
                 features=features,
                 results=results,
@@ -149,7 +149,9 @@ class AnswerVerifyDense(object):
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
         
     def evaluate(self, dev_features, example_ids, out, token_types, bert_out):
-        print("evaluate")
+        data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
+        verifier_input, labels = data
+        print(verifier_input)
         exit(0)
 
 
