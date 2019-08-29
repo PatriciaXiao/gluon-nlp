@@ -139,6 +139,17 @@ class AnswerVerifyDense(object):
         for epoch in range(num_epochs):
             print(verifier_input)
             exit(0)
+            with mx.autograd.record():
+                verify_out = self.dense_layer(verifier_input)
+                ls = self.loss_function(verify_out, labels).mean()
+            ls.backward()
+            # Gradient clipping
+            self.trainer.allreduce_grads()
+            nlp.utils.clip_grad_global_norm(self.params, 1)
+            self.trainer.update(1)
+
+            if verbose:
+                print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
     def evaluate(self):
         pass
 
