@@ -118,8 +118,16 @@ class AnswerVerifyDense(object):
             sentence_ends_included = { i \
                                         for i in range(len(sequence_tokens)) \
                                         if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
-            print(sequence_tokens)
-            print(sentence_ends_included)
+            sentence_ends_included.add(num_total_tokens - 2) # the ending
+            sentence_begins_included = {i + 1 for i in sentence_ends_included}
+            sentence_begins_included.remove(num_total_tokens - 1)
+            sentence_begins_included.remove(num_query_tokens + 1)
+            sentence_begins_included.add(1)
+            sentence_begins_included.add(num_query_tokens + 2)
+            begin_idxs = sorted(list(sentence_begins_included))
+            end_idxs = sorted(list(sentence_ends_included))
+            print(begin_idxs)
+            print(end_idxs)
             exit(0)
             # the beginning
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
