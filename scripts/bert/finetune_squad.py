@@ -566,10 +566,8 @@ def evaluate():
 
     all_results = collections.defaultdict(list)
 
-    if verify and VERIFIER_ID in [2]:
+    if VERIFIER_ID == 2:
         all_pre_na_prob = collections.defaultdict(list)
-    else:
-        all_pre_na_prob = None
 
     epoch_tic = time.time()
     total_num = 0
@@ -581,7 +579,7 @@ def evaluate():
                   token_types.astype('float32').as_in_context(ctx),
                   valid_length.astype('float32').as_in_context(ctx))
         
-        if all_pre_na_prob is not None:
+        if VERIFIER_ID == 2:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out, token_types, bert_out).asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
@@ -591,7 +589,7 @@ def evaluate():
 
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             all_results[example_id].append(PredResult(start=start, end=end))
-        if all_pre_na_prob is not None:
+        if VERIFIER_ID == 2:
             for example_id, has_ans_prob in zip(example_ids, has_answer_tmp):
                 all_pre_na_prob[example_id].append(has_ans_prob)
 
@@ -606,15 +604,7 @@ def evaluate():
     for features in dev_dataset:
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
-
-        if all_pre_na_prob is not None:
-            has_ans_prob_list = all_pre_na_prob[features[0].example_id]
-            has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
-            if has_ans_prob < 0.5:
-                prediction = ""
-                all_predictions[example_qas_id] = prediction
-                continue
-        prediction, _ = predict(
+        prediction, answerable, _ = predict(
             features=features,
             results=results,
             tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
@@ -623,11 +613,19 @@ def evaluate():
             n_best_size=n_best_size,
             version_2=version_2)
 
-        if verify and VERIFIER_ID == 1:
-            if len(prediction) > 0:
-                has_answer = verifier.evaluate(features, prediction)
-                if not has_answer:
-                    prediction = ""
+        # verifier
+        if verify:
+            if VERIFIER_ID == 1:
+                has_ans_prob = verifier.evaluate(features, prediction)
+            elif VERIFIER_ID == 2:
+                has_ans_prob_list = all_pre_na_prob[features[0].example_id]
+                has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
+            answerable = (answerable + has_ans_prob) / 2.
+
+
+        if answerable < answerable_threshold:
+            prediction = ""
+
 
         all_predictions[example_qas_id] = prediction
         # the form of hashkey - answer string

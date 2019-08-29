@@ -304,17 +304,20 @@ def predict(features,
     if not version_2:
         prediction = nbest_json[0][0]
     else:
+        best_non_null_entry.text
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
             best_non_null_entry.pred_end
 
         if score_diff > null_score_diff_threshold:
-            prediction = ''
+            # prediction = ''
+            answerable = 0.0
         else:
-            prediction = best_non_null_entry.text
+            # prediction = best_non_null_entry.text
+            answerable = 1.0
 
     # prediction = nbest_json[0][0]
-    return prediction, nbest_json
+    return prediction, answerable, nbest_json
 
 
 def predict_span(features,
@@ -405,7 +408,7 @@ def predict_span(features,
                         end_index=end_index,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
-                
+
     prelim_predictions = sorted(
         prelim_predictions,
         key=lambda x: (x.pred_start + x.pred_end),

@@ -134,6 +134,8 @@ class AnswerVerifyDense(object):
         return verifier_input, labels
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=3, verbose=False):
+        if not self.version_2:
+            return
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
         verifier_input, labels = data
         for epoch_id in range(num_epochs):
@@ -149,6 +151,8 @@ class AnswerVerifyDense(object):
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
         
     def evaluate(self, dev_features, example_ids, out, token_types, bert_out):
+        if not self.version_2:
+            return mx.nd.ones(example_ids.shape)
         data = self.parse_sentences(dev_features, example_ids, out, token_types, bert_out)
         verifier_input, _ = data
         verifier_output = self.dense_layer(verifier_input)
@@ -275,7 +279,8 @@ class AnswerVerify(object):
     def evaluate(self, dev_feature, prediction):
         # asserted that prediction is not null
         if not self.version_2:
-            return True
+            # return True
+            return 1.0
         raw_data = []
         for feature in dev_feature:
             context_text = ' '.join(feature.doc_tokens)
@@ -304,11 +309,13 @@ class AnswerVerify(object):
             out = self.bert_classifier(token_ids.as_in_context(self.ctx), segment_ids.as_in_context(self.ctx),
                         valid_length.astype('float32').as_in_context(self.ctx))
             # result = out.asnumpy().reshape(-1).tolist()
-            pred = mx.ndarray.argmax(out, axis=1).astype(int)[0]
+            # pred = mx.ndarray.argmax(out, axis=1).astype(int)[0]
+            pred = mx.ndarray.argmax(out, axis=1)[0]
             # print(out, pred, label)
         # exit(0)
 
-        eval_result = pred == 1 # True
+        # eval_result = pred == 1 # True
+        eval_result = pred
         return eval_result
 
     def parse_sentences(self, train_features, example_ids, out, token_types=None):
