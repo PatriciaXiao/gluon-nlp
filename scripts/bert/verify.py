@@ -132,7 +132,7 @@ class AnswerVerifyDense(object):
                 end_idxs = sorted(list(sentence_ends_included))
                 for i in range(len(begin_idxs) - 1):
                     if begin_idxs[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
-                        sentence_begin = begin_idx[i]
+                        sentence_begin = begin_idxs[i]
                         break 
                 for i in range(len(end_idxs) - 1):
                     if end_idxs[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
