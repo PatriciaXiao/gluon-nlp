@@ -81,13 +81,15 @@ class AnswerVerifyDense(object):
             verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
                                 = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
             # the predicted answerability
-            labels_pred[idx] = answerable
-        print(labels_pred)
-        print(labels)
-        input()
-        # exit(0)
+            # labels_pred[idx] = answerable
+        return verifier_input, labels
+
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
+        verifier_input, labels = data
+        for epoch in range(num_epochs):
+            print(verifier_input)
+            exit(0)
     def evaluate(self):
         pass
 
