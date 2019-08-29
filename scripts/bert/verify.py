@@ -126,8 +126,10 @@ class AnswerVerifyDense(object):
                                             if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
                 sentence_ends_included.add(num_total_tokens - 2) # the ending
                 sentence_begins_included = {i + 1 for i in sentence_ends_included}
-                sentence_begins_included.remove(num_total_tokens - 1)
-                sentence_begins_included.remove(num_query_tokens + 1)
+                if num_total_tokens - 1 in sentence_begins_included:
+                    sentence_begins_included.remove(num_total_tokens - 1)
+                if num_query_tokens + 1 in sentence_begins_included:
+                    sentence_begins_included.remove(num_query_tokens + 1)
                 sentence_begins_included.add(1)
                 sentence_begins_included.add(num_query_tokens + 2)
                 begin_idxs = sorted(list(sentence_begins_included))
