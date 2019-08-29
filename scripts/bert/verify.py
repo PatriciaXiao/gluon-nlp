@@ -396,8 +396,7 @@ class AnswerVerify(object):
                             break
                 else:
                     sentence_text = random.choice(sentences)
-                    #answer_text = random.choice(sentence_text.split())
-                    answer_text = context_text
+                    answer_text = random.choice(sentence_text.split())
                 
                 first_part = sentence_text + ' ' + question_text
                 second_part = answer_text
