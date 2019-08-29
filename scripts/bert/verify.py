@@ -136,7 +136,7 @@ class AnswerVerifyDense(object):
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
         verifier_input, labels = data
-        for epoch in range(num_epochs):
+        for epoch_id in range(num_epochs):
             with mx.autograd.record():
                 verify_out = self.dense_layer(verifier_input)
                 ls = self.loss_function(verify_out, labels).mean()
