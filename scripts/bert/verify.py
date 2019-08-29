@@ -150,9 +150,13 @@ class AnswerVerifyDense(object):
         
     def evaluate(self, dev_features, example_ids, out, token_types, bert_out):
         data = self.parse_sentences(dev_features, example_ids, out, token_types, bert_out)
-        verifier_input, labels = data
-        print(verifier_input)
-        exit(0)
+        verifier_input, _ = data
+        verifier_output = self.dense_layer(verifier_input)
+        if self.num_classes == 1:
+            pred = verifier_output.reshape(-1)
+        elif self.num_classes == 2:
+            pred = mx.ndarray.argmax(verifier_output, axis=1)
+        return pred
 
 
 class AnswerVerify(object):
