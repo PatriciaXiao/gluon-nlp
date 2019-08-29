@@ -583,8 +583,6 @@ def evaluate():
         
         if all_pre_na_prob is not None:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out, token_types, bert_out).asnumpy().tolist()
-            print(has_answer_tmp)
-            exit(0)
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
