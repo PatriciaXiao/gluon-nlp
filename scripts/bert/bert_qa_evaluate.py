@@ -458,6 +458,8 @@ def predict_span(features,
         else:
             answerable = 1.0
             # prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
+    else:
+        answerable = 1.0
     return prediction, answerable, nbest_json
 
 
