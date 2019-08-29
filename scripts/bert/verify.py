@@ -118,6 +118,8 @@ class AnswerVerifyDense(object):
                 sentence_idx = (num_query_tokens + 2, num_contx_tokens + num_query_tokens + 2)
                 num_sentc_tokens = num_contx_tokens
             else:
+                sentence_begin = num_query_tokens + 2
+                sentence_end = num_contx_tokens + num_query_tokens + 2
                 sequence_tokens = features[0].tokens
                 sentence_ends_included = { i \
                                             for i in range(len(sequence_tokens)) \
@@ -135,17 +137,15 @@ class AnswerVerifyDense(object):
                         sentence_begin = begin_idxs[i]
                         break 
                 for i in range(len(end_idxs) - 1):
-                    if end_idxs[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
+                    if end_idxs[i] < prediction[1] and end_idxs[i+1] >= prediction[1]:
                         sentence_end = end_idxs[i]
                         break
-                print(end_idxs)
-                print(prediction[1])
                 sentence_idx = (sentence_begin, sentence_end)
                 num_sentc_tokens = sentence_end - sentence_begin + 1
             # the beginning
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
             # the sentence embedding
-            verifier_input[idx, 1:num_sentc_tokens+1, :] = bert_out[idx, sentence_idx[0]:sentence_idx[1], :]
+            verifier_input[idx, 1:num_sentc_tokens+1, :] = bert_out[idx, sentence_idx[0]:sentence_idx[1]+1, :]
             # the query embedding
             verifier_input[idx, num_sentc_tokens+1: num_query_tokens+num_sentc_tokens+1, :] \
                                 = bert_out[idx, 1:num_query_tokens+1, :]
