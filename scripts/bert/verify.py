@@ -137,8 +137,6 @@ class AnswerVerifyDense(object):
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
         verifier_input, labels = data
         for epoch in range(num_epochs):
-            print(verifier_input)
-            exit(0)
             with mx.autograd.record():
                 verify_out = self.dense_layer(verifier_input)
                 ls = self.loss_function(verify_out, labels).mean()
@@ -148,8 +146,10 @@ class AnswerVerifyDense(object):
             nlp.utils.clip_grad_global_norm(self.params, 1)
             self.trainer.update(1)
 
+            print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode)) # debug
             if verbose:
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
+        exit(0)
     def evaluate(self):
         pass
 
