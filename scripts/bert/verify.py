@@ -114,21 +114,48 @@ class AnswerVerifyDense(object):
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
             num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
             # the sentence
-            sequence_tokens = features[0].tokens
-            sentence_ends_included = { i \
-                                        for i in range(len(sequence_tokens)) \
-                                        if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
-            sentence_ends_included.add(num_total_tokens - 2) # the ending
-            sentence_begins_included = {i + 1 for i in sentence_ends_included}
-            sentence_begins_included.remove(num_total_tokens - 1)
-            sentence_begins_included.remove(num_query_tokens + 1)
-            sentence_begins_included.add(1)
-            sentence_begins_included.add(num_query_tokens + 2)
-            begin_idxs = sorted(list(sentence_begins_included))
-            end_idxs = sorted(list(sentence_ends_included))
-            print(begin_idxs)
-            print(end_idxs)
-            exit(0)
+            if num_answr_tokens == 0:
+                sentence_idx = (num_query_tokens + 2, num_contx_tokens + num_query_tokens + 2)
+                num_sentc_tokens = num_contx_tokens
+            else:
+                sequence_tokens = features[0].tokens
+                sentence_ends_included = { i \
+                                            for i in range(len(sequence_tokens)) \
+                                            if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
+                sentence_ends_included.add(num_total_tokens - 2) # the ending
+                sentence_begins_included = {i + 1 for i in sentence_ends_included}
+                sentence_begins_included.remove(num_total_tokens - 1)
+                sentence_begins_included.remove(num_query_tokens + 1)
+                sentence_begins_included.add(1)
+                sentence_begins_included.add(num_query_tokens + 2)
+                begin_idxs = sorted(list(sentence_begins_included))
+                end_idxs = sorted(list(sentence_ends_included))
+                for i in range(len(begin_idxs) - 1):
+                    if begin_idx[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
+                        sentence_begin = begin_idx[i]
+                        break 
+                for i in range(len(end_idxs) - 1):
+                    if end_idx[i] < prediction[1] and begin_idxs[i+1] >= prediction[1]:
+                        sentence_end = end_idxs[i]
+                sentence_idx = (sentence_begin, sentence_end)
+                num_sentc_tokens = sentence_end - sentence_begin + 1
+            # the beginning
+            verifier_input[idx, 0, :] = bert_out[idx, 0, :]
+            # the sentence embedding
+            verifier_input[idx, 1:num_sentc_tokens+1, :] = bert_out[idx, sentence_idx[0]:sentence_idx[1], :]
+            # the query embedding
+            verifier_input[idx, num_sentc_tokens+1: num_query_tokens+num_sentc_tokens+1, :] \
+                                = bert_out[idx, 1:num_query_tokens+1, :]
+            # the separater
+            verifier_input[idx, num_query_tokens+num_sentc_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
+            # the answer
+            if num_answr_tokens > 0:
+                verifier_input[idx, num_query_tokens+num_sentc_tokens+2:num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
+                                = bert_out[idx, prediction[0]:prediction[1]+1,:]
+            # the ending
+            verifier_input[idx, num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
+                                = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
+            '''
             # the beginning
             verifier_input[idx, 0, :] = bert_out[idx, 0, :]
             # the context embedding
@@ -145,6 +172,7 @@ class AnswerVerifyDense(object):
             # the ending
             verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
                                 = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
+            '''
             # the predicted answerability
             # labels_pred[idx] = answerable
         return verifier_input, labels
