@@ -149,7 +149,7 @@ class AnswerVerifyDense(object):
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
         
     def evaluate(self, dev_features, example_ids, out, token_types, bert_out):
-        data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
+        data = self.parse_sentences(dev_features, example_ids, out, token_types, bert_out)
         verifier_input, labels = data
         print(verifier_input)
         exit(0)
