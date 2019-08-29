@@ -275,7 +275,7 @@ def predict(features,
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
         nbest.append(
-            _NbestPrediction(text=features[0].doc_tokens[0], pred_start=0.0, pred_end=0.0))
+            _NbestPrediction(text='empty', pred_start=0.0, pred_end=0.0))
 
     assert len(nbest) >= 1
 
@@ -316,7 +316,6 @@ def predict(features,
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-    # prediction = nbest_json[0][0]
     return prediction, answerable, nbest_json
 
 

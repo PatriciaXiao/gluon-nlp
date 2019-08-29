@@ -217,13 +217,13 @@ parser.add_argument('--apply_self_attention', action='store_true', default=False
 
 parser.add_argument('--null_score_diff_threshold',
                     type=float,
-                    default=-2.0,
+                    default=0.0,
                     help='If null_score - best_non_null is greater than the threshold predict null.'
-                    'Typical values are between -1.0 and -5.0. default is -2.0')
+                    'default is 0.0')
 
 parser.add_argument('--answerable_threshold',
                     type=float,
-                    default=-0.5,
+                    default=0.5,
                     help='If unanswerable - between 0 and 1, 0.5 by default.')
 
 parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
