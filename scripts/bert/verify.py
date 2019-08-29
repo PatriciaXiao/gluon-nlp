@@ -353,7 +353,8 @@ class AnswerVerify(object):
                         break
             else:
                 sentence_text = random.choice(sentences)
-                answer_text = random.choice(sentence_text.split())
+                #answer_text = random.choice(sentence_text.split())
+                answer_text = context_text
             # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
             # raw_data.append([question_text, answer_text, label])
             first_part = sentence_text + ' ' + question_text
