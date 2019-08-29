@@ -271,6 +271,7 @@ def predict(features,
                     text='',
                     pred_start=null_pred_start,
                     pred_end=null_pred_end))
+    
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
@@ -278,6 +279,7 @@ def predict(features,
             _NbestPrediction(text='empty', pred_start=0.0, pred_end=0.0))
 
     assert len(nbest) >= 1
+    
 
     total_scores = []
     best_non_null_entry = None
@@ -303,6 +305,7 @@ def predict(features,
 
     if not version_2:
         prediction = nbest_json[0][0]
+        # prediction = best_non_null_entry.text
         answerable = 1.0
     else:
         prediction = best_non_null_entry.text
