@@ -229,6 +229,9 @@ parser.add_argument('--answerable_threshold',
 parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
                     help='the id of the verifier to use')
 
+parser.add_argument('--extract_sentence', action='store_true', default=False,
+                    help='extracting sentence and use [S;Q;$;A] in verifier')
+
 args = parser.parse_args()
 
 verify = args.verifier is not None
@@ -371,7 +374,8 @@ if verify:
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
                     version_2=version_2,
-                    ctx=verify_ctx) # debug: to be moved onto another GPU latter if space issue happens
+                    ctx=verify_ctx,
+                    extract_sentence=args.extract_sentence) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerifyDense(
                     max_answer_length=max_answer_length,
@@ -380,6 +384,7 @@ if verify:
                     max_len=max_seq_length,
                     in_units=BERT_DIM[args.bert_model],
                     version_2=version_2,
+                    extract_sentence=args.extract_sentence,
                     ctx=verify_ctx)
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))

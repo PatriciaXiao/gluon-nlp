@@ -51,6 +51,7 @@ class AnswerVerifyDense(object):
                 in_units=768,
                 version_2=True,
                 mode='classification',
+                extract_sentence=True,
                 ctx=mx.cpu(),
                 prefix=None,
                 params=None):
@@ -74,6 +75,7 @@ class AnswerVerifyDense(object):
         # the trainer's definition
         self.lr = 3e-5
         self.eps = 5e-9
+        self.extract_sentence = extract_sentence
         self.trainer = mx.gluon.Trainer(self.dense_layer.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
         self.params = [p for p in self.dense_layer.collect_params().values() if p.grad_req != 'null']
@@ -113,73 +115,73 @@ class AnswerVerifyDense(object):
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
             num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
-            # the sentence
-            if num_answr_tokens == 0:
-                sentence_idx = (num_query_tokens + 2, num_contx_tokens + num_query_tokens + 2)
-                num_sentc_tokens = num_contx_tokens
+
+            if self.extract_sentence:
+                # the sentence
+                if num_answr_tokens == 0:
+                    sentence_idx = (num_query_tokens + 2, num_contx_tokens + num_query_tokens + 2)
+                    num_sentc_tokens = num_contx_tokens
+                else:
+                    sentence_begin = num_query_tokens + 2
+                    sentence_end = num_contx_tokens + num_query_tokens + 2
+                    sequence_tokens = features[0].tokens
+                    sentence_ends_included = { i \
+                                                for i in range(len(sequence_tokens)) \
+                                                if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
+                    sentence_ends_included.add(num_total_tokens - 2) # the ending
+                    sentence_begins_included = {i + 1 for i in sentence_ends_included}
+                    if num_total_tokens - 1 in sentence_begins_included:
+                        sentence_begins_included.remove(num_total_tokens - 1)
+                    if num_query_tokens + 1 in sentence_begins_included:
+                        sentence_begins_included.remove(num_query_tokens + 1)
+                    sentence_begins_included.add(1)
+                    sentence_begins_included.add(num_query_tokens + 2)
+                    begin_idxs = sorted(list(sentence_begins_included))
+                    end_idxs = sorted(list(sentence_ends_included))
+                    for i in range(len(begin_idxs) - 1):
+                        if begin_idxs[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
+                            sentence_begin = begin_idxs[i]
+                            break 
+                    for i in range(len(end_idxs) - 1):
+                        if end_idxs[i] < prediction[1] and end_idxs[i+1] >= prediction[1]:
+                            sentence_end = end_idxs[i+1]
+                            break
+                    sentence_idx = (sentence_begin, sentence_end)
+                    num_sentc_tokens = sentence_end - sentence_begin + 1
+                # the beginning
+                verifier_input[idx, 0, :] = bert_out[idx, 0, :]
+                # the sentence embedding
+                verifier_input[idx, 1:num_sentc_tokens+1, :] = bert_out[idx, sentence_idx[0]:sentence_idx[1]+1, :]
+                # the query embedding
+                verifier_input[idx, num_sentc_tokens+1: num_query_tokens+num_sentc_tokens+1, :] \
+                                    = bert_out[idx, 1:num_query_tokens+1, :]
+                # the separater
+                verifier_input[idx, num_query_tokens+num_sentc_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
+                # the answer
+                if num_answr_tokens > 0:
+                    verifier_input[idx, num_query_tokens+num_sentc_tokens+2:num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
+                                    = bert_out[idx, prediction[0]:prediction[1]+1,:]
+                # the ending
+                verifier_input[idx, num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
+                                    = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
             else:
-                sentence_begin = num_query_tokens + 2
-                sentence_end = num_contx_tokens + num_query_tokens + 2
-                sequence_tokens = features[0].tokens
-                sentence_ends_included = { i \
-                                            for i in range(len(sequence_tokens)) \
-                                            if sequence_tokens[i].find('.') != -1 or sequence_tokens[i].find('?') != -1 or sequence_tokens[i].find('!') != -1}
-                sentence_ends_included.add(num_total_tokens - 2) # the ending
-                sentence_begins_included = {i + 1 for i in sentence_ends_included}
-                if num_total_tokens - 1 in sentence_begins_included:
-                    sentence_begins_included.remove(num_total_tokens - 1)
-                if num_query_tokens + 1 in sentence_begins_included:
-                    sentence_begins_included.remove(num_query_tokens + 1)
-                sentence_begins_included.add(1)
-                sentence_begins_included.add(num_query_tokens + 2)
-                begin_idxs = sorted(list(sentence_begins_included))
-                end_idxs = sorted(list(sentence_ends_included))
-                for i in range(len(begin_idxs) - 1):
-                    if begin_idxs[i] <= prediction[0] and begin_idxs[i+1] > prediction[0]:
-                        sentence_begin = begin_idxs[i]
-                        break 
-                for i in range(len(end_idxs) - 1):
-                    if end_idxs[i] < prediction[1] and end_idxs[i+1] >= prediction[1]:
-                        sentence_end = end_idxs[i+1]
-                        break
-                sentence_idx = (sentence_begin, sentence_end)
-                num_sentc_tokens = sentence_end - sentence_begin + 1
-            # the beginning
-            verifier_input[idx, 0, :] = bert_out[idx, 0, :]
-            # the sentence embedding
-            verifier_input[idx, 1:num_sentc_tokens+1, :] = bert_out[idx, sentence_idx[0]:sentence_idx[1]+1, :]
-            # the query embedding
-            verifier_input[idx, num_sentc_tokens+1: num_query_tokens+num_sentc_tokens+1, :] \
-                                = bert_out[idx, 1:num_query_tokens+1, :]
-            # the separater
-            verifier_input[idx, num_query_tokens+num_sentc_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
-            # the answer
-            if num_answr_tokens > 0:
-                verifier_input[idx, num_query_tokens+num_sentc_tokens+2:num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
-                                = bert_out[idx, prediction[0]:prediction[1]+1,:]
-            # the ending
-            verifier_input[idx, num_answr_tokens+num_query_tokens+num_sentc_tokens+2, :] \
-                                = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
-            '''
-            # the beginning
-            verifier_input[idx, 0, :] = bert_out[idx, 0, :]
-            # the context embedding
-            verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
-            # the query embedding
-            verifier_input[idx, num_contx_tokens+1: num_query_tokens+num_contx_tokens+1, :] \
-                                = bert_out[idx, 1:num_query_tokens+1, :]
-            # the separater
-            verifier_input[idx, num_query_tokens+num_contx_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
-            # the answer
-            if num_answr_tokens > 0:
-                verifier_input[idx, num_query_tokens+num_contx_tokens+2:num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
-                                = bert_out[idx, prediction[0]:prediction[1]+1,:]
-            # the ending
-            verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
-                                = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
-            '''
-            # the predicted answerability
-            # labels_pred[idx] = answerable
+                # the beginning
+                verifier_input[idx, 0, :] = bert_out[idx, 0, :]
+                # the context embedding
+                verifier_input[idx, 1:num_contx_tokens+1, :] = bert_out[idx, num_query_tokens + 2: num_contx_tokens + num_query_tokens + 2, :]
+                # the query embedding
+                verifier_input[idx, num_contx_tokens+1: num_query_tokens+num_contx_tokens+1, :] \
+                                    = bert_out[idx, 1:num_query_tokens+1, :]
+                # the separater
+                verifier_input[idx, num_query_tokens+num_contx_tokens+1, :] = bert_out[idx, num_query_tokens+1, :]
+                # the answer
+                if num_answr_tokens > 0:
+                    verifier_input[idx, num_query_tokens+num_contx_tokens+2:num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
+                                    = bert_out[idx, prediction[0]:prediction[1]+1,:]
+                # the ending
+                verifier_input[idx, num_answr_tokens+num_query_tokens+num_contx_tokens+2, :] \
+                                    = bert_out[idx, num_query_tokens + num_contx_tokens+2, :]
+                # the predicted answerability
         return verifier_input, labels
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
@@ -219,6 +221,7 @@ class AnswerVerify(object):
                 n_best_size=20,
                 max_len=384,
                 version_2=True,
+                extract_sentence=True,
                 ctx=mx.cpu()):
         self.tokenizer=tokenizer
         self.max_answer_length=max_answer_length
@@ -239,6 +242,8 @@ class AnswerVerify(object):
         self.lr = 5e-6
         self.eps = 1e-9
         self.batch_size = 2
+
+        self.extract_sentence = extract_sentence
 
         self.get_model(ctx)
         self.get_loss()
@@ -377,38 +382,37 @@ class AnswerVerify(object):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
             label = 0 if features[0].is_impossible else 1
-            # if features[0].is_impossible:
-            #     prediction = ""
-            '''
-            prediction, _ = predict( # TODO: use this more wisely, for example, GAN
-                features=features,
-                results=results,
-                tokenizer=self.tokenizer,
-                max_answer_length=self.max_answer_length,
-                null_score_diff_threshold=self.null_score_diff_threshold,
-                n_best_size=self.n_best_size,
-                version_2=self.version_2)
-            '''
-            context_text = ' '.join(features[0].doc_tokens)
-            sentences = context_text.strip
-            question_text = features[0].question_text
-            answer_text = features[0].orig_answer_text
-            sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-            if label == 1:
-                sentence_text = ''
-                for s in sentences:
-                    if s.find(answer_text) != -1:
-                        sentence_text = s
-                        break
+            if self.extract_sentence:
+                context_text = ' '.join(features[0].doc_tokens)
+                sentences = context_text.strip
+                question_text = features[0].question_text
+                answer_text = features[0].orig_answer_text
+                sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
+                if label == 1:
+                    sentence_text = ''
+                    for s in sentences:
+                        if s.find(answer_text) != -1:
+                            sentence_text = s
+                            break
+                else:
+                    sentence_text = random.choice(sentences)
+                    #answer_text = random.choice(sentence_text.split())
+                    answer_text = context_text
+                
+                first_part = sentence_text + ' ' + question_text
+                second_part = answer_text
+                raw_data.append([first_part, second_part, label])
             else:
-                sentence_text = random.choice(sentences)
-                #answer_text = random.choice(sentence_text.split())
-                answer_text = context_text
-            # raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
-            # raw_data.append([question_text, answer_text, label])
-            first_part = sentence_text + ' ' + question_text
-            second_part = answer_text
-            raw_data.append([first_part, second_part, label])
+                prediction, _ = predict( # TODO: use this more wisely, for example, GAN
+                    features=features,
+                    results=results,
+                    tokenizer=self.tokenizer,
+                    max_answer_length=self.max_answer_length,
+                    null_score_diff_threshold=self.null_score_diff_threshold,
+                    n_best_size=self.n_best_size,
+                    version_2=self.version_2)
+                raw_data.append([question_text, prediction, label]) # TODO: might should use whole context if answer not available
+                raw_data.append([question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
 
