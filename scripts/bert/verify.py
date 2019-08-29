@@ -145,13 +145,12 @@ class AnswerVerifyDense(object):
             self.trainer.allreduce_grads()
             nlp.utils.clip_grad_global_norm(self.params, 1)
             self.trainer.update(1)
-
-            print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode)) # debug
             if verbose:
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
+        
+    def evaluate(self, dev_features, example_ids, out, token_types, bert_out):
+        print("evaluate")
         exit(0)
-    def evaluate(self):
-        pass
 
 
 class AnswerVerify(object):

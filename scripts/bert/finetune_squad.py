@@ -581,7 +581,8 @@ def evaluate():
                   token_types.astype('float32').as_in_context(ctx),
                   valid_length.astype('float32').as_in_context(ctx))
         
-        # if verifier 2: has_answer_tmp = verifier.evaluate(...).asnumpy().tolist()
+        if all_pre_na_prob is not None:
+            has_answer_tmp = verifier.evaluate(dev_features, example_ids, out, token_types, bert_out).asnumpy().tolist()
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
