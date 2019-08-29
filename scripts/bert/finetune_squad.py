@@ -372,6 +372,7 @@ if verify:
                     null_score_diff_threshold=null_score_diff_threshold,
                     n_best_size=n_best_size,
                     max_len=max_seq_length,
+                    in_units=BERT_DIM[args.bert_model],
                     version_2=version_2,
                     ctx=verify_ctx)
     else:

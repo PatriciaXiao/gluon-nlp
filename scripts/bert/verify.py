@@ -26,19 +26,68 @@ class VerifierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+class verifier_layers(Block):
+    def __init__(self, dropout=0.0, num_classes=2, in_units=768, prefix=None, params=None):
+        super(verifier_layers, self).__init__(prefix=prefix, params=params)
+        with self.name_scope():
+            self.classifier = nn.HybridSequential(prefix=prefix)
+            self.classifier.add(nn.Dense(units=in_units, flatten=False, activation='tanh'))
+            if dropout:
+                self.classifier.add(nn.Dropout(rate=dropout))
+            self.classifier.add(nn.Dense(units=num_classes))
+    def forward(self, inputs):
+        '''
+        inputs are bert outputs
+        '''
+        return self.classifier(inputs)
+
 class AnswerVerifyDense(object):
     def __init__(self,
                 max_answer_length=30,
                 null_score_diff_threshold=-2.0,
                 n_best_size=20,
                 max_len=384,
+                dropout=0.0,
+                in_units=768,
                 version_2=True,
-                ctx=mx.cpu()):
+                mode='classification',
+                ctx=mx.cpu(),
+                prefix=None,
+                params=None):
         self.max_answer_length=max_answer_length
         self.null_score_diff_threshold=null_score_diff_threshold
         self.n_best_size=n_best_size
         self.version_2=version_2
         self.ctx = ctx
+        self.mode = mode
+        assert mode in ['classification', 'regression']
+        self.num_classes = 2 if mode == 'classification' else 1
+
+        # the model's definition
+        self.dense_layer = verifier_layers(dropout=dropout, 
+                                        num_classes=self.num_classes, 
+                                        in_units=in_units, 
+                                        prefix=prefix, 
+                                        params=params)
+        self.dense_layer.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
+
+        # the trainer's definition
+        self.lr = 3e-5
+        self.eps = 5e-9
+        self.trainer = mx.gluon.Trainer(self.dense_layer.collect_params(), 'adam',
+                           {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+        self.params = [p for p in self.dense_layer.collect_params().values() if p.grad_req != 'null']
+
+        # loss function
+        self.loss_function = self.get_loss()
+        self.loss_function.hybridize(static_alloc=True)
+
+    def get_loss(self):
+        if self.num_classes == 1:
+            return mx.gluon.loss.L2Loss()
+        elif self.num_classes == 2:
+            return mx.gluon.loss.SoftmaxCELoss()
+
     def parse_sentences(self, train_features, example_ids, out, token_types, bert_out):
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
