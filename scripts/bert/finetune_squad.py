@@ -351,6 +351,7 @@ net = BertForQA(bert=bert, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
     apply_self_attention=args.apply_self_attention,
     apply_transformer=args.apply_transformer)
+additional_params = net.span_classifier.collect_params()
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -368,12 +369,15 @@ else:
 
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
+    additional_params.update(net.co_attention.collect_params())
 
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)
+    additional_params.update(net.multi_head_attention.collect_params())
 
 if args.apply_transformer:
     net.transformer.collect_params().initialize(ctx=ctx)
+    additional_params.update(net.transformer.collect_params())
 
 net.hybridize(static_alloc=True)
 
@@ -449,13 +453,7 @@ def train():
     optimizer_params = {'learning_rate': lr}
 
     if args.freeze_bert:
-        trainable_params = net.span_classifier.collect_params()
-        if args.apply_coattention:
-            trainable_params.update(net.co_attention.collect_params())
-        if args.apply_self_attention:
-            trainable_params.update(net.multi_head_attention.collect_params())
-        if args.apply_transformer:
-            trainable_params.update(net.transformer.collect_params())
+        trainable_params = additional_params
     else:
         trainable_params = net.collect_params()
 
@@ -661,7 +659,7 @@ def evaluate():
                     has_ans_prob_list = all_pre_na_prob[features[0].example_id]
                     has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
                 answerable = answerable * has_ans_prob
-                
+
         if answerable < answerable_threshold:
             prediction = ""
 
