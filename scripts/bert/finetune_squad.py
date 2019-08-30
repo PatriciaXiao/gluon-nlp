@@ -653,18 +653,17 @@ def evaluate():
             version_2=version_2)
 
         # verifier
-        if verify:
-            if VERIFIER_ID == 1:
-                has_ans_prob = verifier.evaluate(features, prediction)
-            elif VERIFIER_ID == 2:
-                has_ans_prob_list = all_pre_na_prob[features[0].example_id]
-                has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
-            answerable = (answerable + has_ans_prob) / 2.
-
-
+        if prediction != '':
+            if verify:
+                if VERIFIER_ID == 1:
+                    has_ans_prob = verifier.evaluate(features, prediction)
+                elif VERIFIER_ID == 2:
+                    has_ans_prob_list = all_pre_na_prob[features[0].example_id]
+                    has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
+                answerable = answerable * has_ans_prob
+                
         if answerable < answerable_threshold:
             prediction = ""
-
 
         all_predictions[example_qas_id] = prediction
         # the form of hashkey - answer string
