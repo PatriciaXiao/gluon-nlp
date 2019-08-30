@@ -405,7 +405,7 @@ class AnswerVerify(object):
                 else:
                     sentence_text = random.choice(sentences)
                     prediction = random.choice(sentence_text.split())
-                first_sentence = sentence_text + ' ' + question_text
+                first_part = sentence_text + ' ' + question_text
                 raw_data.append([first_part, prediction, label])
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
