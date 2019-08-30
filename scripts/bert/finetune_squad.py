@@ -215,6 +215,9 @@ parser.add_argument('--apply_coattention', action='store_true', default=False,
 parser.add_argument('--apply_self_attention', action='store_true', default=False,
                     help='apply self-attention to BERT\' output')
 
+parser.add_argument('--apply_transformer', action='store_true', default=False,
+                    help='apply transformer to BERT\' output')
+
 parser.add_argument('--null_score_diff_threshold',
                     type=float,
                     default=0.0,
@@ -338,7 +341,8 @@ BERT_DIM = {
 net = BertForQA(bert=bert, \
     add_query=args.add_query, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
-    apply_self_attention=args.apply_self_attention)
+    apply_self_attention=args.apply_self_attention,
+    apply_transformer=args.apply_transformer)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -359,6 +363,9 @@ if args.apply_coattention:
 
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)
+
+if args.apply_transformer:
+    net.transformer.collect_params().initialize(ctx=ctx)
 
 net.hybridize(static_alloc=True)
 
