@@ -262,6 +262,7 @@ class BertForQA(Block):
             # option 2: get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
+            print(context_mask.shape)
             print(mx.nd.ones(context_mask[:,0].shape))
             context_mask[:,0] = mx.nd.ones(context_mask[:,0].shape)
             
