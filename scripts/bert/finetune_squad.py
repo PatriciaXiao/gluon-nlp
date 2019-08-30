@@ -449,9 +449,9 @@ def train():
     optimizer_params = {'learning_rate': lr}
 
     if args.freeze_bert:
-        trainable_params = net.collect_params()
-        print(trainable_params | trainable_params)
+        trainable_params = net.span_classifier.collect_params()
         print(trainable_params)
+        print(trainable_params.update(trainable_params))
         exit(0)
     else:
         trainable_params = net.collect_params()
