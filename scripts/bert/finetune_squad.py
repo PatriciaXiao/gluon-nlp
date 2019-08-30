@@ -238,6 +238,9 @@ parser.add_argument('--extract_sentence', action='store_true', default=False,
 parser.add_argument('--save_params', action='store_true', default=False,
                     help='save parameters')
 
+parser.add_argument('--freeze_bert', action='store_true', default=False,
+                    help='not finetuning bert parameters, only finetuning the rest parts.')
+
 args = parser.parse_args()
 
 verify = args.verifier is not None
@@ -444,14 +447,17 @@ def train():
     log.info('Start Training')
 
     optimizer_params = {'learning_rate': lr}
+
+    trainable_params = net.collect_params()
+
     try:
-        trainer = mx.gluon.Trainer(net.collect_params(), optimizer,
+        trainer = mx.gluon.Trainer(trainable_params, optimizer,
                                    optimizer_params, update_on_kvstore=False)
     except ValueError as e:
         print(e)
         warnings.warn('AdamW optimizer is not found. Please consider upgrading to '
                       'mxnet>=1.5.0. Now the original Adam optimizer is used instead.')
-        trainer = mx.gluon.Trainer(net.collect_params(), 'adam',
+        trainer = mx.gluon.Trainer(trainable_params, 'adam',
                                    optimizer_params, update_on_kvstore=False)
 
     num_train_examples = len(train_data_transform)
@@ -465,7 +471,7 @@ def train():
         # set grad to zero for gradient accumulation
         if accumulate:
             if batch_id % accumulate == 0:
-                net.collect_params().zero_grad()
+                trainable_params.zero_grad()
                 step_num += 1
         else:
             step_num += 1
@@ -485,7 +491,7 @@ def train():
     for _, v in net.collect_params('.*beta|.*gamma|.*bias').items():
         v.wd_mult = 0.0
     # Collect differentiable parameters
-    params = [p for p in net.collect_params().values()
+    params = [p for p in trainable_params.values()
               if p.grad_req != 'null']
     # Set grad_req if gradient accumulation is required
     if accumulate:
