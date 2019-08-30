@@ -270,7 +270,7 @@ test_batch_size = args.test_batch_size
 lr = args.lr
 
 ctx = mx.cpu() if args.gpu is None else mx.gpu(args.gpu)
-verify_ctx = ctx if args.verify_gpu is None else mx.gpu(args.gpu)
+verify_ctx = ctx if args.verify_gpu is None else mx.gpu(args.verify_gpu)
 
 accumulate = args.accumulate
 log_interval = args.log_interval * accumulate if accumulate else args.log_interval
