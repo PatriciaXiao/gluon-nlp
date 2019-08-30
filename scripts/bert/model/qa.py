@@ -267,8 +267,6 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
             cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
             context_mask = mx.nd.add(context_mask, cls_mask)
-            print(context_mask)
-            exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
