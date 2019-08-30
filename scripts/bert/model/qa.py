@@ -282,6 +282,8 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            # the digit useful for no-answer-detection
+            attended_output[:,0,:bert_output.shape[2]] = bert_output[:,0,:]
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
