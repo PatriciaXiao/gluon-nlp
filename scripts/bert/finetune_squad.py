@@ -450,7 +450,8 @@ def train():
 
     if args.freeze_bert:
         trainable_params = net.collect_params()
-        print(type(trainable_params))
+        print(trainable_params | trainable_params)
+        print(trainable_params)
         exit(0)
     else:
         trainable_params = net.collect_params()
