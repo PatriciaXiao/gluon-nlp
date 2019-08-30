@@ -450,8 +450,12 @@ def train():
 
     if args.freeze_bert:
         trainable_params = net.span_classifier.collect_params()
-        print(trainable_params)
-        trainable_params.update(trainable_params)
+        if args.apply_coattention:
+            trainable_params.update(net.co_attention.collect_params())
+        if args.apply_self_attention:
+            trainable_params.update(net.multi_head_attention.collect_params())
+        if args.apply_transformer:
+            trainable_params.update(net.transformer.collect_params())
         print(trainable_params)
         exit(0)
     else:
