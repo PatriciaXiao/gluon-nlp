@@ -436,30 +436,17 @@ def predict_span(features,
                 end_index=0))
 
     assert len(nbest) >= 1
-
-    total_scores = []
+    
     best_non_null_entry = nbest[0]
-    for entry in nbest:
-        total_scores.append(entry.pred_start + entry.pred_end)
-
-    probs = nd.softmax(nd.array(total_scores)).asnumpy()
-
-    nbest_json = []
-
-    for (i, entry) in enumerate(nbest):
-        nbest_json.append(((entry.start_index, entry.end_index), float(probs[i])))
-
-    prediction = nbest_json[0][0]
+    prediction = (nbest[0].start_index, nbest[0].end_index)
     if version_2:
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
             best_non_null_entry.pred_end
         if score_diff > null_score_diff_threshold:
             answerable = 0.0
-            # prediction = (null_pred_start_index, null_pred_end_index)
         else:
             answerable = 1.0
-            # prediction = (best_non_null_entry.start_index, best_non_null_entry.end_index)
     else:
         answerable = 1.0
     return prediction, answerable, nbest_json

@@ -104,7 +104,7 @@ class AnswerVerifyDense(object):
             example_id, start, end, token = data
             results = [PredResult(start=start, end=end)]
             features = all_features[example_id]
-            prediction, answerable, _ = predict_span( # TODO: use this more wisely, for example, GAN
+            prediction, _, _ = predict_span(
                 features=features,
                 results=results,
                 max_answer_length=self.max_answer_length,
@@ -114,7 +114,7 @@ class AnswerVerifyDense(object):
             num_total_tokens = len(features[0].tokens)
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
             num_contx_tokens = num_total_tokens - num_query_tokens - 3
-            num_answr_tokens = 0 if prediction[0] < 0 else prediction[1] - prediction[0] + 1
+            num_answr_tokens = prediction[1] - prediction[0] + 1
 
             if self.extract_sentence:
                 # the sentence
