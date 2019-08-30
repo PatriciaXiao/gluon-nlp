@@ -451,7 +451,8 @@ def train():
     if args.freeze_bert:
         trainable_params = net.span_classifier.collect_params()
         print(trainable_params)
-        print(trainable_params.update(trainable_params))
+        trainable_params.update(trainable_params)
+        print(trainable_params)
         exit(0)
     else:
         trainable_params = net.collect_params()
