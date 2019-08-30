@@ -253,9 +253,11 @@ def predict(features,
                 continue
 
             seen_predictions[final_text] = True
+        '''
         else:
             final_text = ''
             seen_predictions[final_text] = True
+        '''
 
         nbest.append(
             _NbestPrediction(
