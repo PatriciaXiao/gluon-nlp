@@ -325,7 +325,6 @@ def predict(features,
 def predict_span(features,
             results,
             max_answer_length=64,
-            null_score_diff_threshold=0.0,
             n_best_size=10,
             version_2=False):
     """Get prediction results.
@@ -338,8 +337,6 @@ def predict_span(features,
         List of model predictions for span start and span end.
     max_answer_length: int, default 64
         Maximum length of the answer tokens.
-    null_score_diff_threshold: float, default 0.0
-        If null_score - best_non_null is greater than the threshold predict null.
     n_best_size: int, default 10
         The total number of n-best predictions.
     version_2: bool, default False
@@ -363,25 +360,9 @@ def predict_span(features,
     prelim_predictions = []
     score_diff = None
 
-    score_null = 1000000  # large and positive
-    min_null_feature_index = 0  # the paragraph slice with min null score
-    null_pred_start = 0  # the start logit at the slice with min null score
-    null_pred_end = 0  # the end logit at the slice with min null score
-    null_pred_start_index = -1
-    null_pred_end_index = -1
-
     for features_id, (result, feature) in enumerate(zip(results, features)):
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
-
-        if version_2:
-            feature_null_score = result.start[0] + \
-                result.end[0]
-            if feature_null_score < score_null:
-                score_null = feature_null_score
-                min_null_feature_index = features_id
-                null_pred_start = result.start[0]
-                null_pred_end = result.end[0]
 
         for start_index in start_indexes:
             for end_index in end_indexes:
@@ -436,20 +417,10 @@ def predict_span(features,
                 end_index=0))
 
     assert len(nbest) >= 1
-    
+
     best_non_null_entry = nbest[0]
     prediction = (nbest[0].start_index, nbest[0].end_index)
-    if version_2:
-        # predict '' iff (the null score - the score of best non-null) > threshold
-        score_diff = score_null - best_non_null_entry.pred_start - \
-            best_non_null_entry.pred_end
-        if score_diff > null_score_diff_threshold:
-            answerable = 0.0
-        else:
-            answerable = 1.0
-    else:
-        answerable = 1.0
-    return prediction, answerable, nbest_json
+    return prediction
 
 
 def predict_original(features,
