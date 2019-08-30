@@ -265,7 +265,7 @@ class BertForQA(Block):
             # keep the [CLS] embedding that will latter be used as null threshold
             ones = mx.nd.ones((token_types.shape[0], 1))
             zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
-            cls_mask = mx.ndarray.concat(ones, zeros, dim=1)
+            cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
             context_mask = mx.nd.add(context_mask, cls_mask)
             print(context_mask)
             exit(0)
