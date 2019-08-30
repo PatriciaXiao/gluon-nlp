@@ -233,7 +233,10 @@ parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
                     help='the id of the verifier to use')
 
 parser.add_argument('--extract_sentence', action='store_true', default=False,
-                    help='extracting sentence and use [S;Q;$;A] in verifier')
+                    help='extracting sentence and use [S;Q;$;A] in verifier, instead of [C;Q;$;A]')
+
+parser.add_argument('--save_params', action='store_true', default=False,
+                    help='save parameters')
 
 args = parser.parse_args()
 
@@ -284,6 +287,8 @@ if accumulate:
 optimizer = args.optimizer
 warmup_ratio = args.warmup_ratio
 
+if args.save_params:
+    print("We will save the model parameters in {} at the end.".format(os.path.join(output_dir, 'net.params')))
 
 version_2 = args.version_2
 null_score_diff_threshold = args.null_score_diff_threshold
@@ -540,7 +545,8 @@ def train():
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
-    # net.save_parameters(os.path.join(output_dir, 'net.params'))
+    if args.save_params:
+        net.save_parameters(os.path.join(output_dir, 'net.params'))
 
 
 def evaluate():
