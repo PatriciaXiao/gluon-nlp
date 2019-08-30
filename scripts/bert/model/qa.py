@@ -286,8 +286,6 @@ class BertForQA(Block):
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
             attended_output, additional_outputs = self.transformer(bert_output)
-            print(attended_output)
-            exit(0)
         if self.add_query or self.apply_self_attention or self.apply_coattention or self.apply_transformer:
             output = self.span_classifier(attended_output)
         else:
