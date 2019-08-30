@@ -263,9 +263,8 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             print(context_mask)
-            exit(0)
             print(mx.nd.ones(context_mask[:,0].shape))
-            context_mask[:,0] = mx.nd.ones(context_mask[:,0].shape)
+            context_mask[:,0].add(mx.nd.ones(context_mask[:,0].shape))
             
             exit(0)
             query_mask = 1 - context_mask
