@@ -448,7 +448,12 @@ def train():
 
     optimizer_params = {'learning_rate': lr}
 
-    trainable_params = net.collect_params()
+    if args.freeze_bert:
+        trainable_params = net.collect_params()
+        print(trainable_params)
+        exit(0)
+    else:
+        trainable_params = net.collect_params()
 
     try:
         trainer = mx.gluon.Trainer(trainable_params, optimizer,
