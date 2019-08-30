@@ -29,6 +29,7 @@ from mxnet.ndarray import GridGenerator, BilinearSampler
 
 import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
+from gluonnlp.model.transformer import TransformerEncoder
 
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
@@ -175,11 +176,13 @@ class BertForQA(Block):
                     n_rnn_layers=0, rnn_hidden_size=200, n_dense_layers=0, units_dense=200, \
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
-                    apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4):
+                    apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
+                    apply_transformer=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.apply_self_attention = apply_self_attention
+        self.apply_transformer = apply_transformer
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
@@ -190,6 +193,9 @@ class BertForQA(Block):
             with self.name_scope():
                 self.multi_head_attention = MultiHeadAttentionCell(DotProductAttentionCell(), \
                         self_attention_dimension, self_attention_dimension, self_attention_dimension, n_attention_heads)
+        if self.apply_transformer:
+            with self.name_scope():
+                self.transformer = TransformerEncoder()
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
@@ -277,8 +283,10 @@ class BertForQA(Block):
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
         if self.apply_self_attention:
-            attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)            
-        if self.add_query or self.apply_self_attention or self.apply_coattention:
+            attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
+        if self.apply_transformer:
+            attended_output = self.transformer(bert_output)
+        if self.add_query or self.apply_self_attention or self.apply_coattention or self.apply_transformer:
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)

@@ -384,25 +384,8 @@ class AnswerVerify(object):
             label = 0 if features[0].is_impossible else 1
             context_text = ' '.join(features[0].doc_tokens)
             question_text = features[0].question_text
-            answer_text = features[0].orig_answer_text
-            if self.extract_sentence:
-                sentences = context_text.strip
-                sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-                if label == 1:
-                    sentence_text = ''
-                    for s in sentences:
-                        if s.find(answer_text) != -1:
-                            sentence_text = s
-                            break
-                else:
-                    sentence_text = random.choice(sentences)
-                    answer_text = random.choice(sentence_text.split())
-                
-                first_part = sentence_text + ' ' + question_text
-                second_part = answer_text
-                raw_data.append([first_part, second_part, label])
-            else:
-                prediction, _, _ = predict( # TODO: use this more wisely, for example, GAN
+            # answer_text = features[0].orig_answer_text
+            prediction, _, _ = predict( # TODO: use this more wisely, for example, GAN
                     features=features,
                     results=results,
                     tokenizer=self.tokenizer,
@@ -410,8 +393,25 @@ class AnswerVerify(object):
                     null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
+            if self.extract_sentence:
+                sentences = context_text.strip
+                sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
+                if label == 1:
+                    sentence_text = ''
+                    for s in sentences:
+                        if s.find(prediction) != -1:
+                            sentence_text = s
+                            break
+                else:
+                    sentence_text = random.choice(sentences)
+                    answer_text = random.choice(sentence_text.split())
+                first_sentence = sentence_text + ' ' + question_text
+                raw_data.append([first_part, prediction, label])
+                raw_data.append([first_part, answer_text, label])
+            else:
                 raw_data.append([context_text + ' ' + question_text, prediction, label]) # TODO: might should use whole context if answer not available
-                raw_data.append([context_text + ' ' + question_text, answer_text, label])
+                if label == 1:
+                    raw_data.append([context_text + ' ' + question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
 
