@@ -262,6 +262,9 @@ class BertForQA(Block):
             # option 2: get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
+            context_mask[:,0] = mx.nd.ones(context_mask[:,0].shape)
+            print(context_mask)
+            exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
@@ -282,10 +285,6 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            # the digit useful for no-answer-detection
-            print(attended_output[:,0,:bert_output.shape[2]].shape)
-            print(bert_output[:,0,:].shape)
-            attended_output[:,0,:bert_output.shape[2]] = bert_output[:,0,:]
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
