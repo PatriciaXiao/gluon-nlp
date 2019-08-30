@@ -456,8 +456,6 @@ def train():
             trainable_params.update(net.multi_head_attention.collect_params())
         if args.apply_transformer:
             trainable_params.update(net.transformer.collect_params())
-        print(trainable_params)
-        exit(0)
     else:
         trainable_params = net.collect_params()
 
