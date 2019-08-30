@@ -249,13 +249,12 @@ def predict(features,
             orig_text = ' '.join(orig_tokens)
 
             final_text = get_final_text(tok_text, orig_text, tokenizer)
-            if final_text in seen_predictions:
-                continue
-
-            seen_predictions[final_text] = True
         else:
             final_text = ''
-            seen_predictions[final_text] = True
+        
+        if final_text in seen_predictions:
+            continue
+        seen_predictions[final_text] = True
 
         nbest.append(
             _NbestPrediction(
