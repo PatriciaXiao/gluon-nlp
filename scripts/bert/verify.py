@@ -104,11 +104,10 @@ class AnswerVerifyDense(object):
             example_id, start, end, token = data
             results = [PredResult(start=start, end=end)]
             features = all_features[example_id]
-            prediction, _, _ = predict_span(
+            prediction = predict_span(
                 features=features,
                 results=results,
                 max_answer_length=self.max_answer_length,
-                null_score_diff_threshold=self.null_score_diff_threshold,
                 n_best_size=self.n_best_size,
                 version_2=self.version_2)
             num_total_tokens = len(features[0].tokens)
