@@ -195,7 +195,7 @@ class BertForQA(Block):
                         self_attention_dimension, self_attention_dimension, self_attention_dimension, n_attention_heads)
         if self.apply_transformer:
             with self.name_scope():
-                self.transformer = TransformerEncoder()
+                self.transformer = TransformerEncoder(units=bert_out_dim)
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
