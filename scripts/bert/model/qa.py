@@ -262,10 +262,15 @@ class BertForQA(Block):
             # option 2: get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
+            # keep the [CLS] embedding that will latter be used as null threshold
+            ones = mx.nd.ones((token_types.shape[0], 1))
+            zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
+            print(ones, zeros)
+            exit(0)
+            cls_mask = mx.ndarray.concat(ones, zeros, dim=1)
             print(context_mask)
             print(mx.nd.ones(context_mask[:,0].shape))
             context_mask[:,0].add(mx.nd.ones(context_mask[:,0].shape))
-            
             exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
