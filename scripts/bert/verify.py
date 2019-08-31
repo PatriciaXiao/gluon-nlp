@@ -340,10 +340,10 @@ class AnswerVerify(object):
             label = 0 if feature.is_impossible else 1
             sentences = re.split(pattern, context_text)
             sentence_text = self.find_sentence(sentences, prediction)
-            raw_data.append([question_text, prediction, label])
             first_part = sentence_text + ' ' + question_text
             second_part = prediction
             raw_data.append([first_part, second_part, label])
+            print(first_part, second_part, label)
         dataset_raw = VerifierDataset(raw_data)
         dataset = dataset_raw.transform(self.transform)
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
