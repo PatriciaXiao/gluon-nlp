@@ -652,10 +652,8 @@ def evaluate():
             null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
-
-        print(prediction)
         # verifier
-        if prediction != '':
+        if True: #prediction != '':
             if verify:
                 if VERIFIER_ID == 1:
                     has_ans_prob = verifier.evaluate(features, prediction)

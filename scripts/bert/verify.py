@@ -339,13 +339,8 @@ class AnswerVerify(object):
             question_text = feature.question_text
             label = 0 if feature.is_impossible else 1
             sentences = re.split(pattern, context_text)
-            sentence_text = ''
-            if label == 1:
-                for s in sentences:
-                    if s.find(prediction) != -1:
-                        sentence_text = s
-                        break
-            # raw_data.append([question_text, prediction, label])
+            sentence_text = self.find_sentence(sentences, prediction)
+            raw_data.append([question_text, prediction, label])
             first_part = sentence_text + ' ' + question_text
             second_part = prediction
             raw_data.append([first_part, second_part, label])
