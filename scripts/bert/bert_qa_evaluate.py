@@ -173,8 +173,6 @@ def predict(features,
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
 
-        print(features_id)
-
         if version_2:
             feature_null_score = result.start[0] + \
                 result.end[0]
@@ -320,7 +318,6 @@ def predict(features,
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-    exit(0)
     return prediction, answerable, nbest_json
 
 
