@@ -396,14 +396,18 @@ class AnswerVerify(object):
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 sentence_text = self.find_sentence(sentences, prediction)
                 raw_data.append([sentence_text + ' ' + question_text, prediction, label])
+                '''
                 if label == 1:
                     answer_sentence = self.find_sentence(sentences, answer_text)
                     raw_data.append([answer_sentence + ' ' + question_text, answer_text, label])
+                '''
             else:
                 first_part = context_text + ' ' + question_text
                 raw_data.append([first_part, prediction, label]) # TODO: might should use whole context if answer not available
+                '''
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
+                '''
         dataset = VerifierDataset(raw_data)
         return dataset
 
