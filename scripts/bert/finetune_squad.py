@@ -653,6 +653,7 @@ def evaluate():
             n_best_size=n_best_size,
             version_2=version_2)
 
+        print(example_qas_id)
         # verifier
         if prediction != '':
             if verify:
