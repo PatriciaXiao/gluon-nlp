@@ -409,7 +409,10 @@ class AnswerVerify(object):
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
             else:
-                raw_data.append([context_text + ' ' + question_text, prediction, label]) # TODO: might should use whole context if answer not available
+                if len(prediction) == 0:
+                    prediction = random.choice(features[0].doc_tokens)
+                first_part = context_text + ' ' + question_text
+                raw_data.append([first_part, prediction, label]) # TODO: might should use whole context if answer not available
                 if label == 1:
                     raw_data.append([context_text + ' ' + question_text, answer_text, label])
         dataset = VerifierDataset(raw_data)
