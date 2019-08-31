@@ -340,10 +340,10 @@ class AnswerVerify(object):
             label = 0 if feature.is_impossible else 1
             sentences = re.split(pattern, context_text)
             sentence_text = self.find_sentence(sentences, prediction)
-            first_part = sentence_text + ' ' + question_text
+            first_part = sentence_text + '. ' + question_text
             second_part = prediction
             raw_data.append([first_part, second_part, label])
-            print(sentence_text)
+            print(prediction)
             print(question_text)
             print(feature.orig_answer_text)
         dataset_raw = VerifierDataset(raw_data)
@@ -391,14 +391,14 @@ class AnswerVerify(object):
             if self.extract_sentence:
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 sentence_text = self.find_sentence(sentences, prediction)
-                raw_data.append([sentence_text + ' ' + question_text, prediction, label])
+                raw_data.append([sentence_text + '. ' + question_text, prediction, label])
                 '''
                 if label == 1:
                     answer_sentence = self.find_sentence(sentences, answer_text)
                     raw_data.append([answer_sentence + ' ' + question_text, answer_text, label])
                 '''
             else:
-                first_part = context_text + ' ' + question_text
+                first_part = context_text + '. ' + question_text
                 raw_data.append([first_part, prediction, label]) # TODO: might should use whole context if answer not available
                 '''
                 if label == 1:
