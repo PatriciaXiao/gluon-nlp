@@ -232,6 +232,9 @@ parser.add_argument('--answerable_threshold',
 parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
                     help='the id of the verifier to use')
 
+parser.add_argument('--verifier_mode', type=str, default="joint", choices=["joint", "all", "takeover"],
+                    help='the id of the verifier to use')
+
 parser.add_argument('--extract_sentence', action='store_true', default=False,
                     help='extracting sentence and use [S;Q;$;A] in verifier, instead of [C;Q;$;A]')
 
@@ -658,7 +661,13 @@ def evaluate():
                 elif VERIFIER_ID == 2:
                     has_ans_prob_list = all_pre_na_prob[features[0].example_id]
                     has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
-                answerable = answerable * has_ans_prob
+
+                if args.verifier_mode == "takeover":
+                    answerable = has_ans_prob
+                elif args.verifier_mode == "joint":
+                    answerable = answerable * has_ans_prob
+                elif args.verifier_mode == "all":
+                    answerable = (answerable + has_ans_prob) * 0.5
 
         if answerable < answerable_threshold:
             prediction = ""
