@@ -240,7 +240,7 @@ class AnswerVerify(object):
 
         self.lr = 5e-6
         self.eps = 1e-9
-        self.batch_size = 12
+        self.batch_size = 3
 
         self.extract_sentence = extract_sentence
 
