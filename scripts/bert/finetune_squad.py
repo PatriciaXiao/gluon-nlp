@@ -654,6 +654,7 @@ def evaluate():
             version_2=version_2)
 
         # verifier
+        print("prediction:", prediction)
         if prediction != '':
             if verify:
                 if VERIFIER_ID == 1:
