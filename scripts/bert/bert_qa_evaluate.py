@@ -295,6 +295,8 @@ def predict(features,
                                     text='',
                                     pred_start=null_pred_start,
                                     pred_end=null_pred_end)
+        print(nbest)
+        exit(0)
 
     probs = nd.softmax(nd.array(total_scores)).asnumpy()
 

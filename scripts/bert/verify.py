@@ -394,7 +394,6 @@ class AnswerVerify(object):
             if self.extract_sentence:
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 sentence_text = self.find_sentence(sentences, prediction)
-                print(question_text, sentence_text, prediction)
                 raw_data.append([sentence_text + ' ' + question_text, prediction, label])
                 '''
                 if label == 1:
