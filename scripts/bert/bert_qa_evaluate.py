@@ -169,6 +169,7 @@ def predict(features,
     null_pred_start = 0  # the start logit at the slice with min null score
     null_pred_end = 0  # the end logit at the slice with min null score
 
+    # len(features) == len(results), normally 1
     for features_id, (result, feature) in enumerate(zip(results, features)):
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
