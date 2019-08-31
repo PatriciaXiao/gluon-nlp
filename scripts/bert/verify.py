@@ -392,7 +392,6 @@ class AnswerVerify(object):
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
             if self.extract_sentence:
-                sentences = context_text.strip
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 sentence_text = self.find_sentence(sentences, prediction)
                 raw_data.append([sentence_text + ' ' + question_text, prediction, label])
