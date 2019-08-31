@@ -281,7 +281,6 @@ class AnswerVerify(object):
         if not self.version_2:
             return
         dataset_raw = self.parse_sentences(train_features, example_ids, out)
-        # print(len(dataset_raw))
         dataset = dataset_raw.transform(self.transform)
 
         # The FixedBucketSampler and the DataLoader for making the mini-batches
