@@ -395,27 +395,28 @@ class AnswerVerify(object):
             if self.extract_sentence:
                 sentences = context_text.strip
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-                if len(prediction):
-                    sentence_text = ''
-                    for s in sentences:
-                        if s.find(prediction) != -1:
-                            sentence_text = s
-                            break
-                else:
-                    sentence_text = random.choice(sentences)
-                    prediction = random.choice(sentence_text.split())
-                first_part = sentence_text + ' ' + question_text
-                raw_data.append([first_part, prediction, label])
+                sentence_text = self.find_sentence(sentences, prediction)
+                raw_data.append([sentence_text + ' ' + question_text, prediction, label])
                 if label == 1:
-                    raw_data.append([first_part, answer_text, label])
+                    answer_sentence = self.find_sentence(sentences, answer_text)
+                    raw_data.append([answer_sentence + ' ' + question_text, answer_text, label])
             else:
-                if len(prediction) == 0:
-                    prediction = random.choice(features[0].doc_tokens)
                 first_part = context_text + ' ' + question_text
                 raw_data.append([first_part, prediction, label]) # TODO: might should use whole context if answer not available
                 if label == 1:
-                    raw_data.append([context_text + ' ' + question_text, answer_text, label])
+                    raw_data.append([first_part, answer_text, label])
         dataset = VerifierDataset(raw_data)
         return dataset
 
+    def find_sentence(self, sentences, target):
+        if len(target) == 0:
+            return random.choice(sentences)
+        sentence_text = ''
+        for s in sentences:
+            if s.find(target) != -1:
+                sentence_text = s
+                break
+        if len(sentence_text) == 0:
+            sentence_text = random.choice(sentences)
+        return sentence_text
 
