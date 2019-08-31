@@ -653,7 +653,7 @@ def evaluate():
             n_best_size=n_best_size,
             version_2=version_2)
         # verifier
-        if True: #prediction != '':
+        if prediction != '':
             if verify:
                 if VERIFIER_ID == 1:
                     has_ans_prob = verifier.evaluate(features, prediction)
