@@ -287,7 +287,7 @@ class AnswerVerify(object):
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=self.batch_size,
-                                                    num_buckets=1, # number of buckets (mini-batches), by default 10; 2 will cause oom
+                                                    num_buckets=1, # number of buckets (mini-batches), by default 10;
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
