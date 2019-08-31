@@ -568,7 +568,7 @@ def train():
 def evaluate():
     """Evaluate the model on validation dataset.
     """
-    log.info('Loading dev data...')
+    log.info('Loading dev data for evaluation...')
     if version_2:
         dev_data = SQuAD('dev', version='2.0')
     else:
@@ -654,7 +654,6 @@ def evaluate():
             version_2=version_2)
 
         # verifier
-        print("prediction:", prediction)
         if prediction != '':
             if verify:
                 if VERIFIER_ID == 1:
