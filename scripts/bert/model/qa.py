@@ -312,7 +312,8 @@ class BertForQALoss(Loss):
             weight=None, batch_axis=0, **kwargs)
         self.loss = loss.SoftmaxCELoss()
 
-    def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
+    # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
+    def forward(self, pred, label):  # pylint: disable=arguments-differ
         """
         Parameters
         ----------
@@ -327,6 +328,7 @@ class BertForQALoss(Loss):
         outputs : NDArray
             Shape (batch_size,)
         """
+        F = nd
         pred = F.split(pred, axis=2, num_outputs=2)
         start_pred = pred[0].reshape((0, -3))
         start_label = label[0]
