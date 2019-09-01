@@ -356,8 +356,7 @@ class BertForQALoss(Loss):
                 start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
                 end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
                 '''
-                if start_label[i, j] != 1:
-                    start_label[i, j] = 1. / (2 ** abs(j - start_label_idx[i].asscalar()) )
+                start_label[i, j] = 1. / (2 ** abs(j - start_label_idx[i].asscalar()) )
                 end_label[i, j] = 1. / (2 ** abs(j - end_label_idx[i].asscalar()))
             start_label[i, :] = start_label[i, :].softmax()
             end_label[i, :] = end_label[i, :].softmax()
