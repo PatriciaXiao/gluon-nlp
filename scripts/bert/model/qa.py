@@ -89,6 +89,7 @@ class CoAttention(Block):
             input tensor with shape `(batch_size, query_sequence_length)`
         context_max_len : int
         query_max_len : int
+        cls_emb_encoded : used for null-entry prediction
 
         Returns
         --------
@@ -281,7 +282,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len,
-                                                cls_emb_encoded=cls_emb_encoded)
+                                                cls_emb_encoded)
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
