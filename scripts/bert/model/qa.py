@@ -116,7 +116,7 @@ class CoAttention(Block):
             cls_added = cls_emb_encoded
         else:
             cls_added = 0
-        cls_added = 0 # debug
+        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
         return F.concat(context + cls_added, \
                         c2q + cls_added, \
                         context * c2q + cls_added, \
