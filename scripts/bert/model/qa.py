@@ -316,7 +316,7 @@ class BertForQALoss(Loss):
         self.loss = loss.SoftmaxCELoss(sparse_label=False)
 
     # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
-    def forward(self, pred, label):  # pylint: disable=arguments-differ
+    def forward(self, pred, label, customize_loss=False):  # pylint: disable=arguments-differ
         """
         Parameters
         ----------
@@ -350,18 +350,19 @@ class BertForQALoss(Loss):
         end_label_idx = end_label
         start_label = mx.ndarray.one_hot(start_label, seq_length)
         end_label = mx.ndarray.one_hot(end_label, seq_length)
-        for i in range(batch_size):
-            for j in range(seq_length):
-                '''
-                start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
-                end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
-                '''
-                if start_label[i, j] != 1:
-                    start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i].asscalar()) + 1.) )
-                if end_label[i, j] != 1:
-                    end_label[i, j] = 1. / (2 ** (abs(j - end_label_idx[i].asscalar()) + 1.) )
-        # start_label = start_label.softmax(axis=1) # too-----slow
-        # end_label = end_label.softmax(axis=1)
+        if customize_loss:
+            for i in range(batch_size):
+                for j in range(seq_length):
+                    '''
+                    start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
+                    end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
+                    '''
+                    if start_label[i, j] != 1:
+                        start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i].asscalar()) + 1.) )
+                    if end_label[i, j] != 1:
+                        end_label[i, j] = 1. / (2 ** (abs(j - end_label_idx[i].asscalar()) + 1.) )
+            # start_label = start_label.softmax(axis=1) # too-----slow
+            # end_label = end_label.softmax(axis=1)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
