@@ -310,7 +310,8 @@ class BertForQALoss(Loss):
     def __init__(self, weight=None, batch_axis=0, **kwargs):  # pylint: disable=unused-argument
         super(BertForQALoss, self).__init__(
             weight=None, batch_axis=0, **kwargs)
-        self.loss = loss.SoftmaxCELoss()
+        # self.loss = loss.SoftmaxCELoss()
+        self.loss = loss.SoftmaxCELoss(sparse_label=False)
 
     # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
     def forward(self, pred, label):  # pylint: disable=arguments-differ
