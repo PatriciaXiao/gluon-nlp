@@ -332,6 +332,9 @@ class BertForQALoss(Loss):
         start_label = label[0]
         end_pred = pred[1].reshape((0, -3))
         end_label = label[1]
+        print(start_label)
+        print(end_label)
+        exit(0)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
