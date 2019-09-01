@@ -113,10 +113,14 @@ class CoAttention(Block):
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
         if cls_emb_encoded is not None:
-            context_all = mx.nd.add(context, cls_emb_encoded)
+            cls_added = cls_emb_encoded
         else:
-            context_all = context
-        return F.concat(context_all, c2q, context * c2q, context * q2c, dim=-1), \
+            cls_added = 0
+        cls_added = 0 # debug
+        return F.concat(context + cls_added, \
+                        c2q + cls_added, \
+                        context * c2q + cls_added, \
+                        context * q2c + cls_added, dim=-1), \
                 F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
