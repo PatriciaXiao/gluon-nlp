@@ -232,7 +232,7 @@ class BertForQA(Block):
         if self.apply_coattention:
             #############################
             '''
-            # option 3: use exactly the QANet way
+            # option 1: use exactly the QANet way
             # not a good idea, this will cause index shift and thus cause bug
             # but if we are going to use QANet's method for modeling and extracting the output, it'll be fine to do so
             # so I just kept these lines here
@@ -274,18 +274,6 @@ class BertForQA(Block):
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
-            '''
-            # option 1: context and query differently masked but use the same values
-            # problem: almost the same with simply self-attention
-            context_mask = token_types
-            query_mask = 1 - context_mask
-            context_max_len = bert_output.shape[1]
-            query_max_len = bert_output.shape[1]
-            context_emb_encoded = bert_output
-            query_emb_encoded = bert_output
-            '''
-            # context_mask = context_mask[:,:context_max_len]
-            # query_mask = query_mask[:,:query_max_len]
             attended_output, query_attended = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
