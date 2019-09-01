@@ -109,8 +109,6 @@ class CoAttention(Block):
         similarity_dash = F.softmax(mask_logits(similarity, query_mask))
         similarity_dash_trans = F.transpose(F.softmax(
             mask_logits(similarity, context_mask), axis=1), axes=(0, 2, 1))
-        print(similarity_dash.shape, query.shape)
-        exit(0)
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
