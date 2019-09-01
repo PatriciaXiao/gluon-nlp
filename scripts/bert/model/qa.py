@@ -354,15 +354,8 @@ class BertForQALoss(Loss):
                 start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
                 end_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
                 '''
-                start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i].asscalar()) + 1.))
-                end_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i].asscalar()) + 1.))
-        print(start_label)
-        print(start_pred)
-        print(end_label)
-        print(end_pred)
-        print((self.loss(start_pred, start_label) + self.loss(
-            end_pred, end_label)))
-        exit(0)
+                start_label[i, j] = 1. / (2 ** abs(j - start_label_idx[i].asscalar()))
+                end_label[i, j] = 1. / (2 ** abs(j - start_label_idx[i].asscalar()))
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
