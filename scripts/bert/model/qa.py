@@ -335,6 +335,10 @@ class BertForQALoss(Loss):
         start_label = label[0]
         end_pred = pred[1].reshape((0, -3))
         end_label = label[1]
+        # standard way, equivalent with not adding these lines + set sparse_label = True
+        # start_label = mx.ndarray.one_hot(start_label, seq_length)
+        # end_label = mx.ndarray.one_hot(end_label, seq_length)
+
         # changed to a soft, non-sparse labeling system
         assert len(start_label) == len(end_label), "number of start labels doesn't match number of end labels."
         assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
@@ -342,14 +346,12 @@ class BertForQALoss(Loss):
         seq_length = start_pred.shape[1]
         start_label_idx = start_label
         start_label_idx = start_label
-        start_label = mx.ndarray.one_hot(start_label, seq_length)
-        end_label = mx.ndarray.one_hot(end_label, seq_length)
-        print(start_label_idx)
-        exit(0)
+        start_label = mx.nd.zeros(start_label, seq_length)
+        end_label = mx.nd.zeros(end_label, seq_length)
         for i in range(batch_size):
             for j in range(seq_length):
-                if start_label[i, j] != 1:
-                    start_label = 1. / abs(j)
+                start_label[i, j] = 1. / abs(j - start_label_idx[i] + 1)
+                end_label[i, j] = 1. / abs(j - start_label_idx[i] + 1)
         print(start_label)
         print(start_pred)
         print(end_label)
