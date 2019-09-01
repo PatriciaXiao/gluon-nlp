@@ -340,13 +340,16 @@ class BertForQALoss(Loss):
         assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
         batch_size = len(start_label)
         seq_length = start_pred.shape[1]
-        print(start_label)
+        start_label_idx = start_label
+        start_label_idx = start_label
         start_label = mx.ndarray.one_hot(start_label, seq_length)
         end_label = mx.ndarray.one_hot(end_label, seq_length)
+        print(start_label_idx)
+        exit(0)
         for i in range(batch_size):
             for j in range(seq_length):
-                if start_label[i, j] == 1:
-                    print(j)
+                if start_label[i, j] != 1:
+                    start_label = 1. / abs(j)
         print(start_label)
         print(start_pred)
         print(end_label)
