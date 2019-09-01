@@ -346,8 +346,8 @@ class BertForQALoss(Loss):
         seq_length = start_pred.shape[1]
         start_label_idx = start_label
         start_label_idx = start_label
-        start_label = mx.nd.zeros(start_label, seq_length)
-        end_label = mx.nd.zeros(end_label, seq_length)
+        start_label = mx.ndarray.one_hot(start_label, seq_length)
+        end_label = mx.ndarray.one_hot(end_label, seq_length)
         for i in range(batch_size):
             for j in range(seq_length):
                 start_label[i, j] = 1. / abs(j - start_label_idx[i] + 1)
