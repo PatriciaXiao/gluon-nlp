@@ -338,6 +338,7 @@ class BertForQALoss(Loss):
         # debug
         start_label = mx.ndarray.one_hot(start_label, start_pred.shape[1])
         end_label = mx.ndarray.one_hot(end_label, end_pred.shape[1])
+        start_label[0, 0] = 1
         print(start_label)
         print(start_pred)
         print(end_label)
