@@ -74,7 +74,7 @@ class CoAttention(Block):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
 
     def forward(self, context, query, context_mask, query_mask,
-                       context_max_len, query_max_len):
+                       context_max_len, query_max_len, cls_emb_encoded=None):
         """Implement forward computation.
 
         Parameters
@@ -111,7 +111,11 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
+        if cls_emb_encoded is not None:
+            context_all = mx.nd.add(context, cls_emb_encoded)
+        else:
+            context_all = context
+        return F.concat(context_all, c2q, context * c2q, context * q2c, dim=-1), \
                 F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
@@ -268,8 +272,6 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
             cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
             cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
-            print(cls_emb_encoded)
-            exit(0)
             # context_mask = mx.nd.add(context_mask, cls_mask)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
@@ -278,7 +280,8 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
-                                                context_max_len, query_max_len)
+                                                context_max_len, query_max_len,
+                                                cls_emb_encoded=cls_emb_encoded)
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
