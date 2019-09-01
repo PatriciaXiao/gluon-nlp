@@ -350,10 +350,10 @@ class BertForQALoss(Loss):
         end_label = mx.ndarray.one_hot(end_label, seq_length)
         for i in range(batch_size):
             for j in range(seq_length):
-                print(start_label_idx[i][0])
+                print(start_label_idx[i].asscalar())
                 exit(0)
-                start_label[i, j] = 1. / abs(j - start_label_idx[i] + 1)
-                end_label[i, j] = 1. / abs(j - start_label_idx[i] + 1)
+                start_label[i, j] = 1. / abs(j - start_label_idx[i].asscalar() + 1)
+                end_label[i, j] = 1. / abs(j - start_label_idx[i].asscalar() + 1)
         print(start_label)
         print(start_pred)
         print(end_label)
