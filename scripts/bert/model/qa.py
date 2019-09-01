@@ -336,6 +336,8 @@ class BertForQALoss(Loss):
         end_label = label[1]
         print(start_label)
         print(end_label)
+        print((self.loss(start_pred, start_label) + self.loss(
+            end_pred, end_label)).item())
         exit(0)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
