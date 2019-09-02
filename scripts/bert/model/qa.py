@@ -346,10 +346,8 @@ class BertForQALoss(Loss):
         assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
         batch_size = len(start_label)
         seq_length = start_pred.shape[1]
-        start_label_idx = start_label.asnumpy().tolist()
-        print(start_label_idx)
-        exit(0)
-        end_label_idx = end_label
+        start_label_idx = start_label.astype(int).asnumpy().tolist() # start_label_idx[i].asscalar()
+        end_label_idx = end_label.astype(int).asnumpy().tolist()
         start_label = mx.ndarray.one_hot(start_label, seq_length)
         end_label = mx.ndarray.one_hot(end_label, seq_length)
         if customize_loss:
@@ -359,12 +357,13 @@ class BertForQALoss(Loss):
                     start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
                     end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
                     '''
-                    start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i].asscalar()) + 1.) )
-                    end_label[i, j] = 1. / (2 ** (abs(j - end_label_idx[i].asscalar()) + 1.) )
+                    start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i]) + 1.) )
+                    end_label[i, j] = 1. / (2 ** (abs(j - end_label_idx[i]) + 1.) )
             # start_label = start_label.softmax(axis=1) # too-----slow
             # end_label = end_label.softmax(axis=1)
             for i in range(batch_size):
-                start_label[i, start_label_idx[i]]
+                start_label[i, start_label_idx[i]] = 1.
+                end_label[i, end_label_idx[i]] = 1.
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
