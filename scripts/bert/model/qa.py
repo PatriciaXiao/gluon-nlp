@@ -77,6 +77,7 @@ class CoAttention(Block):
             # for the cls's encoding
             self.cls_mapping = gluon.nn.Dense(
                 units=bert_out_dim * 4,
+                in_units = bert_out_dim,
                 flatten=False,
                 weight_initializer=Xavier()
             )
