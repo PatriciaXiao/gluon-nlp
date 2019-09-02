@@ -316,7 +316,7 @@ class BertForQALoss(Loss):
         self.loss = loss.SoftmaxCELoss(sparse_label=False)
 
     # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
-    def forward(self, pred, label, customize_loss=True):  # False
+    def forward(self, pred, label, customize_loss=False):  # False / True
         """
         Parameters
         ----------
@@ -350,11 +350,10 @@ class BertForQALoss(Loss):
         end_label_idx = end_label.astype(int).asnumpy().tolist()
         start_label = mx.ndarray.one_hot(start_label, seq_length)
         end_label = mx.ndarray.one_hot(end_label, seq_length)
-
-        a = 0.8
-        b = 0.1
-        assert a + 2 * b == 1
         if customize_loss:
+            a = 0.8
+            b = 0.1
+            assert a + 2 * b == 1
             for i in range(batch_size):
                 for j in range(seq_length):
                     '''
