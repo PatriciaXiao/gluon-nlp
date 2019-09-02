@@ -108,7 +108,6 @@ class CoAttention(Block):
         ctx = context.context
         w4mlu = self.w4mlu.data(ctx)
         bias = self.bias.data(ctx)
-        out_weight = self.out_weight.data(ctx)
         context_mask = F.expand_dims(context_mask, axis=-1)
         query_mask = F.expand_dims(query_mask, axis=1)
 
@@ -133,6 +132,7 @@ class CoAttention(Block):
                 ), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
         #        F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        # out_weight = self.out_weight.data(ctx)
         # return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
         #        out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
 
