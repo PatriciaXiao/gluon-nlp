@@ -74,8 +74,8 @@ class AnswerVerifyDense(object):
 
         # the trainer's definition
         self.step_cnt = 0
-        self.lr = 3e-5 # used for updating learning rate
-        self.eps = 1e-6
+        self.lr = 3e-5
+        self.eps = 5e-9
         self.extract_sentence = extract_sentence
         self.trainer = mx.gluon.Trainer(self.dense_layer.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
