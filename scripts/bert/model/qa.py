@@ -115,10 +115,14 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
+        '''
         if cls_emb_encoded is not None:
             cls_added = cls_emb_encoded
         else:
             cls_added = 0
+        '''
+        print(F.concat(context, c2q, context * c2q, context * q2c, dim=-1))
+        exit(0)
         return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
         #        out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
@@ -279,8 +283,6 @@ class BertForQA(Block):
             # cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
             # context_mask = mx.nd.add(context_mask, cls_mask)
             cls_emb_encoded = bert_output[:, 0, :]
-            print(cls_emb_encoded)
-            exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
