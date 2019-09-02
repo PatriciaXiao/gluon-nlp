@@ -368,8 +368,6 @@ class BertForQALoss(Loss):
             for i in range(batch_size):
                 start_label[i, start_label_idx[i]] = a
                 end_label[i, end_label_idx[i]] = a
-            print(sum(start_label[0, :]))
-            exit(0)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
