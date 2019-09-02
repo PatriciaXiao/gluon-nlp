@@ -350,6 +350,10 @@ class BertForQALoss(Loss):
         end_label_idx = end_label.astype(int).asnumpy().tolist()
         start_label = mx.ndarray.one_hot(start_label, seq_length)
         end_label = mx.ndarray.one_hot(end_label, seq_length)
+
+        a = 0.8
+        b = 0.1
+        assert a + 2 * b == 1
         if customize_loss:
             for i in range(batch_size):
                 for j in range(seq_length):
@@ -357,13 +361,15 @@ class BertForQALoss(Loss):
                     start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
                     end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
                     '''
-                    start_label[i, j] = 1. / (2 ** (abs(j - start_label_idx[i]) + 1.) )
-                    end_label[i, j] = 1. / (2 ** (abs(j - end_label_idx[i]) + 1.) )
+                    start_label[i, j] = b / (2 ** abs(j - start_label_idx[i]) )
+                    end_label[i, j] = b / (2 ** abs(j - end_label_idx[i]) )
             # start_label = start_label.softmax(axis=1) # too-----slow
             # end_label = end_label.softmax(axis=1)
             for i in range(batch_size):
-                start_label[i, start_label_idx[i]] = 1.
-                end_label[i, end_label_idx[i]] = 1.
+                start_label[i, start_label_idx[i]] = a
+                end_label[i, end_label_idx[i]] = a
+            print(sum(start_label[0, :]))
+            exit(0)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
