@@ -206,6 +206,8 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
+            print(self.transformer)
+            exit(0)
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
