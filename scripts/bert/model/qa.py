@@ -289,8 +289,6 @@ class BertForQA(Block):
             # cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
             # context_mask = mx.nd.add(context_mask, cls_mask)
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
-            print(cls_emb_encoded)
-            exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
