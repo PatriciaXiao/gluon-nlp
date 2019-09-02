@@ -264,7 +264,6 @@ def predict(features,
                 pred_end=pred.pred_end))
 
     # if we didn't inlude the empty option in the n-best, inlcude it
-    '''
     if version_2:
         if '' not in seen_predictions:
             nbest.append(
@@ -272,7 +271,7 @@ def predict(features,
                     text='',
                     pred_start=null_pred_start,
                     pred_end=null_pred_end))
-    '''
+
     
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.

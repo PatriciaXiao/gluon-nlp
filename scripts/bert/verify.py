@@ -73,8 +73,9 @@ class AnswerVerifyDense(object):
         self.dense_layer.collect_params().initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
 
         # the trainer's definition
-        self.lr = 3e-5
-        self.eps = 5e-9
+        self.step_cnt = 0
+        self.lr = 5e-5
+        self.eps = 1e-6
         self.extract_sentence = extract_sentence
         self.trainer = mx.gluon.Trainer(self.dense_layer.collect_params(), 'adam',
                            {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
@@ -183,7 +184,7 @@ class AnswerVerifyDense(object):
                 # the predicted answerability
         return verifier_input, labels
 
-    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
+    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=2, verbose=False):
         if not self.version_2:
             return
         data = self.parse_sentences(train_features, example_ids, out, token_types, bert_out)
@@ -385,6 +386,8 @@ class AnswerVerify(object):
                     null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
+            if len(prediction) == 0:
+                continue # not validating for n/a output
             if self.extract_sentence:
                 sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
                 sentence_text = self.find_sentence(sentences, prediction)
@@ -396,7 +399,7 @@ class AnswerVerify(object):
                 '''
             else:
                 first_part = context_text + '. ' + question_text
-                raw_data.append([first_part, prediction, label]) # TODO: might should use whole context if answer not available
+                raw_data.append([first_part, prediction, label])
                 '''
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
