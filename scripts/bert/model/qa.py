@@ -119,9 +119,9 @@ class CoAttention(Block):
             cls_added = cls_emb_encoded
         else:
             cls_added = 0
-        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
-        return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
-               out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
+        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        # return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
+        #        out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
@@ -206,8 +206,6 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-            print(self.transformer)
-            exit(0)
         self.span_classifier = nn.HybridSequential()
         with self.span_classifier.name_scope():
             for i in range(n_rnn_layers):
@@ -275,13 +273,14 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             # keep the [CLS] embedding that will latter be used as null threshold
-            '''
-            ones = mx.nd.ones((token_types.shape[0], 1))
-            zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
-            cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
-            cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
+            # ones = mx.nd.ones((token_types.shape[0], 1))
+            # zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
+            # cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
+            # cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
             # context_mask = mx.nd.add(context_mask, cls_mask)
-            '''
+            cls_emb_encoded = bert_output[:, 0, :]
+            print(cls_emb_encoded)
+            exit(0)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
@@ -289,8 +288,8 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
-                                                context_max_len, query_max_len ) #,
-                                                #cls_emb_encoded)
+                                                context_max_len, query_max_len,
+                                                cls_emb_encoded)
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
