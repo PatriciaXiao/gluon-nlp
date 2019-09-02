@@ -125,11 +125,14 @@ class CoAttention(Block):
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
             zeros = mx.nd.zeros((cls_reshaped.shape[0], context.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
-            print(cls_added)
         else:
             cls_added = 0
-        exit(0)
-        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        return  mx.nd.add(
+                    cls_added,
+                    F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
+                ), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
+        #        F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
         #        out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
 
