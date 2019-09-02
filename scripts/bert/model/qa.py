@@ -74,6 +74,12 @@ class CoAttention(Block):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
             self.out_weight = self.params.get(
                 'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
+            # for the cls's encoding
+            self.cls_mapping = gluon.nn.Dense(
+                units=bert_out_dim * 4,
+                flatten=False,
+                weight_initializer=Xavier()
+            )
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, cls_emb_encoded=None):
@@ -121,7 +127,7 @@ class CoAttention(Block):
         else:
             cls_added = 0
         '''
-        print(F.concat(context, c2q, context * c2q, context * q2c, dim=-1))
+        print(self.cls_mapping(cls_emb_encoded))
         exit(0)
         return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
