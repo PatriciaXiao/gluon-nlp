@@ -72,8 +72,8 @@ class CoAttention(Block):
                 'linear_kernel', shape=(1, 1, int(bert_out_dim)), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
-            self.out_weight = self.params.get(
-                'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
+            # self.out_weight = self.params.get(
+            #     'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
             # for the cls's encoding
             self.cls_mapping = gluon.nn.Dense(
                 units=int(bert_out_dim) * 4,
