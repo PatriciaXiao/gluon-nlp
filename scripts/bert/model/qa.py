@@ -123,9 +123,7 @@ class CoAttention(Block):
             similarity_dash, similarity_dash_trans), context)
         if cls_emb_encoded is not None:
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            print(cls_reshaped)
-            exit(0)
-            zeros = mx.nd.zeros((context.shape[0], context.shape[1] - 1, context.shape[2])).as_in_context(ctx)
+            zeros = mx.nd.zeros((cls_reshaped.shape[0], context.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             print(cls_added)
         else:
