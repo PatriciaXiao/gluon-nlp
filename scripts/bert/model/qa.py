@@ -346,7 +346,7 @@ class BertForQALoss(Loss):
         assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
         batch_size = len(start_label)
         seq_length = start_pred.shape[1]
-        start_label_idx = start_label.tolist()
+        start_label_idx = start_label.asnumpy().tolist()
         print(start_label_idx)
         exit(0)
         end_label_idx = end_label
