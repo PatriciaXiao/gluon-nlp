@@ -324,6 +324,7 @@ class BertForQALoss(Loss):
     def __init__(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):  # pylint: disable=unused-argument
         super(BertForQALoss, self).__init__(
             weight=None, batch_axis=0, **kwargs)
+        self.customize_loss = customize_loss
         if self.customize_loss:
             self.loss = loss.SoftmaxCELoss(sparse_label=False)
         else:
