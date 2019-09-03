@@ -308,6 +308,8 @@ class BertForQA(Block):
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_coattention or self.apply_transformer:
             output = self.span_classifier(attended_output)
+            print(attended_output, output)
+            exit(0)
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
