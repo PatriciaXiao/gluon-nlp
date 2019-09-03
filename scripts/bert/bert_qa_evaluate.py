@@ -300,7 +300,6 @@ def predict(features,
 
     if not version_2:
         prediction = nbest[0].text
-        # prediction = best_non_null_entry.text
         answerable = 1.0
     else:
         prediction = best_non_null_entry.text
@@ -314,7 +313,7 @@ def predict(features,
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-    return prediction, answerable, None
+    return prediction, answerable, score_diff
 
 
 def predict_span(features,

@@ -300,7 +300,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len,
-                                                cls_emb_encoded)
+                                                None ) #cls_emb_encoded)
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
@@ -321,14 +321,16 @@ class BertForQALoss(Loss):
 
     """
 
-    def __init__(self, weight=None, batch_axis=0, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):  # pylint: disable=unused-argument
         super(BertForQALoss, self).__init__(
             weight=None, batch_axis=0, **kwargs)
-        # self.loss = loss.SoftmaxCELoss()
-        self.loss = loss.SoftmaxCELoss(sparse_label=False)
+        if self.customize_loss:
+            self.loss = loss.SoftmaxCELoss(sparse_label=False)
+        else:
+            self.loss = loss.SoftmaxCELoss()
 
     # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
-    def forward(self, pred, label, customize_loss=False):  # False / True
+    def forward(self, pred, label):  # False / True
         """
         Parameters
         ----------
@@ -348,21 +350,17 @@ class BertForQALoss(Loss):
         start_pred = pred[0].reshape((0, -3))
         start_label = label[0]
         end_pred = pred[1].reshape((0, -3))
-        end_label = label[1]
-        # standard way, equivalent with not adding these lines + set sparse_label = True
-        # start_label = mx.ndarray.one_hot(start_label, seq_length)
-        # end_label = mx.ndarray.one_hot(end_label, seq_length)
-
-        # changed to a soft, non-sparse labeling system
-        assert len(start_label) == len(end_label), "number of start labels doesn't match number of end labels."
-        assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
-        batch_size = len(start_label)
-        seq_length = start_pred.shape[1]
-        start_label_idx = start_label.astype(int).asnumpy().tolist() # start_label_idx[i].asscalar()
-        end_label_idx = end_label.astype(int).asnumpy().tolist()
-        start_label = mx.ndarray.one_hot(start_label, seq_length)
-        end_label = mx.ndarray.one_hot(end_label, seq_length)
-        if customize_loss:
+        end_label = label[1]   
+        if self.customize_loss:
+            # changed to a soft, non-sparse labeling system
+            assert len(start_label) == len(end_label), "number of start labels doesn't match number of end labels."
+            assert start_pred.shape[1] == end_pred.shape[1], "start encoding dimension doesn't match end encoding dimension."
+            batch_size = len(start_label)
+            seq_length = start_pred.shape[1]
+            start_label_idx = start_label.astype(int).asnumpy().tolist() # start_label_idx[i].asscalar()
+            end_label_idx = end_label.astype(int).asnumpy().tolist()
+            start_label = mx.ndarray.one_hot(start_label, seq_length)
+            end_label = mx.ndarray.one_hot(end_label, seq_length)
             a = 0.8
             b = 0.1
             assert a + 2 * b == 1
