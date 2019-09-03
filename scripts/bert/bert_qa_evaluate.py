@@ -275,6 +275,8 @@ def predict(features,
     
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
+    print(feature.token_to_orig_map)
+    exit(0)
     if not nbest:
         nbest.append(
             _NbestPrediction(text='empty', pred_start=0.0, pred_end=0.0))
@@ -282,13 +284,12 @@ def predict(features,
     assert len(nbest) >= 1
     
 
-    total_scores = []
     best_non_null_entry = None
     for entry in nbest:
-        total_scores.append(entry.pred_start + entry.pred_end)
         if not best_non_null_entry:
             if entry.text:
                 best_non_null_entry = entry
+                break
 
     if best_non_null_entry is None:
         # in very rare case will this problem occur and corrupt the program
