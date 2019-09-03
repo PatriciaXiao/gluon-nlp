@@ -81,11 +81,11 @@ class HashingMemory(nn.Module):
         q1 = query[:, :half]                                          # (bs,half)
         q2 = query[:, half:]                                          # (bs,half)
 
+        #q1 = torch.ones(q1.shape)
+        #q2 = torch.ones(q2.shape)
         # compute indices with associated scores
         scores1 = F.linear(q1, subkeys[0], bias=None)                 # (bs,n_keys)
         # print(scores1.size()) # (24, 512)
-        print(q1.size(), subkeys[0].size())
-        exit(0)
         scores2 = F.linear(q2, subkeys[1], bias=None)                 # (bs,n_keys)
         scores1, indices1 = scores1.topk(knn, dim=1)                  # (bs,knn)
         scores2, indices2 = scores2.topk(knn, dim=1)                  # (bs,knn)
@@ -145,6 +145,7 @@ class HashingMemory(nn.Module):
 
         # weighted sum of values
         output = self.values(indices, per_sample_weights=scores)                # (bs,v_dim)
+        # print(self.values.weight)
         output = F.dropout(output, p=self.value_dropout, training=self.training)# (bs,v_dim)
 
         # reshape output

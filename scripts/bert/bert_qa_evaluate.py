@@ -297,15 +297,8 @@ def predict(features,
                                     pred_start=null_pred_start,
                                     pred_end=null_pred_end)
 
-    probs = nd.softmax(nd.array(total_scores)).asnumpy()
-
-    nbest_json = []
-
-    for (i, entry) in enumerate(nbest):
-        nbest_json.append((entry.text, float(probs[i])))
-
     if not version_2:
-        prediction = nbest_json[0][0]
+        prediction = nbest[0].text
         # prediction = best_non_null_entry.text
         answerable = 1.0
     else:
@@ -320,7 +313,7 @@ def predict(features,
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-    return prediction, answerable, nbest_json
+    return prediction, answerable, None
 
 
 def predict_span(features,

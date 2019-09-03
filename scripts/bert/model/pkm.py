@@ -92,13 +92,15 @@ class HashingMemory(Block):
         q1 = query[:, :half]                                            # (bs,half)
         q2 = query[:, half:]                                            # (bs,half)
 
+        #q1 = nd.ones(q1.shape)
+        #q2 = nd.ones(q2.shape)
         # compute indices with associated scores
         scores1 = nd.dot(q1, subkeys[0].T)                              # (bs,n_keys)
         scores2 = nd.dot(q2, subkeys[1].T)                              # (bs,n_keys)
         indices1 = scores1.topk(k=knn, axis=1)                          # (bs,knn)
         indices2 = scores2.topk(k=knn, axis=1)                          # (bs,knn)
-        score1 = scores1[indices1]
-        score2 = scores2[indices2]
+        scores1 = nd.array([scores1[i][indices1[i]].asnumpy() for i in range(bs)])
+        scores2 = nd.array([scores2[i][indices2[i]].asnumpy() for i in range(bs)])
 
         # cartesian product on best candidate keys
         all_scores = (
@@ -146,18 +148,19 @@ class HashingMemory(Block):
         query = mx.ndarray.Dropout(query, p=self.query_dropout)         # (bs*heads,k_dim)
         assert query.shape == (bs * self.heads, self.k_dim)
         # retrieve indices and scores
-        scores, indices = self.get_indices(query)                               # (bs*heads,knn)
-        scores = mx.ndarray.softmax(scores, axis=-1)              # (bs*heads,knn)
+        scores, indices = self.get_indices(query)                       # (bs*heads,knn)
+        scores = mx.ndarray.softmax(scores, axis=-1)                    # (bs*heads,knn)
         # merge heads / knn (since we sum heads)
         indices = indices.reshape(bs, self.heads * self.knn)                       # (bs,heads*knn)
         scores = scores.reshape(bs, self.heads * self.knn)                         # (bs,heads*knn)
         # weighted sum of values
-        output_raw = self.values(indices)                                           # (bs,v_dim)
-        # output = nd.zeros((output_raw.shape[0], output_raw.shape[2]))
-        # for i in range(bs):
-        #     output[i, :] = nd.dot(scores, output_raw[i, :, :])
+        output_raw = self.values(indices)                                          # (bs,v_dim)
+        # print(self.values.weight.data())
+        #output = nd.zeros((output_raw.shape[0], output_raw.shape[2]))
+        #for i in range(bs):
+        #    output = output + nd.dot(scores, output_raw[i, :, :])
         output = mx.ndarray.squeeze(mx.ndarray.batch_dot(mx.ndarray.expand_dims(scores, 1), output_raw), axis=1)
-        output = mx.ndarray.Dropout(output, p=self.value_dropout)          # (bs,v_dim)
+        output = mx.ndarray.Dropout(output, p=self.value_dropout)                   # (bs,v_dim)
         # reshape output
         if len(prefix_shape) >= 2:
             output = output.reshape(prefix_shape + (self.v_dim,))                  # (...,v_dim)
