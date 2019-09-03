@@ -2,12 +2,45 @@
 # translated from https://github.com/facebookresearch/XLM/blob/master/PKM-layer.ipynb
 
 import mxnet as mx
+from mxnet.gluon import Block, loss, nn
+
+import math
+import numpy as np
 
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
+def get_uniform_keys(n_keys, dim, seed):
+    """
+    Generate random uniform keys (same initialization as nn.Linear).
+    """
+    rng = np.random.RandomState(seed)
+    bound = 1 / math.sqrt(dim)
+    keys = rng.uniform(-bound, bound, (n_keys, dim))
+    return keys.astype(np.float32)
+
+class HashingMemory(Block):
+    r'''
+    A simple implementation of the product-key memory block
+    '''
+    def __init__(self, input_dim, output_dim, params):
+        super(HashingMemory, self).__init__()
+        # global parameters
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.k_dim = params.k_dim
+        self.v_dim = output_dim
+        self.n_keys = params.n_keys
+        self.size = self.n_keys ** 2
+        self.heads = params.heads
+        self.knn = params.knn
+        assert self.k_dim >= 2 and self.k_dim % 2 == 0
+        # dropout
+        self.input_dropout = params.input_dropout
+        self.query_dropout = params.query_dropout
+        self.value_dropout = params.value_dropout
 
 params = AttrDict({
     "sparse": False,
@@ -21,7 +54,15 @@ params = AttrDict({
     "value_dropout": 0,
 })
 
+
+
 if __name__ == "__main__":
     ctx = mx.gpu(0) if mx.context.num_gpus() else mx.cpu()
     input_dim = 50
     output_dim = 100
+    memory = HashingMemory(input_dim, output_dim, params)
+    # net.collect_params()
+    memory.initialize(init=mx.init.Xavier(), ctx=ctx)
+
+
+
