@@ -74,12 +74,6 @@ class CoAttention(Block):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
             # self.out_weight = self.params.get(
             #     'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
-            # for the cls's encoding
-            self.cls_mapping = gluon.nn.Dense(
-                units=int(bert_out_dim) * 4,
-                flatten=False,
-                weight_initializer=Xavier()
-            )
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, cls_emb_encoded=None):
@@ -120,16 +114,8 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        if cls_emb_encoded is not None:
-            cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            zeros = mx.nd.zeros((cls_reshaped.shape[0], context.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
-            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
-        else:
-            cls_added = 0
-        return  mx.nd.add(
-                    cls_added,
-                    F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
-                ), F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        return  F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
+                F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
         #        F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         # out_weight = self.out_weight.data(ctx)
@@ -210,6 +196,12 @@ class BertForQA(Block):
         if self.apply_coattention:
             with self.name_scope():
                 self.co_attention = CoAttention(str(bert_out_dim))
+                # for the cls's encoding
+                self.cls_mapping = nn.Dense(
+                    units=2,
+                    flatten=False,
+                    weight_initializer=Xavier()
+                )
         if self.apply_self_attention:
             if self_attention_dimension is None:
                 self_attention_dimension = bert_out_dim
@@ -291,7 +283,6 @@ class BertForQA(Block):
             # cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
             # cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
             # context_mask = mx.nd.add(context_mask, cls_mask)
-            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
@@ -299,16 +290,22 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
-                                                context_max_len, query_max_len,
-                                                None ) #cls_emb_encoded)
+                                                context_max_len, query_max_len)
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
             attended_output, additional_outputs = self.transformer(bert_output)
-        if self.add_query or self.apply_self_attention or self.apply_coattention or self.apply_transformer:
+        if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
-            print(attended_output, output)
+        elif self.apply_coattention:
+            context_output = self.span_classifier(attended_output)
+            # deal with the null-score score
+            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
+            cls_reshaped = self.cls_mapping(cls_emb_encoded)
+            zeros = mx.nd.zeros((cls_reshaped.shape[0], context.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
+            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
+            print(cls_added)
             exit(0)
         else:
             output = self.span_classifier(bert_output)
