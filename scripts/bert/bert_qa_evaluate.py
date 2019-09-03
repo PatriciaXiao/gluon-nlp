@@ -185,9 +185,6 @@ def predict(features,
                 null_pred_start = result.start[0]
                 null_pred_end = result.end[0]
 
-        print(feature.token_is_max_context)
-        exit(0)
-
         for start_index in start_indexes:
             for end_index in end_indexes:
                 # We could hypothetically create invalid predictions, e.g., predict
