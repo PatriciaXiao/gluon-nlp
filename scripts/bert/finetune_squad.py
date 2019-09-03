@@ -415,45 +415,89 @@ if verify:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
         exit(0)
 
+########################################
+#         Prepare the data - Begin
+########################################
+
+# train dataset
+segment = 'train' if not args.debug else 'dev'
+log.info('Loading %s data...', segment)
+if version_2:
+    train_data = SQuAD(segment, version='2.0')
+else:
+    train_data = SQuAD(segment, version='1.1')
+if args.debug:
+    sampled_data = [train_data[i] for i in range(120)] # 1000 # 120 # 60
+    train_data = mx.gluon.data.SimpleDataset(sampled_data)
+log.info('Number of records in Train data:{}'.format(len(train_data)))
+
+train_dataset = train_data.transform(
+    SQuADTransform(
+        copy.copy(tokenizer),
+        max_seq_length=max_seq_length,
+        doc_stride=doc_stride,
+        max_query_length=max_query_length,
+        is_pad=True,
+        is_training=True)._transform, lazy=False)
+
+train_data_transform, _ = preprocess_dataset(
+    train_data, SQuADTransform(
+        copy.copy(tokenizer),
+        max_seq_length=max_seq_length,
+        doc_stride=doc_stride,
+        max_query_length=max_query_length,
+        is_pad=True,
+        is_training=True))
+log.info('The number of examples after preprocessing:{}'.format(
+    len(train_data_transform)))
+
+train_features = {features[0].example_id: features for features in train_dataset}
+
+train_dataloader = mx.gluon.data.DataLoader(
+    train_data_transform, batchify_fn=batchify_fn,
+    batch_size=batch_size, num_workers=4, shuffle=True)
+
+# valid dataset
+log.info('Loading dev data for evaluation...')
+if version_2:
+    dev_data = SQuAD('dev', version='2.0')
+else:
+    dev_data = SQuAD('dev', version='1.1')
+if args.debug:
+    sampled_data = dev_data[:10] # [dev_data[0], dev_data[1], dev_data[2]]
+    dev_data = mx.gluon.data.SimpleDataset(sampled_data)
+log.info('Number of records in dev data:{}'.format(len(dev_data)))
+
+dev_dataset = dev_data.transform(
+    SQuADTransform(
+        copy.copy(tokenizer),
+        max_seq_length=max_seq_length,
+        doc_stride=doc_stride,
+        max_query_length=max_query_length,
+        is_pad=True,
+        is_training=True)._transform, lazy=False)
+
+dev_data_transform, _ = preprocess_dataset(
+    dev_data, SQuADTransform(
+        copy.copy(tokenizer),
+        max_seq_length=max_seq_length,
+        doc_stride=doc_stride,
+        max_query_length=max_query_length,
+        is_pad=True,
+        is_training=True))
+
+dev_features = {features[0].example_id: features for features in dev_dataset}
+
+dev_dataloader = mx.gluon.data.DataLoader(
+    dev_data_transform, batchify_fn=batchify_fn,
+    batch_size=test_batch_size, num_workers=4, shuffle=True)
+
+########################################
+#         Prepare the data - Done
+########################################
+
 def train():
     """Training function."""
-    segment = 'train' if not args.debug else 'dev'
-    log.info('Loading %s data...', segment)
-    if version_2:
-        train_data = SQuAD(segment, version='2.0')
-    else:
-        train_data = SQuAD(segment, version='1.1')
-    if args.debug:
-        sampled_data = [train_data[i] for i in range(120)] # 1000 # 120 # 60
-        train_data = mx.gluon.data.SimpleDataset(sampled_data)
-    log.info('Number of records in Train data:{}'.format(len(train_data)))
-
-    train_dataset = train_data.transform(
-        SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=True,
-            is_training=True)._transform, lazy=False)
-
-    train_data_transform, _ = preprocess_dataset(
-        train_data, SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=True,
-            is_training=True))
-    log.info('The number of examples after preprocessing:{}'.format(
-        len(train_data_transform)))
-
-    train_features = {features[0].example_id: features for features in train_dataset}
-
-    train_dataloader = mx.gluon.data.DataLoader(
-        train_data_transform, batchify_fn=batchify_fn,
-        batch_size=batch_size, num_workers=4, shuffle=True)
-
     log.info('Start Training')
 
     optimizer_params = {'learning_rate': lr}
@@ -567,44 +611,16 @@ def train():
     if args.save_params:
         net.save_parameters(os.path.join(output_dir, 'net.params'))
 
+def verify():
+    '''
+    call the verifiers after an ordinary training epoch
+    '''
+    pass
+
 
 def evaluate():
     """Evaluate the model on validation dataset.
     """
-    log.info('Loading dev data for evaluation...')
-    if version_2:
-        dev_data = SQuAD('dev', version='2.0')
-    else:
-        dev_data = SQuAD('dev', version='1.1')
-    if args.debug:
-        sampled_data = dev_data[:10] # [dev_data[0], dev_data[1], dev_data[2]]
-        dev_data = mx.gluon.data.SimpleDataset(sampled_data)
-    log.info('Number of records in dev data:{}'.format(len(dev_data)))
-
-    dev_dataset = dev_data.transform(
-        SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=True,
-            is_training=True)._transform, lazy=False)
-
-    dev_data_transform, _ = preprocess_dataset(
-        dev_data, SQuADTransform(
-            copy.copy(tokenizer),
-            max_seq_length=max_seq_length,
-            doc_stride=doc_stride,
-            max_query_length=max_query_length,
-            is_pad=True,
-            is_training=True))
-
-    dev_features = {features[0].example_id: features for features in dev_dataset}
-
-    dev_dataloader = mx.gluon.data.DataLoader(
-        dev_data_transform, batchify_fn=batchify_fn,
-        batch_size=test_batch_size, num_workers=4, shuffle=True)
-
     log.info('start prediction')
 
     all_results = collections.defaultdict(list)
