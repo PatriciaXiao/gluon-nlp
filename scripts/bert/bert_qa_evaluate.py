@@ -461,7 +461,7 @@ def predict_original(features,
     prelim_predictions = []
     score_diff = None
 
-    score_null = 1000000  # large and positive
+    score_null = 1000000  # large and positive as initial null score
     min_null_feature_index = 0  # the paragraph slice with min mull score
     null_pred_start = 0  # the start logit at the slice with min null score
     null_pred_end = 0  # the end logit at the slice with min null score

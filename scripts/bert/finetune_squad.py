@@ -611,12 +611,12 @@ def train():
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
         if verify:
-            run_verifier()
+            train_verifier()
 
     if args.save_params:
         net.save_parameters(os.path.join(output_dir, 'net.params'))
 
-def run_verifier():
+def train_verifier():
     '''
     call the verifiers after an ordinary training epoch
     '''
