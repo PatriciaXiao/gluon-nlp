@@ -307,8 +307,6 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(context_output, cls_added)
-            print(output[0,:,:])
-            exit(0)
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
