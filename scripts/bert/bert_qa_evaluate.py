@@ -265,14 +265,14 @@ def predict(features,
                 pred_start=pred.pred_start,
                 pred_end=pred.pred_end))
 
-    # if we didn't inlude the empty option in the n-best, inlcude it
+    # if we didn't include the empty option in the n-best (due to the order of visit), inlcude it
     if version_2:
-        if '' not in seen_predictions:
-            nbest.append(
-                _NbestPrediction(
+        no_answer_entry = _NbestPrediction(
                     text='',
                     pred_start=null_pred_start,
-                    pred_end=null_pred_end))
+                    pred_end=null_pred_end)
+        if '' not in seen_predictions:
+            nbest.append(no_answer_entry)
 
     
     # In very rare edge cases we could have no valid predictions. So we
@@ -291,12 +291,9 @@ def predict(features,
                 best_non_null_entry = entry
                 break
 
-    if best_non_null_entry is None:
+    if version_2 and best_non_null_entry is None:
         # in very rare case will this problem occur and corrupt the program
-        best_non_null_entry = _NbestPrediction(
-                                    text='',
-                                    pred_start=null_pred_start,
-                                    pred_end=null_pred_end)
+        best_non_null_entry = no_answer_entry
 
     if not version_2:
         prediction = nbest[0].text
@@ -560,7 +557,7 @@ def predict_original(features,
                 pred_start=pred.pred_start,
                 pred_end=pred.pred_end))
 
-    # if we didn't inlude the empty option in the n-best, inlcude it
+    # if we didn't include the empty option in the n-best, inlcude it
     if version_2:
         if '' not in seen_predictions:
             nbest.append(
