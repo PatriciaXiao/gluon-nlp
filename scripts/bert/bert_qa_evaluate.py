@@ -126,7 +126,6 @@ def predict(features,
             results,
             tokenizer,
             max_answer_length=64,
-            null_score_diff_threshold=0.0,
             n_best_size=10,
             version_2=False):
     """Get prediction results.
@@ -141,8 +140,6 @@ def predict(features,
         Tokenizer function.
     max_answer_length: int, default 64
         Maximum length of the answer tokens.
-    null_score_diff_threshold: float, default 0.0
-        If null_score - best_non_null is greater than the threshold predict null.
     n_best_size: int, default 10
         The total number of n-best predictions.
     version_2: bool, default False
@@ -214,6 +211,7 @@ def predict(features,
                         pred_end=result.end[end_index]))
 
     if version_2:
+        # this prelim prediction will ideally result in the empty answer, if visited
         prelim_predictions.append(
             _PrelimPrediction(
                 feature_index=min_null_feature_index,
@@ -222,6 +220,7 @@ def predict(features,
                 pred_start=null_pred_start,
                 pred_end=null_pred_end))
 
+    # get sorted here: and this is where there's a possibility that the top answer is empty
     prelim_predictions = sorted(
         prelim_predictions,
         key=lambda x: (x.pred_start + x.pred_end),
@@ -303,14 +302,15 @@ def predict(features,
         # predict '' iff (the null score - the score of best non-null) > threshold
         score_diff = score_null - best_non_null_entry.pred_start - \
             best_non_null_entry.pred_end
-
+        '''
         if score_diff > null_score_diff_threshold:
             # prediction = ''
             answerable = 0.0
         else:
             # prediction = best_non_null_entry.text
             answerable = 1.0
-    return prediction, answerable, score_diff
+        '''
+    return prediction, score_diff, nbest[0].text
 
 
 def predict_span(features,

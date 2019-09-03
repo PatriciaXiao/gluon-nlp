@@ -672,32 +672,35 @@ def evaluate():
     for features in dev_dataset:
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
-        prediction, answerable, _ = predict(
+        # prediction2 is likely to be empty when in version_2
+        prediction, score_diff, prediction2 = predict(
             features=features,
             results=results,
             tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
             max_answer_length=max_answer_length,
-            null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
         # verifier
-        if prediction != '':
+        if version_2 and prediction != '':
+            # threshold serves as the basic verifier
+            if score_diff > null_score_diff_threshold:
+                answerable = 0.0
+            else:
+                answerable = 1.0
             if verify:
                 if VERIFIER_ID == 1:
                     has_ans_prob = verifier.evaluate(features, prediction)
                 elif VERIFIER_ID == 2:
                     has_ans_prob_list = all_pre_na_prob[features[0].example_id]
                     has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
-
                 if args.verifier_mode == "takeover":
                     answerable = has_ans_prob
                 elif args.verifier_mode == "joint":
                     answerable = answerable * has_ans_prob
                 elif args.verifier_mode == "all":
                     answerable = (answerable + has_ans_prob) * 0.5
-
-        if answerable < answerable_threshold:
-            prediction = ""
+            if answerable < answerable_threshold:
+                prediction = ""
 
         all_predictions[example_qas_id] = prediction
         # the form of hashkey - answer string
