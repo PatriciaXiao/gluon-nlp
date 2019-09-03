@@ -277,6 +277,7 @@ def predict(features,
     
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
+    print(feature.token_to_orig_map.keys())
     print(random.choice(feature.token_to_orig_map.keys()))
     exit(0)
     if not nbest:
