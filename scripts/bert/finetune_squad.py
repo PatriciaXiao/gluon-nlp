@@ -590,6 +590,8 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out # token_types
+            print(verify)
+            exit(0)
             if verify:
                 verifier.train(train_features, example_ids, out, token_types, bert_out)
 
