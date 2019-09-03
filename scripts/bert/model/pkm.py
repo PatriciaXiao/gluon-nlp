@@ -78,6 +78,7 @@ class HashingMemory(Block):
                 for j in range(2)
             ])).reshape(self.heads, 2, self.n_keys, half)
 
+
     def _get_indices(self, query, subkeys):
         """
         Generate scores and indices for a specific head.
