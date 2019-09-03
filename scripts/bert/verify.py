@@ -74,11 +74,12 @@ class AnswerVerifyDense(object):
 
         # the trainer's definition
         self.step_cnt = 0
-        self.lr = 3e-5
+        self.schedule = mx.lr_scheduler.FactorScheduler(step=1000, factor=0.9)
+        self.schedule.base_lr = 3e-5
         self.eps = 5e-9
         self.extract_sentence = extract_sentence
         self.trainer = mx.gluon.Trainer(self.dense_layer.collect_params(), 'adam',
-                           {'learning_rate': self.lr, 'epsilon': self.eps}, update_on_kvstore=False)
+                           {'learning_rate': self.schedule.base_lr, 'epsilon': self.eps}, update_on_kvstore=False)
         self.params = [p for p in self.dense_layer.collect_params().values() if p.grad_req != 'null']
 
         # loss function
@@ -198,6 +199,8 @@ class AnswerVerifyDense(object):
             self.trainer.allreduce_grads()
             nlp.utils.clip_grad_global_norm(self.params, 1)
             self.trainer.update(1)
+            self.trainer.set_learning_rate(self.schedule(self.step_cnt))
+            self.step_cnt += 1
             if verbose:
                 print("epoch {0} in dense-layer verifier ({2}), loss {1}".format(epoch_id, ls.asscalar(), self.mode))
         
