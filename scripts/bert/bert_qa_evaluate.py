@@ -185,6 +185,9 @@ def predict(features,
                 null_pred_start = result.start[0]
                 null_pred_end = result.end[0]
 
+        print(feature.token_is_max_context)
+        exit(0)
+
         for start_index in start_indexes:
             for end_index in end_indexes:
                 # We could hypothetically create invalid predictions, e.g., predict
@@ -277,8 +280,6 @@ def predict(features,
     
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
-    print(random.choice(list(feature.token_to_orig_map.keys())))
-    exit(0)
     if not nbest:
         nbest.append(
             _NbestPrediction(text=random.choice(list(feature.token_to_orig_map.keys())), pred_start=0.0, pred_end=0.0))
