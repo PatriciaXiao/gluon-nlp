@@ -57,7 +57,7 @@ class HashingMemory(Block):
                 get_uniform_keys(self.n_keys, half, seed=(2 * i + j))
                 for i in range(self.heads)
                 for j in range(2)
-            ])).view(self.heads, 2, self.n_keys, half))
+            ])).reshape(self.heads, 2, self.n_keys, half))
         self.keys = gluon.Parameter(keys)
 
 params = AttrDict({
