@@ -590,8 +590,6 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out # token_types
-            print(verify)
-            exit(0)
             if verify:
                 verifier.train(train_features, example_ids, out, token_types, bert_out)
 
@@ -613,7 +611,7 @@ def train():
     if args.save_params:
         net.save_parameters(os.path.join(output_dir, 'net.params'))
 
-def verify():
+def run_verifier():
     '''
     call the verifiers after an ordinary training epoch
     '''
