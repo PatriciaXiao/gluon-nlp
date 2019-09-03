@@ -22,5 +22,6 @@ params = AttrDict({
 })
 
 if __name__ == "__main__":
-	ctx = mx.gpu(0) if mx.context.num_gpus() else mx.cpu()
-	print(ctx)
+    ctx = mx.gpu(0) if mx.context.num_gpus() else mx.cpu()
+    input_dim = 50
+    output_dim = 100
