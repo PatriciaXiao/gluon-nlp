@@ -590,8 +590,8 @@ def train():
 
             # pass the information to verifier and train it here
             # train_features # example_ids # out # token_types
-            if verify:
-                verifier.train(train_features, example_ids, out, token_types, bert_out)
+            # if verify:
+            #     verifier.train(train_features, example_ids, out, token_types, bert_out)
 
             step_loss += ls.asscalar()
 
@@ -608,6 +608,9 @@ def train():
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
+        if verify:
+            run_verifier()
+
     if args.save_params:
         net.save_parameters(os.path.join(output_dir, 'net.params'))
 
@@ -615,8 +618,12 @@ def run_verifier():
     '''
     call the verifiers after an ordinary training epoch
     '''
-    pass
-
+    for data in train_dataloader:
+        example_ids, inputs, token_types, valid_length, start_label, end_label = data
+        out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
+                          token_types.astype('float32').as_in_context(ctx),
+                          valid_length.astype('float32').as_in_context(ctx))
+        verifier.train(train_features, example_ids, out, token_types, bert_out)
 
 def evaluate():
     """Evaluate the model on validation dataset.
