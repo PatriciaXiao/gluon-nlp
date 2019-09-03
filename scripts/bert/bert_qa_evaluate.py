@@ -277,12 +277,11 @@ def predict(features,
     
     # In very rare edge cases we could have no valid predictions. So we
     # just create a nonce prediction in this case to avoid failure.
-    print(feature.token_to_orig_map.keys())
-    print(random.choice(feature.token_to_orig_map.keys()))
+    print(random.choice(list(feature.token_to_orig_map.keys())))
     exit(0)
     if not nbest:
         nbest.append(
-            _NbestPrediction(text=random.choice(feature.token_to_orig_map.keys()), pred_start=0.0, pred_end=0.0))
+            _NbestPrediction(text=random.choice(list(feature.token_to_orig_map.keys())), pred_start=0.0, pred_end=0.0))
 
     assert len(nbest) >= 1
     
