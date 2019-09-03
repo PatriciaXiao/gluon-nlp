@@ -244,6 +244,9 @@ parser.add_argument('--save_params', action='store_true', default=False,
 parser.add_argument('--freeze_bert', action='store_true', default=False,
                     help='not finetuning bert parameters, only finetuning the rest parts.')
 
+parser.add_argument('--customize_loss', action='store_true', default=False,
+                    help='custimizing the loss function when needed.')
+
 args = parser.parse_args()
 
 verify = args.verifier is not None
@@ -384,7 +387,7 @@ if args.apply_transformer:
 
 net.hybridize(static_alloc=True)
 
-loss_function = net.loss()
+loss_function = net.loss(customize_loss=args.customize_loss)
 loss_function.hybridize(static_alloc=True)
 
 if verify:
