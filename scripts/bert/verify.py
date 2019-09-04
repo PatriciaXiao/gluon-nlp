@@ -79,10 +79,9 @@ class AnswerVerifyThreshold(object):
         else:
             answerable = 1.
         '''
-        answerable = self.clf.predict([[score_diff, best_pred]])
+        answerable = self.clf.predict([[score_diff, best_pred], [-10, 0.]])
         # print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
-        print(answerable[0])
         self.data = list()
         return answerable[0]
 
