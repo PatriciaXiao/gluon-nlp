@@ -115,7 +115,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self, epochs=1000):
+    def update(self, epochs=3000):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
@@ -131,7 +131,6 @@ class AnswerVerifyThreshold(object):
         y = nd.array(data_numpy[:,-1])
         train_dataset = ArrayDataset(X, y)
         train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        train_data_size = X.shape[0]
         for e in range(epochs):
             cumulative_train_loss = 0
             for i, (data, label) in enumerate(train_dataloader):
@@ -145,6 +144,8 @@ class AnswerVerifyThreshold(object):
                 # Calculate gradients
                 loss_result.backward()
                 # Update parameters of the network
+                print(len(data))
+                exit(0)
                 self.trainer.step(len(data))
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
