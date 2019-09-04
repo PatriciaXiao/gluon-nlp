@@ -139,7 +139,7 @@ class AnswerVerifyThreshold(object):
                 # Calculate gradients
                 loss_result.backward()
                 # Update parameters of the network
-                self.trainer.step(batch_size)
+                self.trainer.step(self.batch_size)
                 # sum losses of every batch
                 cumulative_train_loss += nd.sum(loss_result).asscalar()
                 # F1 / accuracy
