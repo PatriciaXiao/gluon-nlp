@@ -118,6 +118,7 @@ class AnswerVerifyThreshold(object):
         # option 2
         # self.clf.fit(X, y)
         # option 3
+        data_numpy = np.array(self.data)
         X = nd.array(data_numpy[:,:-1]).as_in_context(self.ctx)
         y = nd.array(data_numpy[:,-1]).as_in_context(self.ctx)
         print(X, y)
