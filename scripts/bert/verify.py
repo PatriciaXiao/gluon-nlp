@@ -61,8 +61,7 @@ class AnswerVerifyThreshold(object):
             return        
         raw_data = self.get_training_data(train_features, example_ids, out, token_types=token_types)
         self.data.extend(raw_data)
-        print(self.data)
-        exit(0)
+        # exit(0)
 
     def evaluate(self, dev_feature, prediction):
         # asserted that prediction is not null
@@ -91,6 +90,8 @@ class AnswerVerifyThreshold(object):
                     version_2=self.version_2)
             non_empty_top = 1. if top_predict else 0.
             print(prediction, "," , top_predict, ",", features[0].orig_answer_text)
+            if top_predict:
+                exit(0)
             raw_data.append([score_diff, non_empty_top, label])
         return raw_data
 
