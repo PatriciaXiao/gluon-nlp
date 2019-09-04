@@ -109,7 +109,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self, epochs=100):
+    def update(self, epochs=1000, verbose=100):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
@@ -153,7 +153,8 @@ class AnswerVerifyThreshold(object):
                 probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
                 self.f1.update(label, probabilities)
             avg_train_loss = cumulative_train_loss / train_data_size
-            print("Epoch: %s, Training loss: %.2f, accuracy: %.2f, F1 score: %.2f" %
+            if (e + 1) % verbose == 0:
+                print("Epoch: %s, Training loss: %.2f, accuracy: %.2f, F1 score: %.2f" %
                                     (e, avg_train_loss, self.accuracy.get()[1], self.f1.get()[1]))
             self.accuracy.reset()
 
