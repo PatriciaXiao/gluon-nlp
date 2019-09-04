@@ -695,7 +695,8 @@ def evaluate():
                 answerable = 1.0
             
             if VERIFIER_ID == 0:
-                has_ans_prob = verifier.evaluate(score_diff, best_pred)
+                best_pred_score = 1. if best_pred else 0.
+                has_ans_prob = verifier.evaluate(score_diff, best_pred_score)
             elif VERIFIER_ID == 1:
                 has_ans_prob = verifier.evaluate(features, prediction)
             elif VERIFIER_ID == 2:
