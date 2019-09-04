@@ -19,6 +19,11 @@ from mxnet.gluon import nn
 import re
 pattern = r'\?|\.|\!|;'
 
+# http://www.machinelearningtutorial.net/2016/12/10/python-svm/
+# SVM
+import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+
 class VerifierDataset(Dataset):
     def __init__(self, data):
         self.data = data
@@ -76,8 +81,9 @@ class AnswerVerifyThreshold(object):
 
     def update(self):
         data_numpy = np.array(self.data)
-        all_diff = data_numpy[:, 0]
-        print(all_diff)
+        X = np.array(data_numpy[:,:-1])
+        y = np.array(data_numpy[:,-1])
+        print(X, y)
         exit(0)
         best_threshold = 0. # debug
         self.null_score_diff_threshold = best_threshold

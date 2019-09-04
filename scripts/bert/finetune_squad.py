@@ -701,6 +701,8 @@ def evaluate():
             elif VERIFIER_ID == 2:
                 has_ans_prob_list = all_pre_na_prob[features[0].example_id]
                 has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
+            else:
+                has_ans_prob = 1.
             if args.verifier_mode == "takeover":
                 answerable = has_ans_prob
             elif args.verifier_mode == "joint":
