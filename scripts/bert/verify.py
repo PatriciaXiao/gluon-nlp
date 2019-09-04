@@ -144,8 +144,6 @@ class AnswerVerifyThreshold(object):
                 # Calculate gradients
                 loss_result.backward()
                 # Update parameters of the network
-                print(len(data))
-                exit(0)
                 self.trainer.step(len(data))
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
