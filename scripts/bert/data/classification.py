@@ -24,8 +24,11 @@ __all__ = [
 import os
 from mxnet.metric import Accuracy, F1, MCC, PearsonCorrelation, CompositeEvalMetric
 from gluonnlp.base import get_home_dir
-from gluonnlp.data import GlueCoLA, GlueSST2, GlueSTSB, GlueMRPC
-from gluonnlp.data import GlueQQP, GlueRTE, GlueMNLI, GlueQNLI, GlueWNLI
+
+import mxnet as mx
+if mx.context.num_gpus():
+    from gluonnlp.data import GlueCoLA, GlueSST2, GlueSTSB, GlueMRPC
+    from gluonnlp.data import GlueQQP, GlueRTE, GlueMNLI, GlueQNLI, GlueWNLI
 try:
     from .baidu_ernie_data import BaiduErnieXNLI, BaiduErnieLCQMC, BaiduErnieChnSentiCorp
 except ImportError:
