@@ -74,6 +74,8 @@ class AnswerVerifyThreshold(object):
         return answerable
 
     def update(self):
+        print(self.data)
+        exit(0)
         best_threshold = 0. # debug
         self.null_score_diff_threshold = best_threshold
 
