@@ -82,7 +82,7 @@ class AnswerVerifyThreshold(object):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
             label = 0 if features[0].is_impossible else 1
-           prediction, score_diff, top_predict = predict( # TODO: use this more wisely, for example, GAN
+            prediction, score_diff, top_predict = predict(
                     features=features,
                     results=results,
                     tokenizer=self.tokenizer,
