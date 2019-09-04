@@ -70,7 +70,7 @@ class AnswerVerifyThreshold(object):
         # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
         # option 3
         self.threshold = 0.5
-        self.batch_size = 64
+        self.batch_size = 16
         self.classifier = nn.HybridSequential()
         with self.classifier.name_scope():
             self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
@@ -152,6 +152,8 @@ class AnswerVerifyThreshold(object):
                 prediction = prediction.reshape(-1)
                 probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
                 self.f1.update(label, probabilities)
+                print(label, predicted_classes)
+                input()
             avg_train_loss = cumulative_train_loss / train_data_size
             print("Epoch: %s, Training loss: %.2f, Validation accuracy: %.2f, F1 score: %.2f" %
                                     (e, avg_train_loss, self.accuracy.get()[1], self.f1.get()[1]))
