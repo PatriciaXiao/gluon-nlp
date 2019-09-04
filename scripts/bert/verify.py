@@ -88,7 +88,7 @@ class AnswerVerifyThreshold(object):
 
     def update(self):
         data_numpy = np.array(self.data)
-        X = np.array(data_numpy[:,0]) # np.array(data_numpy[:,:-1])
+        X = np.array(data_numpy[:,0]).reshape(-1, 1) # np.array(data_numpy[:,:-1])
         y = np.array(data_numpy[:,-1])
         self.clf.fit(X, y)
         # best_threshold = 0. # debug
