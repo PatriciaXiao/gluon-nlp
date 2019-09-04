@@ -684,7 +684,7 @@ def evaluate():
             max_answer_length=max_answer_length,
             n_best_size=n_best_size,
             version_2=version_2)
-        print(score_diff, null_score_diff_threshold, features[0].is_impossible) # debug
+        # print(score_diff, null_score_diff_threshold, features[0].is_impossible) # debug
         # verifier
         if version_2 and prediction != '':
             # threshold serves as the basic verifier

@@ -296,7 +296,7 @@ def predict(features,
 
     if not version_2:
         prediction = nbest[0].text
-        answerable = 1.0
+        score_diff = 0.0
     else:
         prediction = best_non_null_entry.text
         # predict '' iff (the null score - the score of best non-null) > threshold
