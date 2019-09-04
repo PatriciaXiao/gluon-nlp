@@ -41,6 +41,60 @@ class verifier_layers(Block):
         '''
         return self.classifier(inputs)
 
+class AnswerVerifyThreshold(object):
+    def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=True),
+                max_answer_length=30,
+                n_best_size=20,
+                max_len=384,
+                version_2=True,
+                ctx=mx.cpu()):
+        self.tokenizer=tokenizer
+        self.max_answer_length=max_answer_length
+        self.null_score_diff_threshold=null_score_diff_threshold
+        self.n_best_size=n_best_size
+        self.version_2=version_2
+
+        self.data = list()
+        self.null_score_diff_threshold = 0.0 # normally between -5 and -1
+
+    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
+        if not self.version_2:
+            return        
+        raw_data = self.get_training_data(train_features, example_ids, out, token_types=token_types)
+        self.data.extend(raw_data)
+        exit(0)
+
+    def evaluate(self, dev_feature, prediction):
+        # asserted that prediction is not null
+        # reset the data
+        self.data = list()
+
+    def update(self):
+        pass
+
+    def get_training_data(self, train_features, example_ids, out, token_types=None):
+        output = mx.nd.split(out, axis=2, num_outputs=2)
+        example_ids = example_ids.asnumpy().tolist()
+        pred_start = output[0].reshape((0, -3)).asnumpy()
+        pred_end = output[1].reshape((0, -3)).asnumpy()
+        raw_data = []
+        for example_id, start, end in zip(example_ids, pred_start, pred_end):
+            results = [PredResult(start=start, end=end)]
+            features = train_features[example_id]
+            label = 0 if features[0].is_impossible else 1
+            _, score_diff, top_predict = predict( # TODO: use this more wisely, for example, GAN
+                    features=features,
+                    results=results,
+                    tokenizer=self.tokenizer,
+                    max_answer_length=self.max_answer_length,
+                    n_best_size=self.n_best_size,
+                    version_2=self.version_2)
+            non_empty_top = 1. if top_predict else 0.
+            raw_data.append([score_diff, non_empty_top, label])
+        return raw_data
+
+
+
 class AnswerVerifyDense(object):
     def __init__(self,
                 max_answer_length=30,
@@ -386,7 +440,7 @@ class AnswerVerify(object):
                     results=results,
                     tokenizer=self.tokenizer,
                     max_answer_length=self.max_answer_length,
-                    null_score_diff_threshold=self.null_score_diff_threshold,
+                    # null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
             if len(prediction) == 0:

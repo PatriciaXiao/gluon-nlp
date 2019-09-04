@@ -57,7 +57,7 @@ from model.qa import BertForQA
 from data.qa import SQuADTransform, preprocess_dataset
 from bert_qa_evaluate import get_F1_EM, predict, PredResult
 
-from verify import AnswerVerify, AnswerVerifyDense
+from verify import AnswerVerify, AnswerVerifyDense, AnswerVerifyThreshold
 
 np.random.seed(6)
 random.seed(6)
@@ -229,8 +229,8 @@ parser.add_argument('--answerable_threshold',
                     default=0.5,
                     help='If unanswerable - between 0 and 1, 0.5 by default.')
 
-parser.add_argument('--verifier', type=int, default=None, choices=[1, 2],
-                    help='the id of the verifier to use')
+parser.add_argument('--verifier', type=int, default=0, choices=[0, 1, 2],
+                    help='the id of the verifier to use, 0 refers to the standard thresholding.')
 
 parser.add_argument('--verifier_mode', type=str, default="joint", choices=["joint", "all", "takeover"],
                     help='the id of the verifier to use')
@@ -249,8 +249,7 @@ parser.add_argument('--customize_loss', action='store_true', default=False,
 
 args = parser.parse_args()
 
-verify = args.verifier is not None
-VERIFIER_ID = args.verifier if verify else -1
+VERIFIER_ID = args.verifier
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -393,7 +392,15 @@ loss_function = net.loss(customize_loss=args.customize_loss)
 loss_function.hybridize(static_alloc=True)
 
 if verify:
-    if VERIFIER_ID == 1:
+    if VERIFIER_ID == 0:
+        verifier = AnswerVerifyThreshold(
+                    tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
+                    max_answer_length=max_answer_length,
+                    n_best_size=n_best_size,
+                    max_len=max_seq_length,
+                    version_2=version_2,
+                    ctx=verify_ctx)
+    elif VERIFIER_ID == 1:
         verifier = AnswerVerify(
                     tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
                     max_answer_length=max_answer_length,
@@ -590,11 +597,6 @@ def train():
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
 
-            # pass the information to verifier and train it here
-            # train_features # example_ids # out # token_types
-            # if verify:
-            #     verifier.train(train_features, example_ids, out, token_types, bert_out)
-
             step_loss += ls.asscalar()
 
             if (batch_id + 1) % log_interval == 0:
@@ -610,7 +612,7 @@ def train():
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
-        if verify:
+        if version_2:
             train_verifier()
 
     if args.save_params:
@@ -626,6 +628,8 @@ def train_verifier():
                           token_types.astype('float32').as_in_context(ctx),
                           valid_length.astype('float32').as_in_context(ctx))
         verifier.train(train_features, example_ids, out, token_types, bert_out)
+    if VERIFIER_ID == 0:
+        verifier.update()
 
 def evaluate():
     """Evaluate the model on validation dataset.
