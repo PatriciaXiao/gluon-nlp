@@ -152,10 +152,8 @@ class AnswerVerifyThreshold(object):
                 prediction = prediction.reshape(-1)
                 probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
                 self.f1.update(label, probabilities)
-                print(label, predicted_classes)
-                input()
             avg_train_loss = cumulative_train_loss / train_data_size
-            print("Epoch: %s, Training loss: %.2f, Validation accuracy: %.2f, F1 score: %.2f" %
+            print("Epoch: %s, Training loss: %.2f, accuracy: %.2f, F1 score: %.2f" %
                                     (e, avg_train_loss, self.accuracy.get()[1], self.f1.get()[1]))
             self.accuracy.reset()
 
