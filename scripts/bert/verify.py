@@ -80,7 +80,7 @@ class AnswerVerifyThreshold(object):
         self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
         self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
         self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.8}) # 0.01, 0.1
+                  optimizer_params={'learning_rate': 0.1}) # 0.01, 0.1
 
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
@@ -115,7 +115,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self, epochs=100000, verbose=100):
+    def update(self, epochs=1000):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
