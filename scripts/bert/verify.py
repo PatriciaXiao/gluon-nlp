@@ -62,7 +62,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         # self.null_score_diff_threshold = 0.0 # normally between -5 and -1
 
-        self.clf = SVC(kernel='poly')
+        self.clf = SVC(kernel='linear') # 'poly'
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         if not self.version_2:
