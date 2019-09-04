@@ -70,17 +70,17 @@ class AnswerVerifyThreshold(object):
         # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
         # option 3
         self.threshold = 0.5
-        self.batch_size = 64
+        self.batch_size = 128
         self.classifier = nn.HybridSequential()
         with self.classifier.name_scope():
-            self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
-            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
-            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
+            self.classifier.add(nn.Dense(units=100, activation='relu'))  # input layer
+            self.classifier.add(nn.Dense(units=100, activation='relu'))   # inner layer 1
+            self.classifier.add(nn.Dense(units=100, activation='relu'))   # inner layer 2
             self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
         self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
         self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
         self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.01, 'momentum': 0.1})
+                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.1}) # 0.01, 0.1
         self.accuracy = mx.metric.Accuracy()
         self.f1 = mx.metric.F1()
 
@@ -109,7 +109,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self, epochs=10000, verbose=100):
+    def update(self, epochs=100000, verbose=100):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
