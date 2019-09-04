@@ -6,6 +6,7 @@ from bert_qa_evaluate import PredResult, predict, predict_span
 from mxnet.gluon.data.dataset import Dataset
 
 import random
+import numpy as np
 
 # https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html
 
