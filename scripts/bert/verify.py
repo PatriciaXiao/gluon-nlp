@@ -115,7 +115,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self, epochs=3000):
+    def update(self, epochs=100):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
