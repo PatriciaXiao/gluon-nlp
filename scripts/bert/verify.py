@@ -18,11 +18,6 @@ from mxnet.gluon import nn, Trainer, Block
 import re
 pattern = r'\?|\.|\!|;'
 
-# http://www.machinelearningtutorial.net/2016/12/10/python-svm/
-# SVM
-# import matplotlib.pyplot as plt
-# from sklearn.svm import SVC
-
 from mxnet import nd, autograd, gluon
 from mxnet.gluon.data import DataLoader, ArrayDataset
 
@@ -63,24 +58,25 @@ class AnswerVerifyThreshold(object):
         self.ctx = ctx
 
         self.data = list()
-        # option 1
-        # self.null_score_diff_threshold = 0.0 # normally between -5 and -1
-        # TODO: consider cleverer ways such as svm etc.
-        # option 2
-        # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
-        # option 3
-        self.threshold = 0.5
-        self.batch_size = 1024
-        self.classifier = nn.HybridSequential()
-        with self.classifier.name_scope():
-            self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
-            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
-            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
-            self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
-        self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
-        self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
-        self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.1}) # 0.01, 0.1
+
+        self.option = 2
+
+        if self.option == 1:
+            self.null_score_diff_threshold = 0.0 # normally between -5 and -1
+            # TODO: consider cleverer ways such as svm etc.
+        elif self.option == 2:
+            self.threshold = 0.5
+            self.batch_size = 1024
+            self.classifier = nn.HybridSequential()
+            with self.classifier.name_scope():
+                self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
+                self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
+                self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
+                self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
+            self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
+            self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
+            self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
+                      optimizer_params={'learning_rate': 0.1}) # 0.01, 0.1
 
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
@@ -88,63 +84,58 @@ class AnswerVerifyThreshold(object):
             return        
         raw_data = self.get_training_data(train_features, example_ids, out, token_types=token_types)
         self.data.extend(raw_data)
-        # exit(0)
 
     def evaluate(self, score_diff, best_pred):
         # asserted that prediction is not null
-        # option 1
-        # if score_diff > self.null_score_diff_threshold:
-        #     answerable = 0.
-        # else:
-        #     answerable = 1.
-        # option 2
-        # answerable = self.clf.predict([[score_diff, best_pred]])[0]
-        # option 3
-        data = mx.nd.array([[score_diff, best_pred]]).as_in_context(self.ctx)
-        # Do forward pass on a batch of validation data
-        output = self.classifier(data)
-        # getting prediction as a sigmoid
-        prediction = output.sigmoid()
-        # Converting neuron outputs to classes
-        predicted_classes = mx.nd.ceil(prediction - self.threshold)
-        # calculate probabilities of belonging to different classes. F1 metric works only with this notation
-        # prediction = prediction.reshape(-1)
-        answerable = predicted_classes[0].asscalar()
+        if self.option == 1:
+            if score_diff > self.null_score_diff_threshold:
+                answerable = 0.
+            else:
+                answerable = 1.
+        elif self.option == 2:
+            data = mx.nd.array([[score_diff, best_pred]]).as_in_context(self.ctx)
+            # Do forward pass on a batch of validation data
+            output = self.classifier(data)
+            # getting prediction as a sigmoid
+            prediction = output.sigmoid()
+            # Converting neuron outputs to classes
+            predicted_classes = mx.nd.ceil(prediction - self.threshold)
+            # calculate probabilities of belonging to different classes. F1 metric works only with this notation
+            # prediction = prediction.reshape(-1)
+            answerable = predicted_classes[0].asscalar()
         # print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
-        self.data = list()
         return answerable
 
     def update(self, epochs=100):
-        # data_numpy = np.array(self.data)
-        # X = np.array(data_numpy[:,:-1])
-        # y = np.array(data_numpy[:,-1])
-        # np.mean()
-        # option 1
-        # self.null_score_diff_threshold = np.median(data_numpy[:,0])
-        # self.null_score_diff_threshold = np.mean(data_numpy[:,0])
-        # option 2
-        # self.clf.fit(X, y)
-        # option 3
-        data_numpy = np.array(self.data)
-        X = nd.array(data_numpy[:,:-1])
-        y = nd.array(data_numpy[:,-1])
-        train_dataset = ArrayDataset(X, y)
-        train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        for e in range(epochs):
-            cumulative_train_loss = 0
-            for i, (data, label) in enumerate(train_dataloader):
-                data = data.as_in_context(self.ctx)
-                label = label.as_in_context(self.ctx)
-                with autograd.record():
-                    # Do forward pass on a batch of training data
-                    output = self.classifier(data)
-                    # Calculate loss for the training data batch
-                    loss_result = self.loss(output, label)
-                # Calculate gradients
-                loss_result.backward()
-                # Update parameters of the network
-                self.trainer.step(len(data))
+        if self.option == 1:
+            data_numpy = np.array(self.data)
+            X = np.array(data_numpy[:,:-1])
+            y = np.array(data_numpy[:,-1])
+            # np.mean()
+            # self.null_score_diff_threshold = np.median(data_numpy[:,0])
+            self.null_score_diff_threshold = np.mean(data_numpy[:,0])
+        elif self.option == 2:
+            data_numpy = np.array(self.data)
+            X = nd.array(data_numpy[:,:-1])
+            y = nd.array(data_numpy[:,-1])
+            train_dataset = ArrayDataset(X, y)
+            train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+            for e in range(epochs):
+                cumulative_train_loss = 0
+                for i, (data, label) in enumerate(train_dataloader):
+                    data = data.as_in_context(self.ctx)
+                    label = label.as_in_context(self.ctx)
+                    with autograd.record():
+                        # Do forward pass on a batch of training data
+                        output = self.classifier(data)
+                        # Calculate loss for the training data batch
+                        loss_result = self.loss(output, label)
+                    # Calculate gradients
+                    loss_result.backward()
+                    # Update parameters of the network
+                    self.trainer.step(len(data))
+        self.data = list()
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
