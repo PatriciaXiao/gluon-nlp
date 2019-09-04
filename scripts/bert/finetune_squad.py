@@ -688,22 +688,26 @@ def evaluate():
         # verifier
         if version_2 and prediction != '':
             # threshold serves as the basic verifier
+            '''
             if score_diff > null_score_diff_threshold:
                 answerable = 0.0
             else:
                 answerable = 1.0
-            if verify:
-                if VERIFIER_ID == 1:
-                    has_ans_prob = verifier.evaluate(features, prediction)
-                elif VERIFIER_ID == 2:
-                    has_ans_prob_list = all_pre_na_prob[features[0].example_id]
-                    has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
-                if args.verifier_mode == "takeover":
-                    answerable = has_ans_prob
-                elif args.verifier_mode == "joint":
-                    answerable = answerable * has_ans_prob
-                elif args.verifier_mode == "all":
-                    answerable = (answerable + has_ans_prob) * 0.5
+            '''
+            if VERIFIER_ID == 0:
+                has_ans_prob = verifier.evaluate(score_diff, best_pred)
+            elif VERIFIER_ID == 1:
+                has_ans_prob = verifier.evaluate(features, prediction)
+            elif VERIFIER_ID == 2:
+                has_ans_prob_list = all_pre_na_prob[features[0].example_id]
+                has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
+            if args.verifier_mode == "takeover":
+                answerable = has_ans_prob
+            elif args.verifier_mode == "joint":
+                answerable = answerable * has_ans_prob
+            elif args.verifier_mode == "all":
+                answerable = (answerable + has_ans_prob) * 0.5
+
             if answerable < answerable_threshold:
                 prediction = ""
 

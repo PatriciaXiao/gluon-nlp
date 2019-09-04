@@ -63,13 +63,19 @@ class AnswerVerifyThreshold(object):
         self.data.extend(raw_data)
         # exit(0)
 
-    def evaluate(self, dev_feature, prediction):
+    def evaluate(self, score_diff, best_pred):
         # asserted that prediction is not null
+        if score_diff > self.null_score_diff_threshold:
+            answerable = 0.
+        else:
+            answerable = 1.
         # reset the data
         self.data = list()
+        return answerable
 
     def update(self):
-        pass
+        best_threshold = 0. # debug
+        self.null_score_diff_threshold = best_threshold
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
@@ -89,9 +95,7 @@ class AnswerVerifyThreshold(object):
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
             non_empty_top = 1. if top_predict else 0.
-            print(prediction, "," , top_predict, ",", features[0].orig_answer_text)
-            if top_predict:
-                exit(0)
+            # print(prediction, "," , top_predict, ",", features[0].orig_answer_text)
             raw_data.append([score_diff, non_empty_top, label])
         return raw_data
 
