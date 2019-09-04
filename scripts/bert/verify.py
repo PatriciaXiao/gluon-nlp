@@ -69,6 +69,7 @@ class AnswerVerifyThreshold(object):
         # option 2
         # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
         # option 3
+        self.threshold = 0.5
         self.classifier = nn.HybridSequential()
         with self.classifier.name_scope():
             self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
@@ -107,7 +108,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         return answerable
 
-    def update(self):
+    def update(self, epochs=10):
         # data_numpy = np.array(self.data)
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
@@ -121,7 +122,38 @@ class AnswerVerifyThreshold(object):
         data_numpy = np.array(self.data)
         X = nd.array(data_numpy[:,:-1]).as_in_context(self.ctx)
         y = nd.array(data_numpy[:,-1]).as_in_context(self.ctx)
-        print(X, y)
+        train_dataset = ArrayDataset(X, y)
+        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        train_data_size = X.shape[0]
+        for e in range(epochs):
+            cumulative_train_loss = 0
+            for i, (data, label) in enumerate(train_dataloader):
+                with autograd.record():
+                    # Do forward pass on a batch of training data
+                    output = self.classifier(data)
+                    # Calculate loss for the training data batch
+                    loss_result = self.loss(output, label)
+                # Calculate gradients
+                loss_result.backward()
+                # Update parameters of the network
+                self.trainer.step(batch_size)
+                # sum losses of every batch
+                cumulative_train_loss += nd.sum(loss_result).asscalar()
+                # F1 / accuracy
+                prediction = output.sigmoid()
+                # Converting neuron outputs to classes
+                predicted_classes = mx.nd.ceil(prediction - self.threshold)
+                # Update validation accuracy
+                self.accuracy.update(label, predicted_classes.reshape(-1))
+                # calculate probabilities of belonging to different classes. F1 metric works only with this notation
+                prediction = prediction.reshape(-1)
+                probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
+                self.f1.update(label, probabilities)
+            avg_train_loss = cumulative_train_loss / train_data_size
+            print("Epoch: %s, Training loss: %.2f, Validation accuracy: %.2f, F1 score: %.2f" %
+                                    (e, avg_train_loss, self.accuracy.get()[1], self.f1.get()[1]))
+            self.accuracy.reset()
+
         exit(0)
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):

@@ -239,4 +239,5 @@ for e in range(epochs):
 
     # we reset accuracy, so the new epoch's accuracy would be calculated from the blank state
     accuracy.reset()
+    #f1.reset()
 
