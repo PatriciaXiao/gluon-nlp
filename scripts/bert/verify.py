@@ -124,7 +124,7 @@ class AnswerVerifyThreshold(object):
         X = nd.array(data_numpy[:,:-1]).as_in_context(self.ctx)
         y = nd.array(data_numpy[:,-1]).as_in_context(self.ctx)
         train_dataset = ArrayDataset(X, y)
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
         train_data_size = X.shape[0]
         for e in range(epochs):
             cumulative_train_loss = 0
