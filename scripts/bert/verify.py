@@ -50,7 +50,6 @@ class AnswerVerifyThreshold(object):
                 ctx=mx.cpu()):
         self.tokenizer=tokenizer
         self.max_answer_length=max_answer_length
-        self.null_score_diff_threshold=null_score_diff_threshold
         self.n_best_size=n_best_size
         self.version_2=version_2
 
