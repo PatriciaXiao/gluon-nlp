@@ -80,7 +80,7 @@ class AnswerVerifyThreshold(object):
         self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
         self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
         self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.8})
+                  optimizer_params={'learning_rate': 0.01, 'momentum': 0.1})
         self.accuracy = mx.metric.Accuracy()
         self.f1 = mx.metric.F1()
 
