@@ -677,7 +677,7 @@ def evaluate():
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
         # prediction2 is likely to be empty when in version_2
-        prediction, score_diff, prediction2 = predict(
+        prediction, score_diff, best_pred = predict(
             features=features,
             results=results,
             tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
