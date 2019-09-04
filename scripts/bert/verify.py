@@ -90,7 +90,7 @@ class AnswerVerifyThreshold(object):
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
             non_empty_top = 1. if top_predict else 0.
-            print(prediction, "," , top_predict)
+            print(prediction, "," , top_predict, ",", features[0].orig_answer_text)
             raw_data.append([score_diff, non_empty_top, label])
         return raw_data
 
