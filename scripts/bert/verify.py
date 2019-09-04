@@ -62,7 +62,7 @@ class AnswerVerifyThreshold(object):
         self.data = list()
         # self.null_score_diff_threshold = 0.0 # normally between -5 and -1
 
-        self.clf = SVC(kernel='linear') # 'poly'
+        self.clf = SVC(kernel='poly', gamma='scale') # 'linear'
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         if not self.version_2:
@@ -79,16 +79,15 @@ class AnswerVerifyThreshold(object):
         else:
             answerable = 1.
         '''
-        # answerable = self.clf.predict([[score_diff, best_pred], [-10, 1.], [10, 0]])
-        answerable = self.clf.predict([[score_diff], [-10], [10]])
-        print(score_diff, best_pred, "answerable:", answerable)
+        answerable = self.clf.predict([[score_diff, best_pred]])
+        # print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
         self.data = list()
         return answerable[0]
 
     def update(self):
         data_numpy = np.array(self.data)
-        X = np.array(data_numpy[:,0]).reshape(-1, 1) # np.array(data_numpy[:,:-1])
+        X = np.array(data_numpy[:,:-1])
         y = np.array(data_numpy[:,-1])
         self.clf.fit(X, y)
         # best_threshold = 0. # debug
