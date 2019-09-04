@@ -12,8 +12,7 @@ import numpy as np
 
 import model, data
 
-from mxnet.gluon import Block
-from mxnet.gluon import nn
+from mxnet.gluon import nn, Trainer, Block
 
 # https://blog.csdn.net/HappyRocking/article/details/80900890
 import re
@@ -21,8 +20,11 @@ pattern = r'\?|\.|\!|;'
 
 # http://www.machinelearningtutorial.net/2016/12/10/python-svm/
 # SVM
-import matplotlib.pyplot as plt
-from sklearn.svm import SVC
+# import matplotlib.pyplot as plt
+# from sklearn.svm import SVC
+
+from mxnet import nd, autograd, gluon
+from mxnet.gluon.data import DataLoader, ArrayDataset
 
 class VerifierDataset(Dataset):
     def __init__(self, data):
@@ -60,10 +62,25 @@ class AnswerVerifyThreshold(object):
         self.version_2=version_2
 
         self.data = list()
-        self.null_score_diff_threshold = 0.0 # normally between -5 and -1
+        # option 1
+        # self.null_score_diff_threshold = 0.0 # normally between -5 and -1
         # TODO: consider cleverer ways such as svm etc.
+        # option 2
+        # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
+        # option 3
+        self.classifier = nn.HybridSequential()
+        with self.classifier.name_scope():
+            self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
+            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
+            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
+            self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
+        self.classifier.initialize(mx.init.Xavier())
+        self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
+        self.trainer = Trainer(params=classifier.collect_params(), optimizer='sgd',
+                  optimizer_params={'learning_rate': 0.1})
+        self.accuracy = mx.metric.Accuracy()
+        self.f1 = mx.metric.F1()
 
-        # self.clf = SVC(kernel='poly', gamma='scale') # 'linear'
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         if not self.version_2:
@@ -74,11 +91,16 @@ class AnswerVerifyThreshold(object):
 
     def evaluate(self, score_diff, best_pred):
         # asserted that prediction is not null
-        if score_diff > self.null_score_diff_threshold:
-            answerable = 0.
-        else:
-            answerable = 1.
+        # option 1
+        # if score_diff > self.null_score_diff_threshold:
+        #     answerable = 0.
+        # else:
+        #     answerable = 1.
+        # option 2
         # answerable = self.clf.predict([[score_diff, best_pred]])[0]
+        # option 3
+        answerable = 1.
+        exit(0)
         # print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
         self.data = list()
@@ -86,11 +108,15 @@ class AnswerVerifyThreshold(object):
 
     def update(self):
         data_numpy = np.array(self.data)
-        # X = np.array(data_numpy[:,:-1])
-        # y = np.array(data_numpy[:,-1])
-        # self.clf.fit(X, y)
+        X = np.array(data_numpy[:,:-1])
+        y = np.array(data_numpy[:,-1])
         # np.mean()
-        self.null_score_diff_threshold = np.mean(data_numpy[:,0]) # np.median(data_numpy[:,0])
+        # option 1
+        # self.null_score_diff_threshold = np.median(data_numpy[:,0])
+        # self.null_score_diff_threshold = np.mean(data_numpy[:,0])
+        # option 2
+        # self.clf.fit(X, y)
+        exit(0)
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)

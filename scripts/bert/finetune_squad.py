@@ -229,7 +229,7 @@ parser.add_argument('--answerable_threshold',
                     default=0.5,
                     help='If unanswerable - between 0 and 1, 0.5 by default.')
 
-parser.add_argument('--verifier', type=int, default=0, choices=[0, 1, 2],
+parser.add_argument('--verifier', type=int, default=None, choices=[0, 1, 2],
                     help='the id of the verifier to use, 0 refers to the standard thresholding.')
 
 parser.add_argument('--verifier_mode', type=str, default="joint", choices=["joint", "all", "takeover"],
@@ -391,7 +391,7 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss(customize_loss=args.customize_loss)
 loss_function.hybridize(static_alloc=True)
 
-if version_2:
+if version_2 and VERIFIER_ID is not None:
     if VERIFIER_ID == 0:
         verifier = AnswerVerifyThreshold(
                     tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
@@ -612,7 +612,7 @@ def train():
         log.info('Time cost={:.2f} s, Thoughput={:.2f} samples/s'.format(
             epoch_toc - epoch_tic, total_num/(epoch_toc - epoch_tic)))
 
-        if version_2:
+        if version_2 and VERIFIER_ID is not None:
             train_verifier()
 
     if args.save_params:
@@ -690,10 +690,10 @@ def evaluate():
             # threshold serves as the basic verifier
             
             if score_diff > null_score_diff_threshold:
-                answerable = 0.0
+                answerable = 0.
             else:
-                answerable = 1.0
-            
+                answerable = 1.
+
             if VERIFIER_ID == 0:
                 best_pred_score = 1. if best_pred else 0.
                 has_ans_prob = verifier.evaluate(score_diff, best_pred_score)
@@ -705,6 +705,7 @@ def evaluate():
                 has_ans_prob = sum(has_ans_prob_list) / max(len(has_ans_prob_list), 1)
             else:
                 has_ans_prob = 1.
+                
             if args.verifier_mode == "takeover":
                 answerable = has_ans_prob
             elif args.verifier_mode == "joint":
