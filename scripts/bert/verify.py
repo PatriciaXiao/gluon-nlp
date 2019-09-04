@@ -62,6 +62,7 @@ class AnswerVerifyThreshold(object):
             return        
         raw_data = self.get_training_data(train_features, example_ids, out, token_types=token_types)
         self.data.extend(raw_data)
+        print(self.data)
         exit(0)
 
     def evaluate(self, dev_feature, prediction):
