@@ -89,7 +89,8 @@ class AnswerVerifyThreshold(object):
         # X = np.array(data_numpy[:,:-1])
         # y = np.array(data_numpy[:,-1])
         # self.clf.fit(X, y)
-        self.null_score_diff_threshold = sum(data_numpy[:,0]) / len(data_numpy)
+        # np.mean()
+        self.null_score_diff_threshold = np.median(data_numpy[:,0])
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
