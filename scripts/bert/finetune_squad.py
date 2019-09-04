@@ -391,7 +391,7 @@ net.hybridize(static_alloc=True)
 loss_function = net.loss(customize_loss=args.customize_loss)
 loss_function.hybridize(static_alloc=True)
 
-if verify:
+if version_2:
     if VERIFIER_ID == 0:
         verifier = AnswerVerifyThreshold(
                     tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
