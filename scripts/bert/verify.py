@@ -121,14 +121,16 @@ class AnswerVerifyThreshold(object):
         # self.clf.fit(X, y)
         # option 3
         data_numpy = np.array(self.data)
-        X = nd.array(data_numpy[:,:-1]).as_in_context(self.ctx)
-        y = nd.array(data_numpy[:,-1]).as_in_context(self.ctx)
+        X = nd.array(data_numpy[:,:-1])
+        y = nd.array(data_numpy[:,-1])
         train_dataset = ArrayDataset(X, y)
         train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
         train_data_size = X.shape[0]
         for e in range(epochs):
             cumulative_train_loss = 0
             for i, (data, label) in enumerate(train_dataloader):
+                data = data.as_in_context(self.ctx)
+                label = label.as_in_context(self.ctx)
                 with autograd.record():
                     # Do forward pass on a batch of training data
                     output = self.classifier(data)
