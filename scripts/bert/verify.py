@@ -59,7 +59,7 @@ class AnswerVerifyThreshold(object):
 
         self.data = list()
 
-        self.option = 2
+        self.option = 1
 
         if self.option == 1:
             self.null_score_diff_threshold = 0.0 # normally between -5 and -1
@@ -114,7 +114,7 @@ class AnswerVerifyThreshold(object):
             y = np.array(data_numpy[:,-1])
             # np.mean()
             # self.null_score_diff_threshold = np.median(data_numpy[:,0])
-            self.null_score_diff_threshold = np.mean(data_numpy[:,0])
+            self.null_score_diff_threshold = np.mean(data_numpy[:,0]) + np.std(data_numpy[:,0]) * .1
         elif self.option == 2:
             data_numpy = np.array(self.data)
             X = nd.array(data_numpy[:,:-1])
