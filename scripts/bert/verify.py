@@ -73,16 +73,14 @@ class AnswerVerifyThreshold(object):
         self.batch_size = 1024
         self.classifier = nn.HybridSequential()
         with self.classifier.name_scope():
-            self.classifier.add(nn.Dense(units=100, activation='relu'))  # input layer
-            self.classifier.add(nn.Dense(units=100, activation='relu'))   # inner layer 1
-            self.classifier.add(nn.Dense(units=100, activation='relu'))   # inner layer 2
+            self.classifier.add(nn.Dense(units=10, activation='relu'))  # input layer
+            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
+            self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
             self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
         self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
         self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
         self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.9, 'lr_decay': 0.01}) # 0.01, 0.1
-        self.accuracy = mx.metric.Accuracy()
-        self.f1 = mx.metric.F1()
+                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.8}) # 0.01, 0.1
 
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
@@ -102,9 +100,17 @@ class AnswerVerifyThreshold(object):
         # option 2
         # answerable = self.clf.predict([[score_diff, best_pred]])[0]
         # option 3
-        answerable = 1.
-        exit(0)
-        # print(score_diff, best_pred, "answerable:", answerable)
+        val_data = mx.nd.array([[score_diff, best_pred]])
+        # Do forward pass on a batch of validation data
+        output = self.classifier(val_data)
+        # getting prediction as a sigmoid
+        prediction = output.sigmoid()
+        # Converting neuron outputs to classes
+        predicted_classes = mx.nd.ceil(prediction - self.threshold)
+        # calculate probabilities of belonging to different classes. F1 metric works only with this notation
+        # prediction = prediction.reshape(-1)
+        answerable = predicted_classes[0].asscalar()
+        print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
         self.data = list()
         return answerable
@@ -139,26 +145,7 @@ class AnswerVerifyThreshold(object):
                 # Calculate gradients
                 loss_result.backward()
                 # Update parameters of the network
-                self.trainer.step(self.batch_size)
-                # sum losses of every batch
-                cumulative_train_loss += nd.sum(loss_result).asscalar()
-                # F1 / accuracy
-                prediction = output.sigmoid()
-                # Converting neuron outputs to classes
-                predicted_classes = mx.nd.ceil(prediction - self.threshold)
-                # Update validation accuracy
-                self.accuracy.update(label, predicted_classes.reshape(-1))
-                # calculate probabilities of belonging to different classes. F1 metric works only with this notation
-                prediction = prediction.reshape(-1)
-                probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
-                self.f1.update(label, probabilities)
-            avg_train_loss = cumulative_train_loss / train_data_size
-            if (e + 1) % verbose == 0:
-                print("Epoch: %s, Training loss: %.2f, accuracy: %.2f, F1 score: %.2f" %
-                                    (e, avg_train_loss, self.accuracy.get()[1], self.f1.get()[1]))
-            self.accuracy.reset()
-
-        exit(0)
+                self.trainer.step(len(data))
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)

@@ -169,7 +169,7 @@ classifier.initialize(mx.init.Xavier())
 
 loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
 trainer = Trainer(params=classifier.collect_params(), optimizer='sgd',
-                  optimizer_params={'learning_rate': 0.1})
+                  optimizer_params={'learning_rate': 0.1, 'momentum': 0.8})
 accuracy = mx.metric.Accuracy()
 f1 = mx.metric.F1()
 
@@ -219,6 +219,9 @@ def validate_model(threshold):
         # calculate probabilities of belonging to different classes. F1 metric works only with this notation
         prediction = prediction.reshape(-1)
         probabilities = mx.nd.stack(1 - prediction, prediction, axis=1)
+
+        # print(val_ground_truth_class, prediction)
+        # input()
 
         f1.update(val_ground_truth_class, probabilities)
 
