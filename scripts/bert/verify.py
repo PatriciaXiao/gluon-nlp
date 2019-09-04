@@ -79,7 +79,7 @@ class AnswerVerifyThreshold(object):
         else:
             answerable = 1.
         # answerable = self.clf.predict([[score_diff, best_pred]])[0]
-        print(score_diff, best_pred, "answerable:", answerable)
+        # print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
         self.data = list()
         return answerable
@@ -90,7 +90,7 @@ class AnswerVerifyThreshold(object):
         # y = np.array(data_numpy[:,-1])
         # self.clf.fit(X, y)
         # np.mean()
-        self.null_score_diff_threshold = np.median(data_numpy[:,0])
+        self.null_score_diff_threshold = np.mean(data_numpy[:,0]) # np.median(data_numpy[:,0])
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
