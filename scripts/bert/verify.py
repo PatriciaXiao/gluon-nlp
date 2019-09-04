@@ -70,7 +70,7 @@ class AnswerVerifyThreshold(object):
         # self.clf = SVC(kernel='poly', gamma='scale') # 'linear' / 'poly'
         # option 3
         self.threshold = 0.5
-        self.batch_size = 128
+        self.batch_size = 1024
         self.classifier = nn.HybridSequential()
         with self.classifier.name_scope():
             self.classifier.add(nn.Dense(units=100, activation='relu'))  # input layer
