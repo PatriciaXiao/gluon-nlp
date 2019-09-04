@@ -100,16 +100,16 @@ class AnswerVerifyThreshold(object):
         # option 2
         # answerable = self.clf.predict([[score_diff, best_pred]])[0]
         # option 3
-        val_data = mx.nd.array([[score_diff, best_pred]])
+        data = mx.nd.array([[score_diff, best_pred]]).as_in_context(self.ctx)
         # Do forward pass on a batch of validation data
-        output = self.classifier(val_data)
+        output = self.classifier(data)
         # getting prediction as a sigmoid
         prediction = output.sigmoid()
         # Converting neuron outputs to classes
         predicted_classes = mx.nd.ceil(prediction - self.threshold)
         # calculate probabilities of belonging to different classes. F1 metric works only with this notation
         # prediction = prediction.reshape(-1)
-        print(answerable)
+        print(predicted_classes)
         answerable = predicted_classes[0].asscalar()
         print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
