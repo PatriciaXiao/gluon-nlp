@@ -102,7 +102,7 @@ class AnswerVerifyThreshold(object):
         for example_id, start, end in zip(example_ids, pred_start, pred_end):
             results = [PredResult(start=start, end=end)]
             features = train_features[example_id]
-            label = 0 if features[0].is_impossible else 1
+            label = -1 if features[0].is_impossible else 1
             prediction, score_diff, top_predict = predict(
                     features=features,
                     results=results,
