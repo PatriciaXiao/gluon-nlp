@@ -60,9 +60,10 @@ class AnswerVerifyThreshold(object):
         self.version_2=version_2
 
         self.data = list()
-        # self.null_score_diff_threshold = 0.0 # normally between -5 and -1
+        self.null_score_diff_threshold = 0.0 # normally between -5 and -1
+        # TODO: consider cleverer ways such as svm etc.
 
-        self.clf = SVC(kernel='poly', gamma='scale') # 'linear'
+        # self.clf = SVC(kernel='poly', gamma='scale') # 'linear'
 
     def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
         if not self.version_2:
@@ -79,20 +80,20 @@ class AnswerVerifyThreshold(object):
         else:
             answerable = 1.
         '''
-        answerable = self.clf.predict([[score_diff, best_pred], [-100, -100], [-100, 100], [100, -100], [100, 100]])
+        answerable = self.clf.predict([[score_diff, best_pred]])[0]
         print(score_diff, best_pred, "answerable:", answerable)
-        exit(0)
         # reset the data
         self.data = list()
-        return answerable[0]
+        return answerable
 
     def update(self):
         data_numpy = np.array(self.data)
-        X = np.array(data_numpy[:,:-1])
-        y = np.array(data_numpy[:,-1])
-        self.clf.fit(X, y)
-        # best_threshold = 0. # debug
-        # self.null_score_diff_threshold = best_threshold
+        # X = np.array(data_numpy[:,:-1])
+        # y = np.array(data_numpy[:,-1])
+        # self.clf.fit(X, y)
+        self.null_score_diff_threshold = sum(data_numpy[:,0]) / len(data_numpy)
+        print(self.null_score_diff_threshold)
+        exit(0)
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
         output = mx.nd.split(out, axis=2, num_outputs=2)
