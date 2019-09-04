@@ -109,6 +109,7 @@ class AnswerVerifyThreshold(object):
         predicted_classes = mx.nd.ceil(prediction - self.threshold)
         # calculate probabilities of belonging to different classes. F1 metric works only with this notation
         # prediction = prediction.reshape(-1)
+        print(answerable)
         answerable = predicted_classes[0].asscalar()
         print(score_diff, best_pred, "answerable:", answerable)
         # reset the data
