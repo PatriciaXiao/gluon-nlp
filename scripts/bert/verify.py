@@ -60,6 +60,7 @@ class AnswerVerifyThreshold(object):
         self.max_answer_length=max_answer_length
         self.n_best_size=n_best_size
         self.version_2=version_2
+        self.ctx = ctx
 
         self.data = list()
         # option 1
@@ -74,7 +75,7 @@ class AnswerVerifyThreshold(object):
             self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 1
             self.classifier.add(nn.Dense(units=10, activation='relu'))   # inner layer 2
             self.classifier.add(nn.Dense(units=1))   # output layer: notice, it must have only 1 neuron for regression
-        self.classifier.initialize(mx.init.Xavier())
+        self.classifier.initialize(init=mx.init.Xavier(), ctx=ctx)
         self.loss = gluon.loss.SigmoidBinaryCrossEntropyLoss()
         self.trainer = Trainer(params=self.classifier.collect_params(), optimizer='sgd',
                   optimizer_params={'learning_rate': 0.1})
@@ -107,15 +108,19 @@ class AnswerVerifyThreshold(object):
         return answerable
 
     def update(self):
-        data_numpy = np.array(self.data)
-        X = np.array(data_numpy[:,:-1])
-        y = np.array(data_numpy[:,-1])
+        # data_numpy = np.array(self.data)
+        # X = np.array(data_numpy[:,:-1])
+        # y = np.array(data_numpy[:,-1])
         # np.mean()
         # option 1
         # self.null_score_diff_threshold = np.median(data_numpy[:,0])
         # self.null_score_diff_threshold = np.mean(data_numpy[:,0])
         # option 2
         # self.clf.fit(X, y)
+        # option 3
+        X = nd.array(data_numpy[:,:-1]).as_in_context(self.ctx)
+        y = nd.array(data_numpy[:,-1]).as_in_context(self.ctx)
+        print(X, y)
         exit(0)
 
     def get_training_data(self, train_features, example_ids, out, token_types=None):
