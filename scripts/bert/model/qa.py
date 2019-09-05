@@ -31,7 +31,7 @@ import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
 from gluonnlp.model.transformer import TransformerEncoder
 
-from qanet_layers import Encoder
+from .qanet_layers import Encoder
 
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
