@@ -75,8 +75,8 @@ class CoAttention(Block):
                 'linear_kernel', shape=(1, 1, int(bert_out_dim)), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
-            self.out_weight = self.params.get(
-                'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
+            # self.out_weight = self.params.get(
+            #     'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, cls_emb_encoded=None):
@@ -117,11 +117,13 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
-        #        F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), 
+               F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        '''
         out_weight = self.out_weight.data(ctx)
         return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
                out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
+        '''
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
