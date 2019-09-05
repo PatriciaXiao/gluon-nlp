@@ -173,6 +173,7 @@ class OneEncoderBlock(Block):
         x = self.attention(x, mask)
         debug = self.attention_dropout(x)
         print(debug.context, residual.context, x.context)
+        print(self.attention_dropout(x) + residual)
         x = self.attention_dropout(x) + residual
         return x + self.positionwise_ffn(x)
 
