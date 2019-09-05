@@ -3,6 +3,12 @@ from mxnet import gluon
 
 EMB_ENCODER_CONV_CHANNELS = 768
 
+import math
+from mxnet import nd
+from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
+from gluonnlp.model import (DotProductAttentionCell, Highway,
+                            MultiHeadAttentionCell)
+
 class Encoder(gluon.HybridBlock):
     r"""
     Stacked block of Embedding encoder or Model encoder.
