@@ -71,6 +71,8 @@ class HashingMemory(Block):
         Create two subkey sets per head.
         `self.keys` is of shape (heads, 2, n_keys, k_dim // 2)
         """
+        # TODO: this is not correct right now, we need to make it into parameter
+        # I'm not very familiar with mxnet parameter initialization, will do it later
         half = self.k_dim // 2
         self.keys = nd.array(np.array([
                 get_uniform_keys(self.n_keys, half, seed=(2 * i + j))
