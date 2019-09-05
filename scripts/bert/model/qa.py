@@ -193,6 +193,7 @@ class BertForQA(Block):
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
+                self.co_attention_ = CoAttention(str(bert_out_dim)) # try multiple layers
                 self.co_attention = CoAttention(str(bert_out_dim))
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
@@ -292,16 +293,13 @@ class BertForQA(Block):
                                                 context_max_len, query_max_len)
             '''
             # how about doing it again?
-            attended_output_, attended_query_ = self.co_attention(context_emb_encoded, query_emb_encoded, 
+            attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             attended_output, attended_query = self.co_attention(attended_output_, attended_query_, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             # print(mx.nd.add(attended_output, attended_query)) # this works
-            print(attended_query_)
-            print(attended_query)
-            exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
