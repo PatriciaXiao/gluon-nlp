@@ -11,7 +11,9 @@ from mxnet.initializer import MSRAPrelu, Normal, Uniform, Xavier
 from gluonnlp.model import (DotProductAttentionCell, Highway,
                             MultiHeadAttentionCell)
 
-class Encoder(gluon.HybridBlock):
+F = nd
+
+class Encoder(Block):
     r"""
     Stacked block of Embedding encoder or Model encoder.
     """
@@ -38,7 +40,7 @@ class Encoder(gluon.HybridBlock):
                 )
                 sub_layer_idx += (conv_layers + 2)
 
-    def hybrid_forward(self, F, x, mask):
+    def forward(self, x, mask):
         r"""Implement forward computation.
 
         Parameters
@@ -57,7 +59,7 @@ class Encoder(gluon.HybridBlock):
             x = F.Dropout(x, p=0.1)
         return x
 
-class OneEncoderBlock(gluon.HybridBlock):
+class OneEncoderBlock(Block):
     r"""The basic encoder block.
 
     Parameters
@@ -144,7 +146,7 @@ class OneEncoderBlock(gluon.HybridBlock):
                 )
             )
 
-    def hybrid_forward(self, F, x, mask):
+    def forward(self, x, mask):
         r"""Implement forward computation.
 
         Parameters
@@ -173,7 +175,7 @@ class OneEncoderBlock(gluon.HybridBlock):
         return x + self.positionwise_ffn(x)
 
 
-class StochasticDropoutLayer(gluon.HybridBlock):
+class StochasticDropoutLayer(Block):
     r"""
     Stochastic dropout a layer.
     """
@@ -184,14 +186,14 @@ class StochasticDropoutLayer(gluon.HybridBlock):
         with self.name_scope():
             self.dropout_fn = gluon.nn.Dropout(dropout)
 
-    def hybrid_forward(self, F, inputs):
+    def forward(self, inputs):
         if F.random.uniform().asscalar() < self.dropout:
             return F.zeros(shape=(1,))
         else:
             return self.dropout_fn(inputs)
 
 
-class SelfAttention(gluon.HybridBlock):
+class SelfAttention(Block):
     r"""
     Implementation of self-attention with gluonnlp.model.MultiHeadAttentionCell
     """
@@ -213,7 +215,7 @@ class SelfAttention(gluon.HybridBlock):
                 weight_initializer=Xavier()
             )
 
-    def hybrid_forward(self, F, x, mask):
+    def forward(self, x, mask):
         r"""Implement forward computation.
 
         Parameters
@@ -242,7 +244,7 @@ class PositionEncoder(gluon.HybridBlock):
         with self.name_scope():
             pass
 
-    def hybrid_forward(self, F, x, min_timescale=1.0, max_timescale=1e4):
+    def forward(self, x, min_timescale=1.0, max_timescale=1e4):
         r"""Implement forward computation.
 
         Parameters
@@ -255,8 +257,8 @@ class PositionEncoder(gluon.HybridBlock):
          : NDArray
             output tensor with shape `(batch_size, sequence_length, hidden_size)`
         """
-        length = x.shape_array()[1]
-        channels = x.shape_array()[2]
+        length = x.shape[1]
+        channels = x.shape[2]
         position = nd.array(range(length))
         num_timescales = channels // 2
         log_timescale_increment = (
@@ -295,7 +297,7 @@ class DepthwiseConv(gluon.HybridBlock):
                 bias_initializer='zeros'
             )
 
-    def hybrid_forward(self, F, inputs):
+    def forward(self, inputs):
         r"""Implement forward computation.
 
         Parameters
