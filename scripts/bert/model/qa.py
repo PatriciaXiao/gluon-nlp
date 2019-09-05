@@ -386,8 +386,10 @@ class BertForQALoss(Loss):
             assert a + 2 * b == 1
             for i in range(batch_size):
                 # 0 should be treated separately: it is the digit for no-answer; leave it there be 0 if there is an answer
+                # if no answer
                 if start_label_idx[i] == 0: # then end index must be also 0
                     continue
+                # if there is an answer
                 for j in range(1, seq_length):
                     start_label[i, j] = b / (2 ** abs(j - start_label_idx[i]) )
                     end_label[i, j] = b / (2 ** abs(j - end_label_idx[i]) )
