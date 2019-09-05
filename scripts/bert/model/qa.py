@@ -194,8 +194,15 @@ class BertForQA(Block):
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
-                self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
+                #self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
                 self.co_attention = CoAttention("co-attention", bert_out_dim)
+                self.project = gluon.nn.Dense(
+                    units=bert_out_dim,
+                    flatten=False,
+                    use_bias=False,
+                    weight_initializer=Xavier()
+                )
+                self.dropout = gluon.nn.Dropout(0.1)
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
@@ -288,18 +295,22 @@ class BertForQA(Block):
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
-            '''
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            '''
+            M = self.project(attended_output)
+            M = self.dropout(M)
+            print(M)
+            exit(0)
             # how about doing it again?
+            '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             attended_output, attended_query = self.co_attention(attended_output_, attended_query_, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            '''
             # print(mx.nd.add(attended_output, attended_query)) # this works
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
