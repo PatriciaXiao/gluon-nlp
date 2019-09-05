@@ -25,7 +25,7 @@ class Encoder(Block):
         total_layers = float((conv_layers + 2) * num_blocks)
         sub_layer_idx = 1
         self.num_blocks = num_blocks
-        self.stack_encoders = gluon.nn.HybridSequential()
+        self.stack_encoders = gluon.nn.Sequential()
         with self.stack_encoders.name_scope():
             for _ in range(num_blocks):
                 self.stack_encoders.add(
