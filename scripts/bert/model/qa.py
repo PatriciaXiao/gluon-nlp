@@ -198,6 +198,7 @@ class BertForQA(Block):
             with self.name_scope():
                 #self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
                 self.co_attention = CoAttention("co-attention", bert_out_dim)
+                '''
                 self.project = gluon.nn.Dense(
                     units=bert_out_dim,
                     flatten=False,
@@ -229,6 +230,7 @@ class BertForQA(Block):
                     bias_initializer=Uniform(1.0/bert_out_dim)
                 )
                 self.flatten = gluon.nn.Flatten()
+                '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
@@ -244,16 +246,13 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-        if not self.apply_coattention:
-            self.span_classifier = nn.HybridSequential()
-            with self.span_classifier.name_scope():
-                for i in range(n_rnn_layers):
-                    self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
-                for i in range(n_dense_layers):
-                    self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-                self.span_classifier.add(nn.Dense(units=2, flatten=False))
-        else:
-            self.span_classifier = None
+        self.span_classifier = nn.HybridSequential()
+        with self.span_classifier.name_scope():
+            for i in range(n_rnn_layers):
+                self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
+            for i in range(n_dense_layers):
+                self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
+            self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -327,6 +326,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            '''
             M = self.project(attended_output)
             M = self.dropout(M)
             # print(M)
@@ -349,6 +349,7 @@ class BertForQA(Block):
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(prediction, cls_added)
             return (prediction, bert_output)
+            '''
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
@@ -367,7 +368,6 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)
-        '''
         elif self.apply_coattention:
             context_output = self.span_classifier(attended_output)
             # deal with the null-score score
@@ -377,7 +377,6 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(context_output, cls_added)
-        '''
         return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):
