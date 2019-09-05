@@ -163,20 +163,16 @@ class OneEncoderBlock(Block):
         mask : NDArray
             output tensor with shape `(batch_size, sequence_length)`
         """
-        ctx = x.context
         x = self.position_encoder(x)
         for conv in self.convs:
             residual = x
-            x = conv(x).as_in_context(ctx) + residual
+            x = conv(x) + residual
         residual = x
         x = self.attention_layer_norm(x)
         x = F.Dropout(x, p=0.1)
         x = self.attention(x, mask)
-        # debug = self.attention_dropout(x)
-        # print(debug.context, residual.context, x.context)
-        # print(self.attention_dropout(x) + residual)
-        x = self.attention_dropout(x).as_in_context(ctx) + residual
-        return x + self.positionwise_ffn(x).as_in_context(ctx)
+        x = self.attention_dropout(x) + residual
+        return x + self.positionwise_ffn(x)
 
 
 class StochasticDropoutLayer(Block):
@@ -191,8 +187,9 @@ class StochasticDropoutLayer(Block):
             self.dropout_fn = gluon.nn.Dropout(dropout)
 
     def forward(self, inputs):
+    	ctx = inputs.ctx
         if F.random.uniform().asscalar() < self.dropout:
-            return F.zeros(shape=(1,))
+            return F.zeros(shape=(1,)).as_in_context(ctx)
         else:
             return self.dropout_fn(inputs)
 
