@@ -298,7 +298,9 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(attended_output_, attended_query_, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            print(mx.nd.add(attended_output, attended_query)) # this works
+            # print(mx.nd.add(attended_output, attended_query)) # this works
+            print(attended_query_)
+            print(attended_query)
             exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
