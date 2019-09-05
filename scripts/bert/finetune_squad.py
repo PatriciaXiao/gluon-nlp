@@ -375,8 +375,12 @@ else:
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
     net.cls_mapping.initialize(ctx=ctx)
+    net.project.collect_params().initialize(ctx=ctx)
+    net.dropout.collect_params().initialize(ctx=ctx)
     additional_params.update(net.co_attention.collect_params())
     additional_params.update(net.cls_mapping.collect_params())
+    additional_params.update(net.project.collect_params())
+    additional_params.update(net.dropout.collect_params())
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
