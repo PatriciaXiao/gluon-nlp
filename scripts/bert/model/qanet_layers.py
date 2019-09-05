@@ -173,6 +173,7 @@ class OneEncoderBlock(Block):
         x = self.attention(x, mask)
         print(self.attention_dropout(x).shape, residual.shape)
         x = self.attention_dropout(x) + residual
+        print("safe sentence")
         return x + self.positionwise_ffn(x)
 
 
