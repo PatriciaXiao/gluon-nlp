@@ -167,6 +167,7 @@ class OneEncoderBlock(Block):
         for conv in self.convs:
             residual = x
             print(conv(x).shape, x.shape)
+            exit(0)
             x = conv(x) + residual
         residual = x
         x = self.attention_layer_norm(x)
@@ -311,6 +312,7 @@ class DepthwiseConv(Block):
         x : NDArray
             output tensor with shape `(batch_size, sequence_length, new_hidden_size)`
         """
+        print("inputs.shape",inputs.shape)
         tmp = F.transpose(inputs, axes=(0, 2, 1))
         depthwise_conv = self.depthwise_conv(tmp)
         outputs = self.pointwise_conv(depthwise_conv)
