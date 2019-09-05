@@ -1,5 +1,5 @@
 import mxnet as mx
-from mxnet import gluon, nd
+from mxnet import gluon
 from mxnet.gluon import Block
 
 EMB_ENCODER_CONV_CHANNELS = 768
@@ -232,7 +232,7 @@ class SelfAttention(gluon.HybridBlock):
         return self.attention(x, x, mask=mask)[0]
 
 
-class PositionEncoder(Block):
+class PositionEncoder(gluon.HybridBlock):
     r"""
     An implementation of position encoder.
     """
@@ -242,7 +242,7 @@ class PositionEncoder(Block):
         with self.name_scope():
             pass
 
-    def forward(self, x, min_timescale=1.0, max_timescale=1e4):
+    def hybrid_forward(self, F, x, min_timescale=1.0, max_timescale=1e4):
         r"""Implement forward computation.
 
         Parameters
@@ -255,9 +255,8 @@ class PositionEncoder(Block):
          : NDArray
             output tensor with shape `(batch_size, sequence_length, hidden_size)`
         """
-        F = nd
-        length = x.shape[1]
-        channels = x.shape[2]
+        length = x.shape_array()[1]
+        channels = x.shape_array()[2]
         position = nd.array(range(length))
         num_timescales = channels // 2
         log_timescale_increment = (
