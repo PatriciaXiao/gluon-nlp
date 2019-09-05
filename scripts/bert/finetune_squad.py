@@ -380,25 +380,22 @@ else:
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
     net.cls_mapping.initialize(ctx=ctx)
-    # '''
     net.project.collect_params().initialize(ctx=ctx)
     net.dropout.collect_params().initialize(ctx=ctx)
     net.model_encoder.collect_params().initialize(ctx=ctx)
     net.predict_begin.collect_params().initialize(ctx=ctx)
     net.predict_end.collect_params().initialize(ctx=ctx)
-    # '''
+    # the additional paramaters if we want to freeze the BERT part of the model
     if additional_params is not None:
         additional_params.update(net.co_attention.collect_params())
     else:
         additional_params = net.co_attention.collect_params()
     additional_params.update(net.cls_mapping.collect_params())
-    # '''
     additional_params.update(net.project.collect_params())
     additional_params.update(net.dropout.collect_params())
     additional_params.update(net.model_encoder.collect_params())
     additional_params.update(net.predict_begin.collect_params())
     additional_params.update(net.predict_end.collect_params())
-    # '''
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
@@ -602,6 +599,16 @@ def train():
             # forward and backward
             with mx.autograd.record():
                 example_ids, inputs, token_types, valid_length, start_label, end_label = data
+
+                ############
+                # how to specify the unanswerable questions
+                ############
+                for eid, s, e in zip(example_ids, start_label, end_label):
+                    if train_features[eid].is_impossible:
+                        print("is impossible:", start_label, end_label)
+                    else:
+                        print("is possible:", start_label, end_label)
+                input()
 
                 log_num += len(inputs)
                 total_num += len(inputs)
