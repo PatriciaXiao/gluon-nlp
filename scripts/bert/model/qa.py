@@ -212,6 +212,23 @@ class BertForQA(Block):
                     num_heads=1,
                     num_blocks=7
                 )
+                self.predict_begin = gluon.nn.Dense(
+                    units=1,
+                    use_bias=True,
+                    flatten=False,
+                    weight_initializer=Xavier(
+                        rnd_type='uniform', factor_type='in', magnitude=1),
+                    bias_initializer=Uniform(1.0/bert_out_dim)
+                )
+                self.predict_end = gluon.nn.Dense(
+                    units=1,
+                    use_bias=True,
+                    flatten=False,
+                    weight_initializer=Xavier(
+                        rnd_type='uniform', factor_type='in', magnitude=1),
+                    bias_initializer=Uniform(1.0/bert_out_dim)
+                )
+                self.flatten = gluon.nn.Flatten()
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
@@ -227,13 +244,16 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-        self.span_classifier = nn.HybridSequential()
-        with self.span_classifier.name_scope():
-            for i in range(n_rnn_layers):
-                self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
-            for i in range(n_dense_layers):
-                self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-            self.span_classifier.add(nn.Dense(units=2, flatten=False))
+        if not self.apply_coattention:
+            self.span_classifier = nn.HybridSequential()
+            with self.span_classifier.name_scope():
+                for i in range(n_rnn_layers):
+                    self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
+                for i in range(n_dense_layers):
+                    self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
+                self.span_classifier.add(nn.Dense(units=2, flatten=False))
+        else:
+            self.span_classifier = None
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.

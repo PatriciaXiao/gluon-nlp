@@ -356,7 +356,8 @@ net = BertForQA(bert=bert, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
     apply_self_attention=args.apply_self_attention,
     apply_transformer=args.apply_transformer)
-additional_params = net.span_classifier.collect_params()
+if net.span_classifier is not None:
+    additional_params = net.span_classifier.collect_params()
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -364,10 +365,12 @@ elif pretrained_bert_parameters:
     # only load BertModel parameters
     bert.load_parameters(pretrained_bert_parameters, ctx=ctx,
                          ignore_extra=True, cast_dtype=True)
-    net.span_classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
+    if net.span_classifier is not None:
+        net.span_classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
 elif pretrained:
     # only load BertModel parameters
-    net.span_classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
+    if net.span_classifier is not None:
+        net.span_classifier.initialize(init=mx.init.Normal(0.02), ctx=ctx)
 else:
     # no checkpoint is loaded
     net.initialize(init=mx.init.Normal(0.02), ctx=ctx)
@@ -378,11 +381,15 @@ if args.apply_coattention:
     net.project.collect_params().initialize(ctx=ctx)
     net.dropout.collect_params().initialize(ctx=ctx)
     net.model_encoder.collect_params().initialize(ctx=ctx)
-    additional_params.update(net.co_attention.collect_params())
+    net.predict_begin.collect_params().initialize(ctx=ctx)
+    net.predict_end.collect_params().initialize(ctx=ctx)
+    additional_params = net.co_attention.collect_params()
     additional_params.update(net.cls_mapping.collect_params())
     additional_params.update(net.project.collect_params())
     additional_params.update(net.dropout.collect_params())
     additional_params.update(net.model_encoder.collect_params())
+    additional_params.update(net.predict_begin.collect_params())
+    additional_params.update(net.predict_end.collect_params())
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
