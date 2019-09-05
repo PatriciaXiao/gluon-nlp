@@ -366,8 +366,6 @@ class BertForQA(Block):
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
-        else:
-            output = self.span_classifier(bert_output)
         elif self.apply_coattention:
             context_output = self.span_classifier(attended_output)
             # deal with the null-score score
@@ -377,6 +375,8 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(context_output, cls_added)
+        else:
+            output = self.span_classifier(bert_output)
         return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):
