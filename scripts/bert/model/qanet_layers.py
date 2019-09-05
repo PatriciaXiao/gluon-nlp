@@ -202,7 +202,7 @@ class SelfAttention(gluon.HybridBlock):
                 num_heads=num_heads,
                 base_cell=DotProductAttentionCell(
                     scaled=True,
-                    dropout=LAYERS_DROPOUT,
+                    dropout=0.1,
                     use_bias=False
                 ),
                 query_units=EMB_ENCODER_CONV_CHANNELS,
