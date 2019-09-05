@@ -600,16 +600,6 @@ def train():
             with mx.autograd.record():
                 example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
-                ############
-                # how to specify the unanswerable questions
-                ############
-                for eid, s, e in zip(example_ids, start_label, end_label):
-                    if train_features[eid.asscalar()][0].is_impossible:
-                        print("is impossible:", s, e)
-                    else:
-                        print("is possible:", s, e)
-                input()
-
                 log_num += len(inputs)
                 total_num += len(inputs)
 

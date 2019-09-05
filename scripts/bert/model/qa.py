@@ -378,20 +378,23 @@ class BertForQALoss(Loss):
             seq_length = start_pred.shape[1]
             start_label_idx = start_label.astype(int).asnumpy().tolist() # start_label_idx[i].asscalar()
             end_label_idx = end_label.astype(int).asnumpy().tolist()
+            # one_hot by itself will be the same with the default version
             start_label = mx.ndarray.one_hot(start_label, seq_length)
             end_label = mx.ndarray.one_hot(end_label, seq_length)
             a = 0.8
             b = 0.1
             assert a + 2 * b == 1
             for i in range(batch_size):
-                for j in range(seq_length):
+                # 0 should be treated separately: it is the digit for no-answer; leave it there be 0 if there is an answer
+                if start_label_idx[i] == 0: # then end index must be also 0
+                    continue
+                for j in range(1, seq_length):
                     start_label[i, j] = b / (2 ** abs(j - start_label_idx[i]) )
                     end_label[i, j] = b / (2 ** abs(j - end_label_idx[i]) )
-            # start_label = start_label.softmax(axis=1) # too-----slow
-            # end_label = end_label.softmax(axis=1)
-            for i in range(batch_size):
                 start_label[i, start_label_idx[i]] = a
                 end_label[i, end_label_idx[i]] = a
+            # start_label = start_label.softmax(axis=1) # too-----slow
+            # end_label = end_label.softmax(axis=1)
         return (self.loss(start_pred, start_label) + self.loss(
             end_pred, end_label)) / 2
 
