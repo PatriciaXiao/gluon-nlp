@@ -338,8 +338,8 @@ class BertForQA(Block):
             end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
             predicted_begin = mask_logits(begin_hat, context_mask)
             predicted_end = mask_logits(end_hat, context_mask)
-            print(predicted_begin[0,0])
-            print(predicted_end.shape)
+            prediction = nd.concat(predicted_begin, predicted_end)
+            print(prediction.shape)
             exit(0)
             return predicted_begin, predicted_end
             # how about doing it again?
