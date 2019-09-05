@@ -232,7 +232,7 @@ class SelfAttention(gluon.HybridBlock):
         return self.attention(x, x, mask=mask)[0]
 
 
-class PositionEncoder(gluon.HybridBlock):
+class PositionEncoder(Block):
     r"""
     An implementation of position encoder.
     """
