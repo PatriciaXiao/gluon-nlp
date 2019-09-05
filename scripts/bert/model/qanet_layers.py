@@ -166,8 +166,6 @@ class OneEncoderBlock(Block):
         x = self.position_encoder(x)
         for conv in self.convs:
             residual = x
-            print(conv(x).shape, x.shape)
-            exit(0)
             x = conv(x) + residual
         residual = x
         x = self.attention_layer_norm(x)
