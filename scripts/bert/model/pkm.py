@@ -71,15 +71,15 @@ class HashingMemory(Block):
         Create two subkey sets per head.
         `self.keys` is of shape (heads, 2, n_keys, k_dim // 2)
         """
-        # TODO: this is not correct right now, we need to make it into parameter
-        # I'm not very familiar with mxnet parameter initialization, will do it later
         half = self.k_dim // 2
-        self.keys = nd.array(np.array([
+        keys = nd.array(np.array([
                 get_uniform_keys(self.n_keys, half, seed=(2 * i + j))
                 for i in range(self.heads)
                 for j in range(2)
             ])).reshape(self.heads, 2, self.n_keys, half)
-
+        self.keys = gluon.Parameter("keys", shape=keys.shape, init=mx.init.Zero())
+        self.keys.initialize(ctx=self.ctx)
+        self.keys.set_data(keys)
 
     def _get_indices(self, query, subkeys):
         """
@@ -130,7 +130,7 @@ class HashingMemory(Block):
         assert len(query.shape) == 2 and query.shape[1] == self.k_dim
         query = query.reshape(-1, self.heads, self.k_dim)
         bs = len(query)
-        outputs = [self._get_indices(query[:, i], self.keys[i]) for i in range(self.heads)] # 4
+        outputs = [self._get_indices(query[:, i], self.keys.data(self.ctx)[i]) for i in range(self.heads)] # 4
         s = mx.ndarray.concat(*[s.reshape(bs, 1, self.knn) for s, _ in outputs], dim=1)  # (bs,heads,knn)
         i = mx.ndarray.concat(*[i.reshape(bs, 1, self.knn) for _, i in outputs], dim=1)  # (bs,heads,knn)
         return s.reshape(-1, self.knn), i.reshape(-1, self.knn)

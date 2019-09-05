@@ -31,8 +31,6 @@ import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
 from gluonnlp.model.transformer import TransformerEncoder
 
-from .qanet_layers import Encoder
-
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
@@ -208,15 +206,6 @@ class BertForQA(Block):
                 )
                 self.dropout = gluon.nn.Dropout(0.1)
                 self.model_encoder = TransformerEncoder(units=bert_out_dim)
-                '''
-                self.model_encoder = Encoder(
-                    kernel_size=5,
-                    num_filters=bert_out_dim,
-                    conv_layers=2,
-                    num_heads=1,
-                    num_blocks=7
-                )
-                '''
                 self.predict_begin = gluon.nn.Dense(
                     units=1,
                     use_bias=True,
@@ -304,12 +293,6 @@ class BertForQA(Block):
             #'''
             M = self.project(attended_output)
             M = self.dropout(M)
-            # print(M)
-            '''
-            M_0 = self.model_encoder(M, context_mask)
-            M_1 = self.model_encoder(M_0, context_mask)
-            M_2 = self.model_encoder(M_1, context_mask)
-            '''
             M_0, _ = self.model_encoder(M)
             M_1, _ = self.model_encoder(M_0)
             M_2, _ = self.model_encoder(M_1)
@@ -346,15 +329,6 @@ class BertForQA(Block):
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
-        elif self.apply_coattention:
-            context_output = self.span_classifier(attended_output)
-            # deal with the null-score score
-            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
-            cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            ctx = context_output.context
-            zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
-            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
-            output = mx.nd.add(context_output, cls_added)
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
@@ -366,7 +340,6 @@ class BertForQA(Block):
 class BertForQALoss(Loss):
     """Loss for SQuAD task with BERT.
     """
-
     def __init__(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):  # pylint: disable=unused-argument
         super(BertForQALoss, self).__init__(
             weight=None, batch_axis=0, **kwargs)
@@ -375,7 +348,6 @@ class BertForQALoss(Loss):
             self.loss = loss.SoftmaxCELoss(sparse_label=False)
         else:
             self.loss = loss.SoftmaxCELoss()
-
     # def hybrid_forward(self, F, pred, label):  # pylint: disable=arguments-differ
     def forward(self, pred, label):  # False / True
         """
@@ -413,10 +385,6 @@ class BertForQALoss(Loss):
             assert a + 2 * b == 1
             for i in range(batch_size):
                 for j in range(seq_length):
-                    '''
-                    start_label[i, j] = 1. / (abs(j - start_label_idx[i].asscalar()) + 1.)
-                    end_label[i, j] = 1. / (abs(j - end_label_idx[i].asscalar()) + 1.)
-                    '''
                     start_label[i, j] = b / (2 ** abs(j - start_label_idx[i]) )
                     end_label[i, j] = b / (2 ** abs(j - end_label_idx[i]) )
             # start_label = start_label.softmax(axis=1) # too-----slow
