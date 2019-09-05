@@ -203,7 +203,8 @@ class BertForQA(Block):
                     units=bert_out_dim,
                     flatten=False,
                     use_bias=False,
-                    weight_initializer=Xavier()
+                    weight_initializer=Xavier(),
+                    prefix='projection_'
                 )
                 self.dropout = gluon.nn.Dropout(0.1)
                 self.model_encoder = TransformerEncoder(units=bert_out_dim)
@@ -222,7 +223,8 @@ class BertForQA(Block):
                     flatten=False,
                     weight_initializer=Xavier(
                         rnd_type='uniform', factor_type='in', magnitude=1),
-                    bias_initializer=Uniform(1.0/bert_out_dim)
+                    bias_initializer=Uniform(1.0/bert_out_dim),
+                    prefix='predict_start_'
                 )
                 self.predict_end = gluon.nn.Dense(
                     units=1,
@@ -230,7 +232,8 @@ class BertForQA(Block):
                     flatten=False,
                     weight_initializer=Xavier(
                         rnd_type='uniform', factor_type='in', magnitude=1),
-                    bias_initializer=Uniform(1.0/bert_out_dim)
+                    bias_initializer=Uniform(1.0/bert_out_dim),
+                    prefix='predict_end_'
                 )
                 self.flatten = gluon.nn.Flatten()
                 # '''
@@ -238,7 +241,8 @@ class BertForQA(Block):
                 self.cls_mapping = nn.Dense(
                     units=2,
                     flatten=False,
-                    weight_initializer=Xavier()
+                    weight_initializer=Xavier(),
+                    prefix='cls_mapping_'
                 )
         if self.apply_self_attention:
             if self_attention_dimension is None:
