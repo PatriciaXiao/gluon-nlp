@@ -59,13 +59,13 @@ class AnswerVerifyThreshold(object):
 
         self.data = list()
 
-        self.option = 1
+        self.option = 2
 
         if self.option == 1:
             self.null_score_diff_threshold = 0.0 # normally between -5 and -1
             # TODO: consider cleverer ways such as svm etc.
         elif self.option == 2:
-            self.threshold = 0.5
+            self.threshold = 0.45 # 0.5
             self.batch_size = 1024
             self.classifier = nn.HybridSequential()
             with self.classifier.name_scope():
