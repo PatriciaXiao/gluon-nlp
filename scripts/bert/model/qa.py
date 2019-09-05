@@ -310,6 +310,9 @@ class BertForQA(Block):
             M = self.project(attended_output)
             M = self.dropout(M)
             print(M)
+            M_0 = self.model_encoder(M, context_mask)
+            M_1 = self.model_encoder(M_0, context_mask)
+            M_2 = self.model_encoder(M_1, context_mask)
             exit(0)
             # how about doing it again?
             '''
