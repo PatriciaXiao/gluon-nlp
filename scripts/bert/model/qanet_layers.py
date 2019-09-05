@@ -81,10 +81,10 @@ class OneEncoderBlock(Block):
                  sub_layer_idx, **kwargs):
         super(OneEncoderBlock, self).__init__(**kwargs)
         self.position_encoder = PositionEncoder()
-        self.convs = gluon.nn.HybridSequential()
+        self.convs = gluon.nn.Sequential()
         with self.convs.name_scope():
             for _ in range(conv_layers):
-                one_conv_module = gluon.nn.HybridSequential()
+                one_conv_module = gluon.nn.Sequential()
                 with one_conv_module.name_scope():
                     one_conv_module.add(
                         gluon.nn.LayerNorm(epsilon=1e-06)
@@ -115,7 +115,7 @@ class OneEncoderBlock(Block):
             sub_layer_idx += 1
             self.attention_layer_norm = gluon.nn.LayerNorm(epsilon=1e-06)
 
-        self.positionwise_ffn = gluon.nn.HybridSequential()
+        self.positionwise_ffn = gluon.nn.Sequential()
         with self.positionwise_ffn.name_scope():
             self.positionwise_ffn.add(
                 gluon.nn.LayerNorm(epsilon=1e-06)
