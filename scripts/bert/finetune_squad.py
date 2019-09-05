@@ -377,6 +377,8 @@ if args.apply_coattention:
     net.cls_mapping.initialize(ctx=ctx)
     additional_params.update(net.co_attention.collect_params())
     additional_params.update(net.cls_mapping.collect_params())
+    net.co_attention_.collect_params().initialize(ctx=ctx)
+    additional_params.update(net.co_attention_.collect_params())
 
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)
