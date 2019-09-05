@@ -207,7 +207,7 @@ class BertForQA(Block):
                 self.dropout = gluon.nn.Dropout(0.1)
                 self.model_encoder = Encoder(
                     kernel_size=5,
-                    num_filters=128,
+                    num_filters=bert_out_dim,
                     conv_layers=2,
                     num_heads=1,
                     num_blocks=7

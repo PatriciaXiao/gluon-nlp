@@ -292,9 +292,6 @@ class DepthwiseConv(Block):
             	strides = 1,
                 weight_initializer=MSRAPrelu()
             )
-
-            print(input_channels)
-            exit(0)
             
             # out_width = floor((width+2*padding-dilation*(kernel_size-1)-1)/strides)+1
             
