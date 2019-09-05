@@ -185,46 +185,49 @@ class BertForQA(Block):
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
-                    apply_transformer=False):
+                    apply_transformer=False,
+                    qanet_style_out=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.apply_self_attention = apply_self_attention
         self.apply_transformer = apply_transformer
+        self.qanet_style_out = qanet_style_out
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
                 #self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
                 self.co_attention = CoAttention("co-attention", bert_out_dim)
                 # '''
-                self.project = gluon.nn.Dense(
-                    units=bert_out_dim,
-                    flatten=False,
-                    use_bias=False,
-                    weight_initializer=Xavier(),
-                    prefix='projection_'
-                )
-                self.dropout = gluon.nn.Dropout(0.1)
-                self.model_encoder = TransformerEncoder(units=bert_out_dim)
-                self.predict_begin = gluon.nn.Dense(
-                    units=1,
-                    use_bias=True,
-                    flatten=False,
-                    weight_initializer=Xavier(
-                        rnd_type='uniform', factor_type='in', magnitude=1),
-                    bias_initializer=Uniform(1.0/bert_out_dim),
-                    prefix='predict_start_'
-                )
-                self.predict_end = gluon.nn.Dense(
-                    units=1,
-                    use_bias=True,
-                    flatten=False,
-                    weight_initializer=Xavier(
-                        rnd_type='uniform', factor_type='in', magnitude=1),
-                    bias_initializer=Uniform(1.0/bert_out_dim),
-                    prefix='predict_end_'
-                )
-                self.flatten = gluon.nn.Flatten()
+                if self.qanet_style_out:
+                    self.project = gluon.nn.Dense(
+                        units=bert_out_dim,
+                        flatten=False,
+                        use_bias=False,
+                        weight_initializer=Xavier(),
+                        prefix='projection_'
+                    )
+                    self.dropout = gluon.nn.Dropout(0.1)
+                    self.model_encoder = TransformerEncoder(units=bert_out_dim)
+                    self.predict_begin = gluon.nn.Dense(
+                        units=1,
+                        use_bias=True,
+                        flatten=False,
+                        weight_initializer=Xavier(
+                            rnd_type='uniform', factor_type='in', magnitude=1),
+                        bias_initializer=Uniform(1.0/bert_out_dim),
+                        prefix='predict_start_'
+                    )
+                    self.predict_end = gluon.nn.Dense(
+                        units=1,
+                        use_bias=True,
+                        flatten=False,
+                        weight_initializer=Xavier(
+                            rnd_type='uniform', factor_type='in', magnitude=1),
+                        bias_initializer=Uniform(1.0/bert_out_dim),
+                        prefix='predict_end_'
+                    )
+                    self.flatten = gluon.nn.Flatten()
                 # '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
@@ -242,7 +245,9 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-        if not self.apply_coattention:
+        if self.qanet_style_out:
+            self.span_classifier = None
+        else:
             self.span_classifier = nn.HybridSequential()
             with self.span_classifier.name_scope():
                 for i in range(n_rnn_layers):
@@ -250,8 +255,6 @@ class BertForQA(Block):
                 for i in range(n_dense_layers):
                     self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
                 self.span_classifier.add(nn.Dense(units=2, flatten=False))
-        else:
-            self.span_classifier = None
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -291,28 +294,6 @@ class BertForQA(Block):
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             #'''
-            M = self.project(attended_output)
-            M = self.dropout(M)
-            M_0, _ = self.model_encoder(M)
-            M_1, _ = self.model_encoder(M_0)
-            M_2, _ = self.model_encoder(M_1)
-            begin_hat = self.flatten(
-                self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
-            end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
-            predicted_begin = mask_logits(begin_hat, context_mask)
-            predicted_end = mask_logits(end_hat, context_mask)
-            prediction = nd.stack(predicted_begin, predicted_end, axis=2)
-            # print(prediction.shape) # (12, 384, 2)
-            # exit(0)
-            # deal with the null-score score
-            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
-            cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            ctx = prediction.context
-            zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
-            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
-            output = mx.nd.add(prediction, cls_added)
-            return (output, bert_output)
-            #'''
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
@@ -323,12 +304,43 @@ class BertForQA(Block):
                                                 context_max_len, query_max_len)
             '''
             # print(mx.nd.add(attended_output, attended_query)) # this works
+            if self.qanet_style_out
+                M = self.project(attended_output)
+                M = self.dropout(M)
+                M_0, _ = self.model_encoder(M)
+                M_1, _ = self.model_encoder(M_0)
+                M_2, _ = self.model_encoder(M_1)
+                begin_hat = self.flatten(
+                    self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
+                end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
+                predicted_begin = mask_logits(begin_hat, context_mask)
+                predicted_end = mask_logits(end_hat, context_mask)
+                prediction = nd.stack(predicted_begin, predicted_end, axis=2)
+                # print(prediction.shape) # (12, 384, 2)
+                # exit(0)
+                # deal with the null-score score
+                cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
+                cls_reshaped = self.cls_mapping(cls_emb_encoded)
+                ctx = prediction.context
+                zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
+                cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
+                output = mx.nd.add(prediction, cls_added)
+                return (output, bert_output)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
+        elif self.apply_coattention and not self.qanet_style_out:
+            context_output = self.span_classifier(attended_output)
+            # deal with the null-score score
+            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
+            cls_reshaped = self.cls_mapping(cls_emb_encoded)
+            ctx = prediction.context
+            zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
+            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
+            output = mx.nd.add(context_output, cls_added)
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)

@@ -244,6 +244,9 @@ parser.add_argument('--save_params', action='store_true', default=False,
 parser.add_argument('--freeze_bert', action='store_true', default=False,
                     help='not finetuning bert parameters, only finetuning the rest parts.')
 
+parser.add_argument('--qanet_style_out', action='store_true', default=False,
+                    help='using the QANet-style output.')
+
 parser.add_argument('--customize_loss', action='store_true', default=False,
                     help='custimizing the loss function when needed.')
 
@@ -355,8 +358,9 @@ net = BertForQA(bert=bert, \
     add_query=args.add_query, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
     apply_self_attention=args.apply_self_attention,
-    apply_transformer=args.apply_transformer)
-if not args.apply_coattention:
+    apply_transformer=args.apply_transformer,
+    qanet_style_out=args.qanet_style_out)
+if not args.qanet_style_out:
     additional_params = net.span_classifier.collect_params()
 else:
     additional_params = None
@@ -380,22 +384,24 @@ else:
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
     net.cls_mapping.initialize(ctx=ctx)
-    net.project.collect_params().initialize(ctx=ctx)
-    net.dropout.collect_params().initialize(ctx=ctx)
-    net.model_encoder.collect_params().initialize(ctx=ctx)
-    net.predict_begin.collect_params().initialize(ctx=ctx)
-    net.predict_end.collect_params().initialize(ctx=ctx)
+    if args.qanet_style_out:
+        net.project.collect_params().initialize(ctx=ctx)
+        net.dropout.collect_params().initialize(ctx=ctx)
+        net.model_encoder.collect_params().initialize(ctx=ctx)
+        net.predict_begin.collect_params().initialize(ctx=ctx)
+        net.predict_end.collect_params().initialize(ctx=ctx)
     # the additional paramaters if we want to freeze the BERT part of the model
     if additional_params is not None:
         additional_params.update(net.co_attention.collect_params())
     else:
         additional_params = net.co_attention.collect_params()
     additional_params.update(net.cls_mapping.collect_params())
-    additional_params.update(net.project.collect_params())
-    additional_params.update(net.dropout.collect_params())
-    additional_params.update(net.model_encoder.collect_params())
-    additional_params.update(net.predict_begin.collect_params())
-    additional_params.update(net.predict_end.collect_params())
+    if args.qanet_style_out:
+        additional_params.update(net.project.collect_params())
+        additional_params.update(net.dropout.collect_params())
+        additional_params.update(net.model_encoder.collect_params())
+        additional_params.update(net.predict_begin.collect_params())
+        additional_params.update(net.predict_end.collect_params())
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
