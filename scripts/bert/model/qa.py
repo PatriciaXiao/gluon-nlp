@@ -312,7 +312,7 @@ class BertForQA(Block):
             # print(M)
             M_0 = self.model_encoder(M, context_mask)
             M_1 = self.model_encoder(M_0, context_mask)
-            print(M.context, M_0.context, M_1.context_mask)
+            print(M.context, M_0.context, M_1.context)
             exit(0)
             M_2 = self.model_encoder(M_1, context_mask)
             # how about doing it again?
