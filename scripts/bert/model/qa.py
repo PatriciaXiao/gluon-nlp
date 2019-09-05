@@ -246,13 +246,14 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
+        if not self.apply_coattention:
         self.span_classifier = nn.HybridSequential()
-        with self.span_classifier.name_scope():
-            for i in range(n_rnn_layers):
-                self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
-            for i in range(n_dense_layers):
-                self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
-            self.span_classifier.add(nn.Dense(units=2, flatten=False))
+            with self.span_classifier.name_scope():
+                for i in range(n_rnn_layers):
+                    self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
+                for i in range(n_dense_layers):
+                    self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
+                self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
     def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
