@@ -53,8 +53,9 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, bert_out_dim, params=None):
-        super(CoAttention, self).__init__(bert_out_dim)
+    def __init__(self, name, bert_out_dim, params=None):
+        super(CoAttention, self).__init__(name)
+        self.in_dim = bert_out_dim
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
@@ -193,8 +194,8 @@ class BertForQA(Block):
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
-                self.co_attention_ = CoAttention(str(bert_out_dim)) # try multiple layers
-                self.co_attention = CoAttention(str(bert_out_dim))
+                self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
+                self.co_attention = CoAttention("co-attention", bert_out_dim)
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
