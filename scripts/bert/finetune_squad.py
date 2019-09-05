@@ -605,9 +605,9 @@ def train():
                 ############
                 for eid, s, e in zip(example_ids, start_label, end_label):
                     if train_features[eid.asscalar()][0].is_impossible:
-                        print("is impossible:", start_label, end_label)
+                        print("is impossible:", s, e)
                     else:
-                        print("is possible:", start_label, end_label)
+                        print("is possible:", s, e)
                 input()
 
                 log_num += len(inputs)
