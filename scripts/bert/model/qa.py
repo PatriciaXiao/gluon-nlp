@@ -206,6 +206,8 @@ class BertForQA(Block):
                     weight_initializer=Xavier()
                 )
                 self.dropout = gluon.nn.Dropout(0.1)
+                self.model_encoder = TransformerEncoder(units=bert_out_dim)
+                '''
                 self.model_encoder = Encoder(
                     kernel_size=5,
                     num_filters=bert_out_dim,
@@ -213,6 +215,7 @@ class BertForQA(Block):
                     num_heads=1,
                     num_blocks=7
                 )
+                '''
                 self.predict_begin = gluon.nn.Dense(
                     units=1,
                     use_bias=True,
