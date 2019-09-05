@@ -163,12 +163,12 @@ class OneEncoderBlock(Block):
         mask : NDArray
             output tensor with shape `(batch_size, sequence_length)`
         """
+        ctx = x.context
         x = self.position_encoder(x)
         for conv in self.convs:
             residual = x
-            x = conv(x) + residual
+            x = conv(x).as_in_context(ctx) + residual
         residual = x
-        ctx = x.context
         x = self.attention_layer_norm(x)
         x = F.Dropout(x, p=0.1)
         x = self.attention(x, mask)
