@@ -198,7 +198,7 @@ class BertForQA(Block):
             with self.name_scope():
                 #self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
                 self.co_attention = CoAttention("co-attention", bert_out_dim)
-                '''
+                # '''
                 self.project = gluon.nn.Dense(
                     units=bert_out_dim,
                     flatten=False,
@@ -230,7 +230,7 @@ class BertForQA(Block):
                     bias_initializer=Uniform(1.0/bert_out_dim)
                 )
                 self.flatten = gluon.nn.Flatten()
-                '''
+                # '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
