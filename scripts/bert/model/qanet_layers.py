@@ -187,7 +187,7 @@ class StochasticDropoutLayer(Block):
             self.dropout_fn = gluon.nn.Dropout(dropout)
 
     def forward(self, inputs):
-    	ctx = inputs.ctx
+        ctx = inputs.ctx
         if F.random.uniform().asscalar() < self.dropout:
             return F.zeros(shape=(1,)).as_in_context(ctx)
         else:
