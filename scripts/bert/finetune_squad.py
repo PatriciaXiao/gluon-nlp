@@ -356,7 +356,10 @@ net = BertForQA(bert=bert, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
     apply_self_attention=args.apply_self_attention,
     apply_transformer=args.apply_transformer)
-additional_params = net.span_classifier.collect_params()
+if not args.apply_coattention:
+    additional_params = net.span_classifier.collect_params()
+else:
+    additional_params = None
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -384,7 +387,10 @@ if args.apply_coattention:
     net.predict_begin.collect_params().initialize(ctx=ctx)
     net.predict_end.collect_params().initialize(ctx=ctx)
     # '''
-    additional_params.update(net.co_attention.collect_params())
+    if additional_params is not None:
+        additional_params.update(net.co_attention.collect_params())
+    else:
+        additional_params = net.co_attention.collect_params()
     additional_params.update(net.cls_mapping.collect_params())
     # '''
     additional_params.update(net.project.collect_params())
