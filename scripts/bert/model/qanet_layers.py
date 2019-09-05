@@ -292,15 +292,11 @@ class DepthwiseConv(Block):
             	strides = 1,
                 weight_initializer=MSRAPrelu()
             )
-            
-            # out_width = floor((width+2*padding-dilation*(kernel_size-1)-1)/stride)+1
-            width = 384
-            dilation = 1
-            strides = 1
-            padding=kernel_size // 2
-            out_width = math.floor((width+2*padding-dilation*(kernel_size-1)-1)/strides)+1
-            print(out_width)
+
+            print(input_channels)
             exit(0)
+            
+            # out_width = floor((width+2*padding-dilation*(kernel_size-1)-1)/strides)+1
             
             self.pointwise_conv = gluon.nn.Conv1D(
                 channels=num_filters,
@@ -326,8 +322,7 @@ class DepthwiseConv(Block):
         """
         # print("inputs.shape",inputs.shape)
         tmp = F.transpose(inputs, axes=(0, 2, 1))
-        print(tmp.shape)
         depthwise_conv = self.depthwise_conv(tmp)
-        print(depthwise_conv.shape)
         outputs = self.pointwise_conv(depthwise_conv)
         return F.transpose(outputs, axes=(0, 2, 1))
+
