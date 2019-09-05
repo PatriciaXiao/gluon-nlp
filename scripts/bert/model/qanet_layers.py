@@ -312,8 +312,10 @@ class DepthwiseConv(Block):
         x : NDArray
             output tensor with shape `(batch_size, sequence_length, new_hidden_size)`
         """
-        print("inputs.shape",inputs.shape)
+        # print("inputs.shape",inputs.shape)
         tmp = F.transpose(inputs, axes=(0, 2, 1))
         depthwise_conv = self.depthwise_conv(tmp)
+        print("depthwise_conv.shape",depthwise_conv.shape)
         outputs = self.pointwise_conv(depthwise_conv)
+        print("outputs.shape",outputs.shape)
         return F.transpose(outputs, axes=(0, 2, 1))
