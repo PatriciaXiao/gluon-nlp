@@ -117,8 +117,8 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
-               F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        return  F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
+                F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         '''
         out_weight = self.out_weight.data(ctx)
         return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
