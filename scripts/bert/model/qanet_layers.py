@@ -176,7 +176,7 @@ class OneEncoderBlock(Block):
         # print(debug.context, residual.context, x.context)
         # print(self.attention_dropout(x) + residual)
         x = self.attention_dropout(x).as_in_context(ctx) + residual
-        return x + self.positionwise_ffn(x)
+        return x + self.positionwise_ffn(x).as_in_context(ctx)
 
 
 class StochasticDropoutLayer(Block):
