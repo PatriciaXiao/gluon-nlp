@@ -234,7 +234,7 @@ class SelfAttention(Block):
         return self.attention(x, x, mask=mask)[0]
 
 
-class PositionEncoder(gluon.HybridBlock):
+class PositionEncoder(Block):
     r"""
     An implementation of position encoder.
     """
@@ -272,7 +272,7 @@ class PositionEncoder(gluon.HybridBlock):
         return x + signal.as_in_context(x.context)
 
 
-class DepthwiseConv(gluon.HybridBlock):
+class DepthwiseConv(Block):
     r"""
     An implementation of depthwise-convolution net.
     """
