@@ -2,6 +2,7 @@ import mxnet as mx
 from mxnet import gluon
 
 EMB_ENCODER_CONV_CHANNELS = 768
+p_L = 0.9
 
 import math
 from mxnet import nd
