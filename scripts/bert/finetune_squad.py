@@ -604,7 +604,7 @@ def train():
                 # how to specify the unanswerable questions
                 ############
                 for eid, s, e in zip(example_ids, start_label, end_label):
-                    if train_features[eid].is_impossible:
+                    if train_features[eid.asscalar()].is_impossible:
                         print("is impossible:", start_label, end_label)
                     else:
                         print("is possible:", start_label, end_label)
