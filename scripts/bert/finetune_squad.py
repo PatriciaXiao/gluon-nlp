@@ -441,6 +441,8 @@ if version_2 and VERIFIER_ID is not None:
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
         exit(0)
+else:
+    verifier = None
 
 ########################################
 #         Prepare the data - Begin
