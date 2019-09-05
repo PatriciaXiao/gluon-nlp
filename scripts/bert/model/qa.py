@@ -280,44 +280,9 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
-            #############################
-            '''
-            # option 1: use exactly the QANet way
-            # not a good idea, this will cause index shift and thus cause bug
-            # but if we are going to use QANet's method for modeling and extracting the output, it'll be fine to do so
-            # so I just kept these lines here
-            o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
-            context_mask = token_types
-            query_mask = 1 - context_mask
-            context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
-            query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
-            context_raw = mx.nd.multiply(context_mask, o)
-            context_raw = mx.ndarray.expand_dims(context_raw, 0)
-            # print(context_raw[0,0,0,:])
-            # to get the offset to shift using gridgenerator and bilinear-sampler
-            raw_offset = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
-            warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
-                                                mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0)
-            grid = GridGenerator(data=warp_matrix, transform_type='warp')
-            warpped_out = BilinearSampler(context_raw, grid)
-            # the context mask also needs to be shifted
-            context_mask = mx.ndarray.expand_dims(context_mask, 0)
-            context_mask = mx.ndarray.expand_dims(context_mask, 0)
-            context_mask = BilinearSampler(context_mask, grid)
-            context_mask = mx.ndarray.squeeze(context_mask, axis=(0, 1))
             # get the two encodings separated
-            context_emb_encoded = mx.ndarray.transpose(mx.ndarray.squeeze(warpped_out, axis=0), axes=(1,2,0))
-            '''
-            #################################
-            # option 2: get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
-            # keep the [CLS] embedding that will latter be used as null threshold
-            # ones = mx.nd.ones((token_types.shape[0], 1))
-            # zeros = mx.nd.zeros((token_types.shape[0], token_types.shape[1] - 1))
-            # cls_mask = mx.ndarray.concat(ones, zeros, dim=1).as_in_context(token_types.context)
-            # cls_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(cls_mask, o), axes=(1,2,0))
-            # context_mask = mx.nd.add(context_mask, cls_mask)
             query_mask = 1 - context_mask
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
@@ -326,7 +291,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            '''
+            #'''
             M = self.project(attended_output)
             M = self.dropout(M)
             # print(M)
@@ -349,7 +314,7 @@ class BertForQA(Block):
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(prediction, cls_added)
             return (prediction, bert_output)
-            '''
+            #'''
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
