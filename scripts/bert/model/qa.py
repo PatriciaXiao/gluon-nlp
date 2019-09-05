@@ -311,9 +311,10 @@ class BertForQA(Block):
             M = self.dropout(M)
             # print(M)
             M_0 = self.model_encoder(M, context_mask)
-            exit(0)
             M_1 = self.model_encoder(M_0, context_mask)
             M_2 = self.model_encoder(M_1, context_mask)
+            print(M_0, M_1)
+            exit(0)
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
