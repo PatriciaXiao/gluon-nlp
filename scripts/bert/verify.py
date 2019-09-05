@@ -114,7 +114,7 @@ class AnswerVerifyThreshold(object):
             y = np.array(data_numpy[:,-1])
             # np.mean()
             # self.null_score_diff_threshold = np.median(data_numpy[:,0])
-            self.null_score_diff_threshold = np.mean(data_numpy[:,0]) + np.std(data_numpy[:,0]) * .02
+            self.null_score_diff_threshold = np.mean(data_numpy[:,0]) + np.std(data_numpy[:,0]) * .05
         elif self.option == 2:
             data_numpy = np.array(self.data)
             X = nd.array(data_numpy[:,:-1])
