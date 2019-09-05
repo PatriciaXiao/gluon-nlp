@@ -295,7 +295,7 @@ class DepthwiseConv(Block):
             dilation = 1
             stride = 1
             padding=kernel_size // 2
-            out_width = floor((width+2*padding-dilation*(kernel_size-1)-1)/stride)+1
+            out_width = math.floor((width+2*padding-dilation*(kernel_size-1)-1)/stride)+1
             print(out_width)
             exit(0)
             self.pointwise_conv = gluon.nn.Conv1D(
