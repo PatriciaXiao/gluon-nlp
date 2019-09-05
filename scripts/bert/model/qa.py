@@ -306,9 +306,9 @@ class BertForQA(Block):
             M_1 = self.model_encoder(M_0, context_mask)
             M_2 = self.model_encoder(M_1, context_mask)
             '''
-            M_0 = self.model_encoder(M)
-            M_1 = self.model_encoder(M_0)
-            M_2 = self.model_encoder(M_1)
+            M_0, _ = self.model_encoder(M)
+            M_1, _ = self.model_encoder(M_0)
+            M_2, _ = self.model_encoder(M_1)
             begin_hat = self.flatten(
                 self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
             end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
