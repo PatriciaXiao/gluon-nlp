@@ -377,22 +377,22 @@ else:
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
     net.cls_mapping.initialize(ctx=ctx)
-    '''
+    # '''
     net.project.collect_params().initialize(ctx=ctx)
     net.dropout.collect_params().initialize(ctx=ctx)
     net.model_encoder.collect_params().initialize(ctx=ctx)
     net.predict_begin.collect_params().initialize(ctx=ctx)
     net.predict_end.collect_params().initialize(ctx=ctx)
-    '''
+    # '''
     additional_params.update(net.co_attention.collect_params())
     additional_params.update(net.cls_mapping.collect_params())
-    '''
+    # '''
     additional_params.update(net.project.collect_params())
     additional_params.update(net.dropout.collect_params())
     additional_params.update(net.model_encoder.collect_params())
     additional_params.update(net.predict_begin.collect_params())
     additional_params.update(net.predict_end.collect_params())
-    '''
+    # '''
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
