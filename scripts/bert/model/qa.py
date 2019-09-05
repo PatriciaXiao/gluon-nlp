@@ -338,7 +338,9 @@ class BertForQA(Block):
             end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
             predicted_begin = mask_logits(begin_hat, context_mask)
             predicted_end = mask_logits(end_hat, context_mask)
+            print(predicted_begin, predicted_end)
             exit(0)
+            return predicted_begin, predicted_end
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
