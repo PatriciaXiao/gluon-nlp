@@ -341,6 +341,13 @@ class BertForQA(Block):
             prediction = nd.stack(predicted_begin, predicted_end, axis=2)
             # print(prediction.shape) # (12, 384, 2)
             # exit(0)
+            # deal with the null-score score
+            cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
+            cls_reshaped = self.cls_mapping(cls_emb_encoded)
+            ctx = context_output.context
+            zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
+            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
+            output = mx.nd.add(prediction, cls_added)
             return (prediction, bert_output)
             # how about doing it again?
             '''
@@ -358,6 +365,9 @@ class BertForQA(Block):
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
+        else:
+            output = self.span_classifier(bert_output)
+        '''
         elif self.apply_coattention:
             context_output = self.span_classifier(attended_output)
             # deal with the null-score score
@@ -367,8 +377,7 @@ class BertForQA(Block):
             zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
             cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
             output = mx.nd.add(context_output, cls_added)
-        else:
-            output = self.span_classifier(bert_output)
+        '''
         return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):
