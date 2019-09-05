@@ -31,6 +31,8 @@ import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
 from gluonnlp.model.transformer import TransformerEncoder
 
+from qanet_layers import Encoder
+
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
@@ -203,6 +205,13 @@ class BertForQA(Block):
                     weight_initializer=Xavier()
                 )
                 self.dropout = gluon.nn.Dropout(0.1)
+                self.model_encoder = Encoder(
+                    kernel_size=5,
+                    num_filters=128,
+                    conv_layers=2,
+                    num_heads=1,
+                    num_blocks=7
+                )
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
