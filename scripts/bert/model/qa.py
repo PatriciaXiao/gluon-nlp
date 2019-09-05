@@ -341,7 +341,7 @@ class BertForQA(Block):
             prediction = nd.stack(predicted_begin, predicted_end, axis=2)
             # print(prediction.shape) # (12, 384, 2)
             # exit(0)
-            return prediction
+            return (prediction, bert_output)
             # how about doing it again?
             '''
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
