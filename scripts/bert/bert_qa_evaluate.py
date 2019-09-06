@@ -677,8 +677,8 @@ def get_F1_EM(dataset, predict_data):
     """
     f1 = exact_match = total = 0
     for record in dataset:
-        print(record)
-        print(predict_data)
+        print(record[1], record[4])
+        print(predict_data[record[1]])
         input()
         total += 1
         if record[1] not in predict_data:
