@@ -610,7 +610,7 @@ def train():
             with mx.autograd.record():
                 example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
-                doc_tokens0 = train_features[example_ids[0].asscalar()][0].doc_tokens
+                doc_tokens0 = train_features[example_ids[0].asscalar()][0].tokens
                 print(doc_tokens0)
                 print(len(doc_tokens0))
 
