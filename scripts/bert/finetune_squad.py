@@ -609,16 +609,20 @@ def train():
             example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
             cls_mask = mx.nd.zeros(token_types.shape)
+            sep_mask_1 = mx.nd.zeros(token_types.shape)
+            sep_mask_2 = mx.nd.zeros(token_types.shape)
             cls_mask[:, 0] = 1.
             valid_sequence_length = (1 - token_types).sum(axis=1)
-            print(valid_sequence_length)
-            exit(0)
+            sep_mask_1[[[0,0],[0,1]]] = 1
+            print(sep_mask_1)
             # forward and backward
             with mx.autograd.record():
 
                 doc_tokens0 = train_features[example_ids[1].asscalar()][0].tokens
                 print(doc_tokens0)
                 print(len(doc_tokens0))
+
+                exit(0)
 
                 log_num += len(inputs)
                 total_num += len(inputs)
