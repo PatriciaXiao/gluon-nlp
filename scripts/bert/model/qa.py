@@ -342,8 +342,7 @@ class BertForQA(Block):
                 zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
                 cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
                 output = mx.nd.add(prediction, cls_added)
-                print(prediction[0])
-                print(prediction[1])
+                print(prediction)
                 exit(0)
                 return (output, bert_output)
         if self.apply_self_attention:
