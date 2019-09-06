@@ -254,7 +254,7 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-        if self.qanet_style_out:
+        if self.apply_coattention and self.qanet_style_out:
             self.span_classifier = None
         else:
             self.span_classifier = nn.HybridSequential()
@@ -349,7 +349,7 @@ class BertForQA(Block):
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
-        elif self.apply_coattention:
+        elif self.apply_coattention and not self.qanet_style_out:
             context_output = self.span_classifier(attended_output)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
