@@ -247,6 +247,9 @@ parser.add_argument('--freeze_bert', action='store_true', default=False,
 parser.add_argument('--qanet_style_out', action='store_true', default=False,
                     help='using the QANet-style output.')
 
+parser.add_argument('--remove_special_token', action='store_true', default=False,
+                    help='remove the special tokens from bert output by masking.')
+
 parser.add_argument('--customize_loss', action='store_true', default=False,
                     help='custimizing the loss function when needed.')
 
@@ -359,7 +362,8 @@ net = BertForQA(bert=bert, \
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],\
     apply_self_attention=args.apply_self_attention,
     apply_transformer=args.apply_transformer,
-    qanet_style_out=args.qanet_style_out)
+    qanet_style_out=args.qanet_style_out,
+    remove_special_token=args.remove_special_token)
 if not args.qanet_style_out:
     additional_params = net.span_classifier.collect_params()
 else:

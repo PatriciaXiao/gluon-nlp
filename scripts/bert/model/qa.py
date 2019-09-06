@@ -186,13 +186,15 @@ class BertForQA(Block):
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
                     apply_transformer=False,
-                    qanet_style_out=False):
+                    qanet_style_out=False,
+                    remove_special_token=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.apply_self_attention = apply_self_attention
         self.apply_transformer = apply_transformer
         self.qanet_style_out = qanet_style_out
+        self.remove_special_token = remove_special_token
         self.bert = bert
         if self.apply_coattention:
             with self.name_scope():
@@ -286,6 +288,8 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
+            print(context_mask, query_mask)
+            exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
