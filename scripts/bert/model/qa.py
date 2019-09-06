@@ -266,12 +266,24 @@ class BertForQA(Block):
                     self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
                 self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
+    def shift_ndarray(self, data, mask, raw_offset):
+        '''
+        Parameters
+        ----------
+        data: NDArray, shape(dim, batch_size, seq_length)
+        mask: NDArray, shape(batch_size, seq_length)
+        raw_offset: NDArray, shape(batch_size, seq_length)
+        '''
+        data_raw = mx.ndarray.expand_dims(mx.nd.multiply(data, o), 0)
+        print(data_raw)
+        exit(0)
+
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
 
         Parameters
         ----------
-        inputs : NDArray, shape (batch_size, seq_length)
+        inputs : NDArray, shape (batch_size, seq_length, dim)
             Input words for the sequences.
         token_types : NDArray, shape (batch_size, seq_length)
             Token types for the sequences, used to indicate whether the word belongs to the
@@ -298,8 +310,6 @@ class BertForQA(Block):
             query_mask = 1 - context_mask
             raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
             raw_offset_query = mx.nd.zeros(inputs.shape)
-            print(raw_offset_contx, raw_offset_query)
-            exit(0)
             raw_offset_query = 1.
             valid_query_length = query_mask.sum(axis=1)
             valid_contx_length = valid_length - valid_query_length
@@ -309,6 +319,10 @@ class BertForQA(Block):
                 query_mask = query_mask - (sep_mask_1 + cls_mask) 
                 valid_query_length = valid_query_length - 2
                 valid_contx_length = valid_contx_length - 1
+                raw_offset_query = mx.nd.ones(inputs.shape)
+            # use raw_offset to shift the query, and shift back as well, as long as it is permitted
+            query_shifted = self.shift_ndarray(o, query_mask, raw_offset_query)
+            exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
@@ -316,6 +330,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            exit(0)
             #'''
             # how about doing it again?
             '''
