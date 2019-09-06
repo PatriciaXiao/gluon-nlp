@@ -159,8 +159,6 @@ class CoAttention(Block):
         similarity_mat = subres0 + subres1 + subres2 + bias
         return similarity_mat
 
-
-
 class BertForQA(Block):
     """Model for SQuAD task with BERT.
 
@@ -324,9 +322,9 @@ class BertForQA(Block):
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
-                M_0, _ = self.model_encoder(M)
-                M_1, _ = self.model_encoder(M_0)
-                M_2, _ = self.model_encoder(M_1)
+                M_0, _ = self.model_encoder(M, mask=context_mask)
+                M_1, _ = self.model_encoder(M_0, mask=context_mask)
+                M_2, _ = self.model_encoder(M_1, mask=context_mask)
                 print(attended_output)
                 exit(0)
                 begin_hat = self.flatten(
