@@ -287,6 +287,8 @@ class BertForQA(Block):
             # get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             if self.remove_special_token:
+                context_mask = token_types
+                query_mask = 1 - context_mask
                 query_mask[:,0] = 0.
                 print(context_mask, query_mask, valid_length)
                 exit(0)
