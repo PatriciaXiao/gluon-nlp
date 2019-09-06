@@ -612,11 +612,16 @@ def train():
             sep_mask_1 = mx.nd.zeros(token_types.shape)
             sep_mask_2 = mx.nd.zeros(token_types.shape)
             cls_mask[:, 0] = 1.
+            range_row_index = mx.nd.array(np.arange(batch_size))
             valid_query_length = (1 - token_types).sum(axis=1)
             # sep_mask_1[[0,0],[0,1]] = 1 # it works this way
+            '''
             for i in range(batch_size):
                 sep_mask_1[i, valid_query_length[i] - 1] = 1.
                 sep_mask_2[i, valid_length[i] - 1] = 1.
+            '''
+            sep_mask_1[range_row_index, valid_query_length] = 1.
+            sep_mask_2[range_row_index, valid_length] = 1. 
             print(sep_mask_1[0])
             print(sep_mask_2[0])
             # forward and backward
