@@ -615,7 +615,9 @@ def train():
             valid_sequence_length = (1 - token_types).sum(axis=1)
             # sep_mask_1[[0,0],[0,1]] = 1 # it works this way
             sep_index1 = [[0,0],[0,1]]
-            sep_mask_1[*[idx for idx in sep_index1]] = 1
+            print(*sep_index1)
+            exit(0)
+            sep_mask_1[*sep_index1] = 1
             print(sep_mask_1)
             # forward and backward
             with mx.autograd.record():
