@@ -606,9 +606,9 @@ def train():
         for batch_id, data in enumerate(train_dataloader):
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
+            example_ids, inputs, token_types, valid_length, start_label, end_label = data
             # forward and backward
             with mx.autograd.record():
-                example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
                 doc_tokens0 = train_features[example_ids[1].asscalar()][0].tokens
                 print(doc_tokens0)
