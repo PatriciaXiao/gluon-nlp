@@ -20,7 +20,7 @@
 
 __all__ = ['BertForQA', 'BertForQALoss']
 
-from mxnet.gluon import Block, loss, nn
+from mxnet.gluon import Block, loss, nn, rnn
 from mxnet.gluon.loss import Loss
 from mxnet import gluon, nd
 import mxnet as mx
@@ -53,9 +53,10 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, name, bert_out_dim, params=None):
+    def __init__(self, name, bert_out_dim, params=None, concat_out=True):
         super(CoAttention, self).__init__(name)
         self.in_dim = bert_out_dim
+        self.concat_out = concat_out
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
@@ -73,8 +74,9 @@ class CoAttention(Block):
                 'linear_kernel', shape=(1, 1, int(bert_out_dim)), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
-            self.out_weight = self.params.get(
-                'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
+            if not self.concat_out:
+                self.out_weight = self.params.get(
+                    'weight_of_output', shape=(2, 4), init=mx.init.Xavier())
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, cls_emb_encoded=None):
@@ -115,11 +117,13 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
-        #        F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
-        out_weight = self.out_weight.data(ctx)
-        return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
-               out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
+        if self.concat_out:
+            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
+                   F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+        else:
+            out_weight = self.out_weight.data(ctx)
+            return out_weight[0, 0] * context + out_weight[0, 1] * c2q + out_weight[0, 2] * context * c2q + out_weight[0, 3] * context * q2c, \
+                   out_weight[1, 0] * query   + out_weight[1, 1] * q2c + out_weight[1, 2] * query * q2c   + out_weight[1, 3] *  query * c2q
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
