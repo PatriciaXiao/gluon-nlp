@@ -509,26 +509,22 @@ class AnswerVerify(object):
                     # null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
                     version_2=self.version_2)
-            if len(prediction) == 0:
-                continue # not validating for n/a output
+            # if len(prediction) == 0:
+            #     continue # not validating for n/a output
             if self.extract_sentence:
-                sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-                sentence_text = self.find_sentence(sentences, prediction)
-                raw_data.append([sentence_text + '. ' + question_text, prediction, label])
-                '''
+                if len(prediction) > 0:
+                    sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
+                    sentence_text = self.find_sentence(sentences, prediction)
+                    raw_data.append([sentence_text + '. ' + question_text, prediction, label])
                 if label == 1:
                     answer_sentence = self.find_sentence(sentences, answer_text)
-                    raw_data.append([answer_sentence + ' ' + question_text, answer_text, label])
-                '''
+                    raw_data.append([answer_sentence + '. ' + question_text, answer_text, label])
             else:
                 first_part = context_text + '. ' + question_text
-                raw_data.append([first_part, prediction, label])
-                '''
+                if len(prediction) > 0:
+                    raw_data.append([first_part, prediction, label])
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
-                '''
-        print(raw_data)
-        input()
         dataset = VerifierDataset(raw_data)
         return dataset
 
