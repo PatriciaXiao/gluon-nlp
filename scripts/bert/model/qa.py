@@ -342,8 +342,6 @@ class BertForQA(Block):
                 zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
                 cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
                 output = mx.nd.add(prediction, cls_added)
-                print(prediction)
-                exit(0)
                 return (output, bert_output)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
@@ -362,6 +360,8 @@ class BertForQA(Block):
             output = mx.nd.add(context_output, cls_added)
         else:
             output = self.span_classifier(bert_output)
+        print(output)
+        exit(0)
         return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):
