@@ -677,6 +677,9 @@ def get_F1_EM(dataset, predict_data):
     """
     f1 = exact_match = total = 0
     for record in dataset:
+        print(record)
+        print(predict_data)
+        input()
         total += 1
         if record[1] not in predict_data:
             message = 'Unanswered question ' + record[1] + \
