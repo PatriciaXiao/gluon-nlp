@@ -607,6 +607,11 @@ def train():
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
             example_ids, inputs, token_types, valid_length, start_label, end_label = data
+
+            cls_mask = mx.nd.zeros(token_types.shape)
+            cls_mask[:, 0] = 1.
+            print(cls_mask)
+            exit(0)
             # forward and backward
             with mx.autograd.record():
 

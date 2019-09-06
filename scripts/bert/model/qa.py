@@ -258,7 +258,7 @@ class BertForQA(Block):
                     self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
                 self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
-    def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
+    def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
 
         Parameters
