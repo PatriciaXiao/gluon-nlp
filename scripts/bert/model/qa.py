@@ -304,7 +304,7 @@ class BertForQA(Block):
                                                 context_max_len, query_max_len)
             '''
             # print(mx.nd.add(attended_output, attended_query)) # this works
-            if self.qanet_style_out
+            if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
                 M_0, _ = self.model_encoder(M)
