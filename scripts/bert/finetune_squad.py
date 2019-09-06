@@ -610,7 +610,8 @@ def train():
 
             cls_mask = mx.nd.zeros(token_types.shape)
             cls_mask[:, 0] = 1.
-            print(cls_mask)
+            valid_sequence_length = (1 - token_types).sum(axis=1).max().asscalar()
+            print(valid_sequence_length)
             exit(0)
             # forward and backward
             with mx.autograd.record():
