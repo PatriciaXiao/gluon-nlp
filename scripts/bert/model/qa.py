@@ -327,7 +327,7 @@ class BertForQA(Block):
                 M_0, _ = self.model_encoder(M)
                 M_1, _ = self.model_encoder(M_0)
                 M_2, _ = self.model_encoder(M_1)
-                print(M_2)
+                print(attended_output)
                 exit(0)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
