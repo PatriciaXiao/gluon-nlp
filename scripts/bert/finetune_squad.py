@@ -614,9 +614,7 @@ def train():
             cls_mask[:, 0] = 1.
             range_row_index = mx.nd.array(np.arange(batch_size))
             valid_query_length = (1 - token_types).sum(axis=1)
-            sep_mask_1[[0,0,1],[0,1,2]] = 1 # it works this way
-            print(sep_mask_1)
-            exit(0)
+            # sep_mask_1[[0,0,1],[0,1,2]] = 1 # it works this way
             '''
             for i in range(batch_size):
                 sep_mask_1[i, valid_query_length[i] - 1] = 1.
@@ -629,19 +627,25 @@ def train():
             # forward and backward
             with mx.autograd.record():
 
-                doc_tokens0 = train_features[example_ids[0].asscalar()][0].tokens
+                # doc_tokens0 = train_features[example_ids[0].asscalar()][0].tokens
                 # doc_tokens0 = train_features[example_ids[1].asscalar()][0].tokens
-                print(doc_tokens0)
-                print(len(doc_tokens0))
+                # print(doc_tokens0)
+                # print(len(doc_tokens0))
 
-                exit(0)
+                # exit(0)
+                additional_masks = (
+                                        cls_mask.astype('float32').as_in_context(ctx),
+                                        sep_mask_1.astype('float32').as_in_context(ctx),
+                                        sep_mask_2.astype('float32').as_in_context(ctx)
+                                    )
 
                 log_num += len(inputs)
                 total_num += len(inputs)
 
                 out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
                           token_types.astype('float32').as_in_context(ctx),
-                          valid_length.astype('float32').as_in_context(ctx))
+                          valid_length.astype('float32').as_in_context(ctx),
+                          additional_masks)
 
                 ls = loss_function(out, [
                     start_label.astype('float32').as_in_context(ctx),
@@ -683,9 +687,21 @@ def train_verifier():
     '''
     for data in train_dataloader:
         example_ids, inputs, token_types, valid_length, start_label, end_label = data
+        cls_mask = mx.nd.zeros(token_types.shape)
+        sep_mask_1 = mx.nd.zeros(token_types.shape)
+        sep_mask_2 = mx.nd.zeros(token_types.shape)
+        cls_mask[:, 0] = 1.
+        range_row_index = mx.nd.array(np.arange(batch_size))
+        valid_query_length = (1 - token_types).sum(axis=1)
+        sep_mask_1[range_row_index, valid_query_length] = 1.
+        sep_mask_2[range_row_index, valid_length] = 1. 
+        additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
+                            sep_mask_1.astype('float32').as_in_context(ctx),
+                            sep_mask_2.astype('float32').as_in_context(ctx))
         out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
                           token_types.astype('float32').as_in_context(ctx),
-                          valid_length.astype('float32').as_in_context(ctx))
+                          valid_length.astype('float32').as_in_context(ctx),
+                          additional_masks)
         verifier.train(train_features, example_ids, out, token_types, bert_out)
     if VERIFIER_ID == 0:
         verifier.update()
@@ -706,9 +722,22 @@ def evaluate():
         example_ids, inputs, token_types, valid_length, _, _ = data
         total_num += len(inputs)
 
+        cls_mask = mx.nd.zeros(token_types.shape)
+        sep_mask_1 = mx.nd.zeros(token_types.shape)
+        sep_mask_2 = mx.nd.zeros(token_types.shape)
+        cls_mask[:, 0] = 1.
+        range_row_index = mx.nd.array(np.arange(batch_size))
+        valid_query_length = (1 - token_types).sum(axis=1)
+        sep_mask_1[range_row_index, valid_query_length] = 1.
+        sep_mask_2[range_row_index, valid_length] = 1. 
+        additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
+                            sep_mask_1.astype('float32').as_in_context(ctx),
+                            sep_mask_2.astype('float32').as_in_context(ctx))
+
         out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
                   token_types.astype('float32').as_in_context(ctx),
-                  valid_length.astype('float32').as_in_context(ctx))
+                  valid_length.astype('float32').as_in_context(ctx),
+                  additional_masks)
         
         if VERIFIER_ID == 2:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out, token_types, bert_out).asnumpy().tolist()
