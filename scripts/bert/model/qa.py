@@ -327,6 +327,8 @@ class BertForQA(Block):
                 M_0, _ = self.model_encoder(M)
                 M_1, _ = self.model_encoder(M_0)
                 M_2, _ = self.model_encoder(M_1)
+                print(M_2)
+                exit(0)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
@@ -360,8 +362,6 @@ class BertForQA(Block):
             output = mx.nd.add(context_output, cls_added)
         else:
             output = self.span_classifier(bert_output)
-        print(output)
-        exit(0)
         return (output, bert_output)
 
     def loss(self, weight=None, batch_axis=0, customize_loss=False, **kwargs):
