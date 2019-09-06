@@ -290,7 +290,7 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             if self.remove_special_token:
                 context_mask = token_types - sep_mask_2
-                query_mask = 1 - context_mask - sep_mask_1 - cls_mask
+                query_mask = 1 - context_mask - (sep_mask_1 + cls_mask)
                 print(context_mask, query_mask, valid_length)
                 exit(0)
             else:
