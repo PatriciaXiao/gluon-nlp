@@ -654,7 +654,7 @@ def exact_match_score(prediction, ground_truth):
 def metric_max_over_ground_truths(metric_fn, prediction, ground_truths):
     scores_for_ground_truths = []
     for ground_truth in ground_truths:
-        score = metric_fn(prediction, ground_truth)
+        score = metric_fn(str(prediction), str(ground_truth))
         scores_for_ground_truths.append(score)
     return max(scores_for_ground_truths)
 
@@ -677,9 +677,6 @@ def get_F1_EM(dataset, predict_data):
     """
     f1 = exact_match = total = 0
     for record in dataset:
-        print(record[1], record[4])
-        print(predict_data[record[1]])
-        input()
         total += 1
         if record[1] not in predict_data:
             message = 'Unanswered question ' + record[1] + \
