@@ -337,9 +337,8 @@ class BertForQA(Block):
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            ctx = prediction.context
-            zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
-            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
+            zeros = mx.nd.zeros((cls_reshaped.shape[0], context_output.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(self.ctx)
+            cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(self.ctx)
             output = mx.nd.add(context_output, cls_added)
         else:
             output = self.span_classifier(bert_output)
