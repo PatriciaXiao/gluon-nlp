@@ -76,7 +76,7 @@ class CoAttention(Block):
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
             if not self.concat_out:
                 self.out_weight = self.params.get(
-                    'weight_of_output', shape=(4,), init=mx.init.Xavier())
+                    'weight_of_output', shape=(1,4), init=mx.init.Xavier())
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len, cls_emb_encoded=None):
@@ -122,8 +122,8 @@ class CoAttention(Block):
                    F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
         else:
             out_weight = self.out_weight.data(ctx)
-            return out_weight[0] * context + out_weight[1] * c2q + out_weight[2] * context * c2q + out_weight[3] * context * q2c, \
-                   out_weight[0] * query   + out_weight[1] * q2c + out_weight[2] * query * q2c   + out_weight[3] *  query * c2q
+            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c, \
+                   out_weight[0,0] * query   + out_weight[0,1] * q2c + out_weight[0,2] * query * q2c   + out_weight[0,3] *  query * c2q
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
