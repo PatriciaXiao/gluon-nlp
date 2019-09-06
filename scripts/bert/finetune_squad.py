@@ -733,9 +733,9 @@ def evaluate():
                             sep_mask_2.astype('float32').as_in_context(ctx))
 
         out, bert_out = net(inputs.astype('float32').as_in_context(ctx),
-                  token_types.astype('float32').as_in_context(ctx),
-                  valid_length.astype('float32').as_in_context(ctx),
-                  additional_masks)
+                            token_types.astype('float32').as_in_context(ctx),
+                            valid_length.astype('float32').as_in_context(ctx),
+                            additional_masks)
         
         if VERIFIER_ID == 2:
             has_answer_tmp = verifier.evaluate(dev_features, example_ids, out, token_types, bert_out).asnumpy().tolist()
