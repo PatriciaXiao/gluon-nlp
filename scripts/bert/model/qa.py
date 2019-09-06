@@ -289,6 +289,7 @@ class BertForQA(Block):
             context_mask = token_types
             query_mask = 1 - context_mask
             if self.remove_special_token:
+                context_mask[:,0] = 0.
                 print(context_mask, query_mask, valid_length)
                 exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
