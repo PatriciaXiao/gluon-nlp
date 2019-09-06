@@ -278,7 +278,7 @@ def predict(features,
     # just create a nonce prediction in this case to avoid failure.
     if not nbest:
         nbest.append(
-            _NbestPrediction(text='', pred_start=0.0, pred_end=0.0))
+            _NbestPrediction(text='empty', pred_start=0.0, pred_end=0.0))
 
     assert len(nbest) >= 1
     
