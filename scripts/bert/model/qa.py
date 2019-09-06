@@ -294,13 +294,16 @@ class BertForQA(Block):
         if self.apply_coattention:
             # get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
+            context_mask = token_types
+            query_mask = 1 - context_mask
+            valid_query_length = query_mask.sum(axis=1)
+            valid_contx_length = valid_length - valid_query_length
+            print(valid_query_length, valid_contx_length, valid_length)
+            exit(0)
             if self.remove_special_token:
                 cls_mask, sep_mask_1, sep_mask_2 = additional_masks
                 context_mask = token_types - sep_mask_2
-                query_mask = 1 - context_mask - (sep_mask_1 + cls_mask)
-            else:
-                context_mask = token_types
-                query_mask = 1 - context_mask
+                query_mask = 1 - context_mask - (sep_mask_1 + cls_mask) 
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
