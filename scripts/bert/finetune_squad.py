@@ -614,7 +614,9 @@ def train():
             cls_mask[:, 0] = 1.
             range_row_index = mx.nd.array(np.arange(batch_size))
             valid_query_length = (1 - token_types).sum(axis=1)
-            # sep_mask_1[[0,0],[0,1]] = 1 # it works this way
+            sep_mask_1[[0,0,0],[0,1,2]] = 1 # it works this way
+            print(sep_mask_1)
+            exit(0)
             '''
             for i in range(batch_size):
                 sep_mask_1[i, valid_query_length[i] - 1] = 1.
@@ -622,8 +624,8 @@ def train():
             '''
             sep_mask_1[range_row_index, valid_query_length] = 1.
             sep_mask_2[range_row_index, valid_length] = 1. 
-            print(sep_mask_1[0])
-            print(sep_mask_2[0])
+            # print(sep_mask_1[0])
+            # print(sep_mask_2[0])
             # forward and backward
             with mx.autograd.record():
 
