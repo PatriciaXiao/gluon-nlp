@@ -654,7 +654,7 @@ def exact_match_score(prediction, ground_truth):
 def metric_max_over_ground_truths(metric_fn, prediction, ground_truths):
     scores_for_ground_truths = []
     for ground_truth in ground_truths:
-        score = metric_fn(str(prediction), str(ground_truth))
+        score = metric_fn(prediction, ground_truth)
         scores_for_ground_truths.append(score)
     return max(scores_for_ground_truths)
 
