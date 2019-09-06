@@ -251,12 +251,13 @@ def predict(features,
             orig_text = ' '.join(orig_tokens)
 
             final_text = get_final_text(tok_text, orig_text, tokenizer)
+            if final_text in seen_predictions:
+                continue
+
+            seen_predictions[final_text] = True
         else:
             final_text = ''
-        
-        if final_text in seen_predictions:
-            continue
-        seen_predictions[final_text] = True
+            seen_predictions[final_text] = True
 
         nbest.append(
             _NbestPrediction(
@@ -294,8 +295,10 @@ def predict(features,
         # in very rare case will this problem occur and corrupt the program
         best_non_null_entry = no_answer_entry
 
+    best_entry = nbest[0].text
+
     if not version_2:
-        prediction = nbest[0].text
+        prediction = best_entry
         score_diff = 0.0
     else:
         prediction = best_non_null_entry.text
@@ -310,7 +313,7 @@ def predict(features,
             # prediction = best_non_null_entry.text
             answerable = 1.0
         '''
-    return prediction, score_diff, nbest[0].text
+    return prediction, score_diff, best_entry
 
 
 def predict_span(features,
