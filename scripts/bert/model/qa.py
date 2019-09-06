@@ -181,7 +181,7 @@ class BertForQA(Block):
     """
 
     def __init__(self, bert, prefix=None, params=None, \
-                    n_rnn_layers=0, rnn_hidden_size=200, n_dense_layers=0, units_dense=200, \
+                    n_rnn_layers=0, rnn_hidden_size=200, num_rnn_layers=2, n_dense_layers=0, units_dense=200, \
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
@@ -230,6 +230,9 @@ class BertForQA(Block):
                         prefix='predict_end_'
                     )
                     self.flatten = gluon.nn.Flatten()
+                else:
+                    # BiDAF mode
+                    n_rnn_layers = 1
                 # '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
@@ -253,7 +256,10 @@ class BertForQA(Block):
             self.span_classifier = nn.HybridSequential()
             with self.span_classifier.name_scope():
                 for i in range(n_rnn_layers):
-                    self.span_classifier.add(rnn.LSTM(hidden_size=rnn_hidden_size, bidirectional=True))
+                    self.span_classifier.add(rnn.LSTM( hidden_size=rnn_hidden_size, 
+                                                        num_layers=num_rnn_layers, 
+                                                        dropout=0.0, 
+                                                        bidirectional=True))
                 for i in range(n_dense_layers):
                     self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
                 self.span_classifier.add(nn.Dense(units=2, flatten=False))
