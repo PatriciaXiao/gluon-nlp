@@ -633,11 +633,9 @@ def train():
                 # print(len(doc_tokens0))
 
                 # exit(0)
-                additional_masks = (
-                                        cls_mask.astype('float32').as_in_context(ctx),
-                                        sep_mask_1.astype('float32').as_in_context(ctx),
-                                        sep_mask_2.astype('float32').as_in_context(ctx)
-                                    )
+                additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
+                                    sep_mask_1.astype('float32').as_in_context(ctx),
+                                    sep_mask_2.astype('float32').as_in_context(ctx))
 
                 log_num += len(inputs)
                 total_num += len(inputs)
