@@ -277,6 +277,8 @@ class BertForQA(Block):
             Shape (batch_size, seq_length, 2)
         """
         bert_output = self.bert(inputs, token_types, valid_length)
+        if additional_masks is not None:
+            cls_mask, sep_mask_1, sep_mask_2 = additional_masks
         if self.add_query:
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             mask = 1 - token_types
@@ -287,9 +289,8 @@ class BertForQA(Block):
             # get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             if self.remove_special_token:
-                context_mask = token_types
-                query_mask = 1 - context_mask
-                query_mask[:,0] = 0.
+                context_mask = token_types - sep_mask_2
+                query_mask = 1 - context_mask - sep_mask_1 - cls_mask
                 print(context_mask, query_mask, valid_length)
                 exit(0)
             else:
