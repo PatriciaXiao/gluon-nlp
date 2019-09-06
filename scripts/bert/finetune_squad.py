@@ -614,7 +614,7 @@ def train():
             cls_mask[:, 0] = 1.
             range_row_index = mx.nd.array(np.arange(batch_size))
             valid_query_length = (1 - token_types).sum(axis=1)
-            sep_mask_1[[0,0,0],[0,1,2]] = 1 # it works this way
+            sep_mask_1[[0,0,1],[0,1,2]] = 1 # it works this way
             print(sep_mask_1)
             exit(0)
             '''
