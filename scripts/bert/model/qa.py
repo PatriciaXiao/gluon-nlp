@@ -297,7 +297,8 @@ class BertForQA(Block):
             context_mask = token_types
             query_mask = 1 - context_mask
             raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
-            print(raw_offset_contx)
+            raw_offset_query = mx.nd.zeros(inputs.shape)
+            print(raw_offset_contx, raw_offset_query)
             exit(0)
             raw_offset_query = 1.
             valid_query_length = query_mask.sum(axis=1)
