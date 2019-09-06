@@ -274,7 +274,7 @@ class BertForQA(Block):
         mask: NDArray, shape(batch_size, seq_length)
         raw_offset: NDArray, shape(batch_size, seq_length)
         '''
-        data_raw = mx.ndarray.expand_dims(mx.nd.multiply(data, o), 0)
+        data_raw = mx.ndarray.expand_dims(mx.nd.multiply(mask, data), 0)
         print(data_raw)
         exit(0)
 
