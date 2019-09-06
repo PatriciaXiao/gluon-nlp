@@ -527,6 +527,8 @@ class AnswerVerify(object):
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
                 '''
+        print(raw_data)
+        input()
         dataset = VerifierDataset(raw_data)
         return dataset
 
