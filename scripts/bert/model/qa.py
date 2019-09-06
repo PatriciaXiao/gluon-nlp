@@ -288,8 +288,9 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
-            print(context_mask, query_mask)
-            exit(0)
+            if self.remove_special_token:
+                print(context_mask, query_mask)
+                exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
