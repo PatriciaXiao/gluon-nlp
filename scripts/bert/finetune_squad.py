@@ -615,12 +615,15 @@ def train():
             valid_query_length = (1 - token_types).sum(axis=1)
             # sep_mask_1[[0,0],[0,1]] = 1 # it works this way
             for i in range(batch_size):
-                print(i, valid_query_length[i] - 1)
                 sep_mask_1[i, valid_query_length[i] - 1] = 1.
-                print(i, valid_length[i] - 1)
                 sep_mask_2[i, valid_length[i] - 1]
             print(sep_mask_1[0])
             print(sep_mask_2[0])
+            for j in range(len(sep_mask_1)):
+                if sep_mask_1[0, j] == 1:
+                    print("sep 1 is at {}".format(j))
+                if sep_mask_2[0, j] == 1:
+                    print("sep 2 is at {}".format(j))
             # forward and backward
             with mx.autograd.record():
 
