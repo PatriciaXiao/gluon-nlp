@@ -612,7 +612,7 @@ def train():
             sep_mask_1 = mx.nd.zeros(token_types.shape)
             sep_mask_2 = mx.nd.zeros(token_types.shape)
             cls_mask[:, 0] = 1.
-            range_row_index = mx.nd.array(np.arange(batch_size))
+            range_row_index = mx.nd.array(np.arange(len(example_ids)))
             valid_query_length = (1 - token_types).sum(axis=1)
             # sep_mask_1[[0,0,1],[0,1,2]] = 1 # it works this way
             '''
@@ -689,7 +689,7 @@ def train_verifier():
         sep_mask_1 = mx.nd.zeros(token_types.shape)
         sep_mask_2 = mx.nd.zeros(token_types.shape)
         cls_mask[:, 0] = 1.
-        range_row_index = mx.nd.array(np.arange(batch_size))
+        range_row_index = mx.nd.array(np.arange(len(example_ids)))
         valid_query_length = (1 - token_types).sum(axis=1)
         sep_mask_1[range_row_index, valid_query_length] = 1.
         sep_mask_2[range_row_index, valid_length] = 1. 
@@ -724,7 +724,7 @@ def evaluate():
         sep_mask_1 = mx.nd.zeros(token_types.shape)
         sep_mask_2 = mx.nd.zeros(token_types.shape)
         cls_mask[:, 0] = 1.
-        range_row_index = mx.nd.array(np.arange(batch_size))
+        range_row_index = mx.nd.array(np.arange(len(example_ids)))
         valid_query_length = (1 - token_types).sum(axis=1)
         sep_mask_1[range_row_index, valid_query_length] = 1.
         sep_mask_2[range_row_index, valid_length] = 1. 
