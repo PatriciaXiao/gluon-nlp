@@ -345,6 +345,8 @@ class BertForQA(Block):
             o2 = mx.ndarray.transpose(attended_output, axes=(2,0,1))
             attended_output, context_mask = self.shift_ndarray(o2, context_mask, -raw_offset_contx)
             attended_output = mx.ndarray.transpose(attended_output, axes=(1,2,0))
+            print(attended_output)
+            exit(0)
             # exit(0)
             #'''
             # how about doing it again?
