@@ -341,6 +341,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
+            shift_output, shift_mask = self.shift_ndarray(o, context_mask, -raw_offset_contx)
             # exit(0)
             #'''
             # how about doing it again?
