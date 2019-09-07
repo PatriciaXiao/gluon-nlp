@@ -415,6 +415,10 @@ class SQuADTransform(object):
                 start_position = 0
                 end_position = 0
 
+            # compute the offset
+            print(token_to_orig_map)
+            exit(0)
+
             features.append(SQuADFeature(example_id=example.example_id,
                                          qas_id=example.qas_id,
                                          doc_tokens=example.doc_tokens,
