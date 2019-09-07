@@ -282,9 +282,9 @@ class BertForQA(Block):
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
         mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
+        mask_result = BilinearSampler(mask_result, grid)
         print(mask_result)
         exit(0)
-        mask_result = BilinearSampler(mask_result, grid)
         mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
         return result, mask_result
 
