@@ -281,15 +281,12 @@ class BertForQA(Block):
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
+        '''
         mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
         mask_result = BilinearSampler(mask_result, grid)
         mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
-        print(raw_offset[0,:])
-        print(warp_matrix)
-        print(mask[0,:])
-        print(mask_result[0,:])
-        exit(0)
-        return result, mask_result
+        '''
+        return result #, mask_result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -334,8 +331,17 @@ class BertForQA(Block):
                 valid_contx_length = valid_contx_length - 1
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
-            query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
-            print(query, query_mask)
+            query = self.shift_ndarray(o, query_mask, raw_offset_query)
+            ###### debug
+            raw_offset = raw_offset_query
+            warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
+                                                mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0)
+            grid = GridGenerator(data=warp_matrix, transform_type='warp')
+            query_mask = mx.ndarray.expand_dims(query_mask, 0)
+            query_mask = mx.ndarray.expand_dims(query_mask, 0)
+            query_mask = BilinearSampler(query_mask, grid)
+            query_mask = mx.ndarray.squeeze(query_mask, axis=(0, 1))
+            print(query_mask)
             exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
