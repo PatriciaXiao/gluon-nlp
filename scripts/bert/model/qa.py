@@ -339,9 +339,6 @@ class BertForQA(Block):
             query_emb_encoded = query_emb_encoded[:,:query_max_len,:]
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
-            print(context_emb_encoded.shape, context_mask.shape)
-            print(query_emb_encoded.shape, query_mask.shape)
-            exit(0)
 
             # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
