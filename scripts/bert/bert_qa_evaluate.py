@@ -197,7 +197,7 @@ def predict(features,
                     continue
                 if end_index >= len(feature.tokens):
                     continue
-                if start_index not in :
+                if start_index not in feature.token_to_orig_map:
                     continue
                 if end_index not in feature.token_to_orig_map:
                     continue
