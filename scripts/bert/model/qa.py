@@ -278,9 +278,6 @@ class BertForQA(Block):
         warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
                                                 mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0)
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
-        print(warp_matrix.context)
-        print(raw_offset.context)
-        exit(0)
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         return result
