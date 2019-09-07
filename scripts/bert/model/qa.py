@@ -276,14 +276,14 @@ class BertForQA(Block):
         '''
         data_raw = mx.ndarray.expand_dims(mx.nd.multiply(mask, data), 0)
         warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
-                                                mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0)
+                                                mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0).astype(int)
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
         mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
-        grid = GridGenerator(data=warp_matrix, transform_type='warp')
         mask_result = BilinearSampler(mask_result, grid)
+        print(warp_matrix)
         print(mask[0,:])
         print(mask_result[0,0,0,:])
         exit(0)
