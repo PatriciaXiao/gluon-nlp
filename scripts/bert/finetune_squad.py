@@ -617,14 +617,9 @@ def train():
             sep_mask_1[range_row_index, valid_query_length - 1] = 1.
             sep_mask_2[range_row_index, valid_length - 1] = 1. 
 
-            print(start_label)
-            print(end_label)
             if args.apply_coattention:
-                start_label = start_label - valid_query_length
-                end_label = end_label - valid_query_length
-            print(start_label)
-            print(end_label)
-            exit(0)
+                start_label = start_label - valid_query_length + 1
+                end_label = end_label - valid_query_length + 1 # 1 for the [CLS]
 
             # forward and backward
             with mx.autograd.record():
@@ -694,6 +689,9 @@ def train_verifier():
         valid_query_length = (1 - token_types).sum(axis=1)
         sep_mask_1[range_row_index, valid_query_length - 1] = 1.
         sep_mask_2[range_row_index, valid_length - 1] = 1. 
+        # if args.apply_coattention:
+        #     start_label = start_label - valid_query_length
+        #     end_label = end_label - valid_query_length
         additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
                             sep_mask_1.astype('float32').as_in_context(ctx),
                             sep_mask_2.astype('float32').as_in_context(ctx))
