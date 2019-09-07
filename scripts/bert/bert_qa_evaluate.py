@@ -179,6 +179,7 @@ def predict(features,
         # if offset, change the start and end indexes
         #if offsets is not None:
         #    # 
+        print(feature.doc_offset)
         exit(0)
 
         if version_2:
