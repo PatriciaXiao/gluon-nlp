@@ -117,16 +117,11 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        print(context.shape, c2q.shape, (context * c2q).shape, (context * q2c).shape)
-        print(query.shape, q2c.shape, c2q.shape)
-        exit(0)
         if self.concat_out:
-            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
-                   F.concat(query, q2c, query * q2c, query * c2q, dim=-1)
+            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
         else:
             out_weight = self.out_weight.data(ctx)
-            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c, \
-                   out_weight[0,0] * query   + out_weight[0,1] * q2c + out_weight[0,2] * query * q2c   + out_weight[0,3] *  query * c2q
+            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
@@ -347,7 +342,7 @@ class BertForQA(Block):
             # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             # query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
-            attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
+            attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             #'''
@@ -356,7 +351,7 @@ class BertForQA(Block):
             attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            attended_output, attended_query = self.co_attention(attended_output_, attended_query_, 
+            attended_output, attended_query = self.co_attention(attended_output_, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             '''
