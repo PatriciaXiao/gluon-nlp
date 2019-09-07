@@ -361,9 +361,9 @@ class BertForQA(Block):
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
-                M_0, _ = self.model_encoder(M, valid_length=valid_length)
-                M_1, _ = self.model_encoder(M_0, valid_length=valid_length)
-                M_2, _ = self.model_encoder(M_1, valid_length=valid_length)
+                M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
+                M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
+                M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
@@ -375,10 +375,7 @@ class BertForQA(Block):
                 # deal with the null-score score
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
-                ctx = prediction.context
-                zeros = mx.nd.zeros((cls_reshaped.shape[0], prediction.shape[1] - 1, cls_reshaped.shape[2])).as_in_context(ctx)
-                cls_added = mx.ndarray.concat(cls_reshaped, zeros, dim=1).as_in_context(ctx)
-                output = mx.nd.add(prediction, cls_added)
+                output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
