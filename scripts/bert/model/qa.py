@@ -283,11 +283,12 @@ class BertForQA(Block):
         # mask shifting
         mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
         mask_result = BilinearSampler(mask_result, grid)
+        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
+        print(raw_offset[0,0,:])
         print(warp_matrix)
         print(mask[0,:])
-        print(mask_result[0,0,0,:])
+        print(mask_result[0,:])
         exit(0)
-        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
         return result, mask_result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
