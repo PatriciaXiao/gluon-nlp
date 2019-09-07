@@ -280,6 +280,13 @@ class BertForQA(Block):
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
+        # mask shifting
+        print(mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0).shape)
+        print(mx.ndarray.expand_dims(mask, (0, 1)).shape)
+        exit(0)
+        mask = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
+        mask_result = BilinearSampler(mask, grid)
+        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
         return result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
@@ -325,7 +332,7 @@ class BertForQA(Block):
                 valid_contx_length = valid_contx_length - 1
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
-            query_shifted = self.shift_ndarray(o, query_mask, raw_offset_query)
+            query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
             print(query_shifted)
             exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
