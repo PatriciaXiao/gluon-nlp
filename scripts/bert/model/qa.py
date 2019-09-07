@@ -333,8 +333,8 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(query, axes=(1,2,0))
             context_emb_encoded = mx.ndarray.transpose(contx, axes=(1,2,0))
 
-            context_max_len = int(context_mask.sum(axis=1).max().asscalar())
-            query_max_len = int(query_mask.sum(axis=1).max().asscalar())
+            context_max_len = int(valid_contx_length.sum(axis=1).max().asscalar())
+            query_max_len = int(valid_query_length.max().asscalar())
             context_emb_encoded = context_emb_encoded[:,:context_max_len,:]
             query_emb_encoded = query_emb_encoded[:,:query_max_len,:]
             context_mask = context_mask[:,:context_max_len]
