@@ -330,7 +330,7 @@ class BertForQA(Block):
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
             query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
-            contx, context_mask = self.shift_ndarray(o, contex_mask, raw_offset_contx)
+            contx, context_mask = self.shift_ndarray(o, context_mask, raw_offset_contx)
             query_emb_encoded = mx.ndarray.transpose(query, axes=(1,2,0))
             context_emb_encoded = mx.ndarray.transpose(contx, axes=(1,2,0))
 
