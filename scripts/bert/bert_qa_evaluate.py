@@ -20,6 +20,8 @@ from collections import Counter, namedtuple, OrderedDict
 
 from mxnet import nd
 
+import numpy as np
+
 import random
 
 PredResult = namedtuple('PredResult', ['start', 'end'])
@@ -174,6 +176,10 @@ def predict(features,
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
 
+        start_indexes = np.array(start_indexes)
+        end_indexes = np.array(end_indexes)
+
+        '''
         print(start_indexes)
         print(end_indexes)
         # if offset, change the start and end indexes
@@ -181,6 +187,7 @@ def predict(features,
         #    # 
         print(feature.doc_offset)
         exit(0)
+        '''
 
         if version_2:
             feature_null_score = result.start[0] + \
