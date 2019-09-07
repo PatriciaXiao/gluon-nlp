@@ -177,8 +177,8 @@ def predict(features,
         print(start_indexes)
         print(end_indexes)
         # if offset, change the start and end indexes
-        if offsets is not None:
-            # 
+        #if offsets is not None:
+        #    # 
         exit(0)
 
         if version_2:
