@@ -691,8 +691,8 @@ def train_verifier():
         cls_mask[:, 0] = 1.
         range_row_index = mx.nd.array(np.arange(len(example_ids)))
         valid_query_length = (1 - token_types).sum(axis=1)
-        sep_mask_1[range_row_index, valid_query_length] = 1.
-        sep_mask_2[range_row_index, valid_length] = 1. 
+        sep_mask_1[range_row_index, valid_query_length - 1.] = 1.
+        sep_mask_2[range_row_index, valid_length - 1.] = 1. 
         additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
                             sep_mask_1.astype('float32').as_in_context(ctx),
                             sep_mask_2.astype('float32').as_in_context(ctx))
