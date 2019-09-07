@@ -281,12 +281,10 @@ class BertForQA(Block):
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
-        '''
         mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
         mask_result = BilinearSampler(mask_result, grid)
-        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1))
-        '''
-        return result #, mask_result
+        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1)).astype(int).astype(float)
+        return result, mask_result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
@@ -331,16 +329,7 @@ class BertForQA(Block):
                 valid_contx_length = valid_contx_length - 1
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
-            query = self.shift_ndarray(o, query_mask, raw_offset_query)
-            ###### debug
-            raw_offset = raw_offset_query
-            warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
-                                                mx.nd.zeros(raw_offset.shape).as_in_context(raw_offset.context)), 0)
-            grid = GridGenerator(data=warp_matrix, transform_type='warp')
-            query_mask = mx.ndarray.expand_dims(query_mask, 0)
-            query_mask = mx.ndarray.expand_dims(query_mask, 0)
-            query_mask = BilinearSampler(query_mask, grid)
-            query_mask = mx.ndarray.squeeze(query_mask, axis=(0, 1))
+            query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
             print(query_mask)
             exit(0)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
