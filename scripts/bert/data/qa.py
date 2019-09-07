@@ -100,6 +100,7 @@ class SQuADFeature(object):
                  orig_answer_text,
                  tokens,
                  token_to_orig_map,
+                 doc_offset,
                  token_is_max_context,
                  input_ids,
                  valid_length,
@@ -115,6 +116,7 @@ class SQuADFeature(object):
         self.orig_answer_text = orig_answer_text
         self.tokens = tokens
         self.token_to_orig_map = token_to_orig_map
+        self.doc_offset = doc_offset
         self.token_is_max_context = token_is_max_context
         self.input_ids = input_ids
         self.valid_length = valid_length
@@ -419,9 +421,6 @@ class SQuADTransform(object):
             sample_t = list(token_to_orig_map.keys())[0]
             sample_v = token_to_orig_map[sample_t]
             doc_offset = sample_t - sample_v
-            print(doc_offset)
-            print(tokens)
-            exit(0)
 
             features.append(SQuADFeature(example_id=example.example_id,
                                          qas_id=example.qas_id,
@@ -431,6 +430,7 @@ class SQuADTransform(object):
                                          orig_answer_text=example.orig_answer_text,
                                          tokens=tokens,
                                          token_to_orig_map=token_to_orig_map,
+                                         doc_offset=doc_offset,
                                          token_is_max_context=token_is_max_context,
                                          input_ids=input_ids,
                                          valid_length=valid_length,
