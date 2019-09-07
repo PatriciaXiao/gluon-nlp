@@ -418,7 +418,7 @@ class SQuADTransform(object):
             # compute the offset
             sample_t = list(token_to_orig_map.keys())[0]
             sample_v = token_to_orig_map[sample_t]
-            doc_offset = sample_v - sample_t
+            doc_offset = sample_t - sample_v
             print(doc_offset)
             print(tokens)
             exit(0)
