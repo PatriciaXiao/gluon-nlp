@@ -316,7 +316,7 @@ class BertForQA(Block):
             context_mask = token_types
             query_mask = 1 - context_mask
             raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
-            raw_offset_query = mx.nd.zeros(inputs.shape)
+            raw_offset_query = mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
             raw_offset_query = 1.
             valid_query_length = query_mask.sum(axis=1)
             valid_contx_length = valid_length - valid_query_length
@@ -326,7 +326,7 @@ class BertForQA(Block):
                 query_mask = query_mask - (sep_mask_1 + cls_mask) 
                 valid_query_length = valid_query_length - 2
                 valid_contx_length = valid_contx_length - 1
-                raw_offset_query = mx.nd.ones(inputs.shape)
+                raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
             query_shifted = self.shift_ndarray(o, query_mask, raw_offset_query)
             print(query_shifted)
