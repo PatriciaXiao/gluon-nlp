@@ -127,7 +127,8 @@ def predict(features,
             tokenizer,
             max_answer_length=64,
             n_best_size=10,
-            version_2=False):
+            version_2=False,
+            offsets=None):
     """Get prediction results.
 
     Parameters
@@ -173,6 +174,11 @@ def predict(features,
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
 
+        print(start_indexes)
+        print(end_indexes)
+        # if offset, change the start and end indexes
+        exit(0)
+
         if version_2:
             feature_null_score = result.start[0] + \
                 result.end[0]
@@ -191,7 +197,7 @@ def predict(features,
                     continue
                 if end_index >= len(feature.tokens):
                     continue
-                if start_index not in feature.token_to_orig_map:
+                if start_index not in :
                     continue
                 if end_index not in feature.token_to_orig_map:
                     continue
