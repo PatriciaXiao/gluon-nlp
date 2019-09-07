@@ -179,7 +179,7 @@ def predict(features,
         start_indexes = np.array(start_indexes)
         end_indexes = np.array(end_indexes)
 
-        '''
+        
         print(start_indexes)
         print(end_indexes)
         # if offset, change the start and end indexes
@@ -187,7 +187,7 @@ def predict(features,
         #    # 
         print(feature.doc_offset)
         exit(0)
-        '''
+
 
         if version_2:
             feature_null_score = result.start[0] + \
