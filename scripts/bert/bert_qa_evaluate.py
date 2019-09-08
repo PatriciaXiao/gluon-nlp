@@ -187,6 +187,7 @@ def predict(features,
         # if offset, change the start and end indexes
         orig_start_indexes = start_indexes + shift
         orig_end_indexes = end_indexes + shift
+        '''
         print(start_indexes)
         print(end_indexes)
         print(shift)
@@ -195,7 +196,7 @@ def predict(features,
         print(feature.orig_answer_text)
         print([feature.tokens[i] for i in orig_start_indexes])
         exit(0)
-
+        '''
 
         if version_2:
             feature_null_score = result.start[0] + \
