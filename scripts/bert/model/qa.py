@@ -362,12 +362,6 @@ class BertForQA(Block):
                 M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
                 M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
                 M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
-                print(valid_contx_length)
-                print(M)
-                print(M_0)
-                print(M_1)
-                print(M_2)
-                exit(0)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
