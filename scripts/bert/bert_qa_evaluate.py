@@ -192,6 +192,8 @@ def predict(features,
         print(shift)
         print(orig_start_indexes)
         print(orig_end_indexes)
+        print(feature.orig_answer_text)
+        print([feature.doc_tokens[i] for i in orig_start_indexes])
         exit(0)
 
 
