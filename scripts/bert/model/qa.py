@@ -362,6 +362,8 @@ class BertForQA(Block):
                 M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
                 M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
                 M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
+                print(M_2)
+                exit(0)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
@@ -369,7 +371,6 @@ class BertForQA(Block):
                 predicted_end = mask_logits(end_hat, context_mask)
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
                 # print(prediction.shape) # (12, 384, 2)
-                # exit(0)
                 # deal with the null-score score
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
