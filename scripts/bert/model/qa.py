@@ -362,6 +362,7 @@ class BertForQA(Block):
                 M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
                 M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
                 M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
+                print(valid_contx_length)
                 print(M)
                 print(M_0)
                 print(M_1)
