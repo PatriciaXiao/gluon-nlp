@@ -704,7 +704,7 @@ def train_verifier():
                           valid_length.astype('float32').as_in_context(ctx),
                           additional_masks)
         verifier.train(train_features, example_ids, out, token_types, bert_out)
-    if VERIFIER_ID == 0:
+    if VERIFIER_ID in [0, 1]:
         verifier.update()
 
 def evaluate():

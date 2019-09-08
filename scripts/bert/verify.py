@@ -380,6 +380,8 @@ class AnswerVerify(object):
 
         self.get_data_transform()
 
+        self.data = list()
+
     def get_model(self, ctx):
         bert_base, self.vocabulary = nlp.model.get_model('bert_12_768_12',
                                              dataset_name='book_corpus_wiki_en_uncased',
@@ -406,10 +408,14 @@ class AnswerVerify(object):
                                                         pad=True,
                                                         pair=self.pair)
 
-    def train(self, train_features, example_ids, out, token_types=None, bert_out=None, num_epochs=1, verbose=False):
+    def train(self, train_features, example_ids, out, token_types=None, bert_out=None):
         if not self.version_2:
             return
-        dataset_raw = self.parse_sentences(train_features, example_ids, out)
+        data_raw = self.parse_sentences(train_features, example_ids, out)
+        self.data.extend(data_raw)
+
+    def update(self, num_epochs=1, verbose=False):
+        dataset_raw = VerifierDataset(self.data)
         dataset = dataset_raw.transform(self.transform)
 
         # The FixedBucketSampler and the DataLoader for making the mini-batches
@@ -454,7 +460,9 @@ class AnswerVerify(object):
                                  step_loss / len(dataloader),
                                  self.trainer.learning_rate,  # TODO: add learning rate scheduler latter
                                  self.metric.get()[1]))
-            step_loss = 0           
+            step_loss = 0  
+
+        self.data = list()         
         # exit(0)
 
     def evaluate(self, dev_feature, prediction):
@@ -530,8 +538,9 @@ class AnswerVerify(object):
                     raw_data.append([first_part, prediction, label])
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
-        dataset = VerifierDataset(raw_data)
-        return dataset
+        # dataset = VerifierDataset(raw_data)
+        # return dataset
+        return raw_data
 
     def find_sentence(self, sentences, target):
         if len(target) == 0:
