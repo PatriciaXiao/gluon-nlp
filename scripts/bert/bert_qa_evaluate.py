@@ -193,7 +193,7 @@ def predict(features,
         print(orig_start_indexes)
         print(orig_end_indexes)
         print(feature.orig_answer_text)
-        print(len(feature.doc_tokens), feature.doc_tokens)
+        print([feature.tokens[i] for i in feature.orig_start_indexes])
         exit(0)
 
 
