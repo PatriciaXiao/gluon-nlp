@@ -130,7 +130,7 @@ def predict(features,
             max_answer_length=64,
             n_best_size=10,
             version_2=False,
-            offsets=None):
+            offsets=False):
     """Get prediction results.
 
     Parameters
@@ -180,7 +180,7 @@ def predict(features,
         end_indexes = np.array(end_indexes)
 
         
-        if offsets is None:
+        if not offsets:
             shift = 0
         else:
             shift = feature.doc_offset - 1
@@ -189,6 +189,7 @@ def predict(features,
         orig_end_indexes = end_indexes + shift
         print(start_indexes)
         print(end_indexes)
+        print(shift)
         print(orig_start_indexes)
         print(orig_end_indexes)
         exit(0)
@@ -341,6 +342,7 @@ def predict_span(features,
             results,
             max_answer_length=64,
             n_best_size=10,
+            offsets=False,
             version_2=False):
     """Get prediction results.
 
@@ -379,20 +381,30 @@ def predict_span(features,
         start_indexes = _get_best_indexes(result.start, n_best_size)
         end_indexes = _get_best_indexes(result.end, n_best_size)
 
-        for start_index in start_indexes:
-            for end_index in end_indexes:
+        start_indexes = np.array(start_indexes)
+        end_indexes = np.array(end_indexes)
+        if not offsets:
+            shift = 0
+        else:
+            shift = feature.doc_offset - 1
+        # if offset, change the start and end indexes
+        orig_start_indexes = start_indexes + shift
+        orig_end_indexes = end_indexes + shift
+
+        for start_index, start_index_orig in zip(start_indexes, orig_start_indexes):
+            for end_index, end_index_orig in zip(end_indexes, orig_end_indexes):
                 # We could hypothetically create invalid predictions, e.g., predict
                 # that the start of the span is in the question. We throw out all
                 # invalid predictions.
-                if start_index >= len(feature.tokens):
+                if start_index_orig >= len(feature.tokens):
                     continue
-                if end_index >= len(feature.tokens):
+                if end_index_orig >= len(feature.tokens):
                     continue
-                if start_index not in feature.token_to_orig_map:
+                if start_index_orig not in feature.token_to_orig_map:
                     continue
-                if end_index not in feature.token_to_orig_map:
+                if end_index_orig not in feature.token_to_orig_map:
                     continue
-                if not feature.token_is_max_context.get(start_index, False):
+                if not feature.token_is_max_context.get(start_index_orig, False):
                     continue
                 if end_index < start_index:
                     continue
@@ -402,8 +414,8 @@ def predict_span(features,
                 prelim_predictions.append(
                     _PrelimPrediction(
                         feature_index=features_id,
-                        start_index=start_index,
-                        end_index=end_index,
+                        start_index=start_index_orig,
+                        end_index=end_index_orig,
                         pred_start=result.start[start_index],
                         pred_end=result.end[end_index]))
 

@@ -173,6 +173,7 @@ class AnswerVerifyDense(object):
                 mode='classification',
                 extract_sentence=True,
                 ctx=mx.cpu(),
+                offsets=False,
                 prefix=None,
                 params=None):
         self.max_answer_length=max_answer_length
@@ -180,6 +181,7 @@ class AnswerVerifyDense(object):
         self.n_best_size=n_best_size
         self.version_2=version_2
         self.ctx = ctx
+        self.offsets=offsets
         self.mode = mode
         assert mode in ['classification', 'regression']
         self.num_classes = 2 if mode == 'classification' else 1
@@ -231,6 +233,7 @@ class AnswerVerifyDense(object):
                 results=results,
                 max_answer_length=self.max_answer_length,
                 n_best_size=self.n_best_size,
+                offsets=self.offsets,
                 version_2=self.version_2)
             num_total_tokens = len(features[0].tokens)
             num_query_tokens = int((1 - token).sum().max().asscalar()) - 2
@@ -345,12 +348,14 @@ class AnswerVerify(object):
                 max_len=384,
                 version_2=True,
                 extract_sentence=True,
+                offsets=False,
                 ctx=mx.cpu()):
         self.tokenizer=tokenizer
         self.max_answer_length=max_answer_length
         self.null_score_diff_threshold=null_score_diff_threshold
         self.n_best_size=n_best_size
         self.version_2=version_2
+        self.offsets = offsets
 
         # The labels for the two classes [(0 = not proper) or  (1 = proper)]
         self.all_labels = [0, 1]
@@ -506,9 +511,9 @@ class AnswerVerify(object):
                     results=results,
                     tokenizer=self.tokenizer,
                     max_answer_length=self.max_answer_length,
-                    # null_score_diff_threshold=self.null_score_diff_threshold,
                     n_best_size=self.n_best_size,
-                    version_2=self.version_2)
+                    version_2=self.version_2,
+                    offsets=self.offsets)
             # if len(prediction) == 0:
             #     continue # not validating for n/a output
             if self.extract_sentence:

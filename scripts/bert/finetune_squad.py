@@ -257,6 +257,8 @@ args = parser.parse_args()
 
 VERIFIER_ID = args.verifier
 
+offsets = args.apply_coattention
+
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -440,6 +442,7 @@ if version_2 and VERIFIER_ID is not None:
                     max_len=max_seq_length,
                     version_2=version_2,
                     ctx=verify_ctx,
+                    offsets=offsets,
                     extract_sentence=args.extract_sentence) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerifyDense(
@@ -450,6 +453,7 @@ if version_2 and VERIFIER_ID is not None:
                     in_units=BERT_DIM[args.bert_model],
                     version_2=version_2,
                     extract_sentence=args.extract_sentence,
+                    offsets=offsets,
                     ctx=verify_ctx)
     else:
         print("ERROR: verifier with id {0} unknown to the model.".format(VERIFIER_ID))
@@ -768,7 +772,8 @@ def evaluate():
             tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
             max_answer_length=max_answer_length,
             n_best_size=n_best_size,
-            version_2=version_2)
+            version_2=version_2,
+            offsets=offsets)
         # print(score_diff, null_score_diff_threshold, features[0].is_impossible) # debug
         # verifier
         if version_2 and prediction != '':
