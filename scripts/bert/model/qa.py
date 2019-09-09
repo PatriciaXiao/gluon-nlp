@@ -278,7 +278,7 @@ class BertForQA(Block):
                                                 mx.nd.zeros(raw_offset.shape).astype(float).as_in_context(raw_offset.context)), 
                                             0)
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
-        warpped_out = BilinearSampler(data_raw, grid)
+        warpped_out = BilinearSampler(data_raw.astype(float), grid.astype(float))
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
