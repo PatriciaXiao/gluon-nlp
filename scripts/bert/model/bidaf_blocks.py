@@ -1,5 +1,5 @@
 from mxnet import initializer
-from mxnet.gluon import HybridBlock
+from mxnet.gluon import HybridBlock, Block
 from mxnet.gluon import nn
 from mxnet.gluon.rnn import LSTM
 
@@ -8,7 +8,7 @@ import mxnet as mx
 def get_very_negative_number():
     return -1e30
 
-class BiDAFOutputLayer(HybridBlock):
+class BiDAFOutputLayer(Block): # HybridBlock):
     """
     ``BiDAFOutputLayer`` produces the final prediction of an answer. The output is a tuple of
     start and end index of token in the paragraph per each batch.
