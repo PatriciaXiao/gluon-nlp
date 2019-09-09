@@ -338,9 +338,9 @@ class BertForQA(Block):
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
 
-            print(bert_output[0])
-            print(query[0])
-            print(contx[0])
+            print(bert_output[0,:,0])
+            print(query[0,:,0])
+            print(contx[0,:,0])
             print(query_mask[0])
             print(context_mask[0])
             exit(0)
