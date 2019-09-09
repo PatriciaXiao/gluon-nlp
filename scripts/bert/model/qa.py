@@ -279,7 +279,7 @@ class BertForQA(Block):
                                             0)
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
         warpped_out = BilinearSampler(data_raw.astype(float), grid.astype(float))
-        result = mx.ndarray.squeeze(warpped_out, axis=0)
+        result = mx.ndarray.squeeze(warpped_out, axis=0).astype('float32')
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
         row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
