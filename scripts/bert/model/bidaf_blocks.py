@@ -3,6 +3,9 @@ from mxnet.gluon import HybridBlock
 from mxnet.gluon import nn
 from mxnet.gluon.rnn import LSTM
 
+def get_very_negative_number():
+    return -1e30
+
 class BiDAFOutputLayer(HybridBlock):
     """
     ``BiDAFOutputLayer`` produces the final prediction of an answer. The output is a tuple of
