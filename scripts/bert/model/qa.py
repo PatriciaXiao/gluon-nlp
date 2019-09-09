@@ -326,6 +326,7 @@ class BertForQA(Block):
                 valid_contx_length = valid_contx_length - 1
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
+            print(context_mask[0])
             query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
             contx, context_mask = self.shift_ndarray(o, context_mask, raw_offset_contx)
             query_emb_encoded = mx.ndarray.transpose(query, axes=(1,2,0))
@@ -339,9 +340,7 @@ class BertForQA(Block):
             query_mask = query_mask[:,:query_max_len]
 
             print(bert_output[0,:,0])
-            print(query_emb_encoded[0,:,0])
-            print(context_emb_encoded[0,:,0])
-            print(query_mask[0])
+            # print(context_emb_encoded[0,:,0])
             print(context_mask[0])
             exit(0)
             # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
