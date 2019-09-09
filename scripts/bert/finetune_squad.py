@@ -401,7 +401,8 @@ if args.apply_coattention:
         net.predict_begin.collect_params().initialize(ctx=ctx)
         net.predict_end.collect_params().initialize(ctx=ctx)
     elif args.bidaf_style_out:
-        #
+        net.modeling_layer.collect_params().initialize(ctx=ctx)
+        net.output_layer.collect_params().initialize(ctx=ctx)
     # the additional paramaters if we want to freeze the BERT part of the model
     if additional_params is not None:
         additional_params.update(net.co_attention.collect_params())
