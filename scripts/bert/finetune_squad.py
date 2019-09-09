@@ -257,7 +257,7 @@ args = parser.parse_args()
 
 VERIFIER_ID = args.verifier
 
-offsets = args.apply_coattention
+offsets = args.apply_coattention and args.qanet_style_out
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
