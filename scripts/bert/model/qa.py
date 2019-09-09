@@ -280,8 +280,6 @@ class BertForQA(Block):
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
         mask_result = (result != 0).max(axis=0)
-        print(mask_result[0])
-        exit(0)
         return result, mask_result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
