@@ -400,7 +400,7 @@ class BertForQA(Block):
                 modeled_output = self.modeling_layer(attended_output)
                 print(modeled_output)
                 print(attended_output.shape, modeled_output.shape)
-                # exit(0)
+                exit(0)
                 predicted_begin, predicted_end = self.output_layer(attended_output, modeled_output, context_mask)
                 print(predicted_begin)
                 exit(0)
