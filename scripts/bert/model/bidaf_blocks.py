@@ -59,20 +59,20 @@ class BiDAFOutputLayer(HybridBlock):
         start_index_dense_output = self._start_index_combined(self._dropout(x)) + \
                                    self._start_index_model(self._dropout(
                                        F.transpose(m, axes=(1, 0, 2))))
-
+        print("1")
         m2 = self._end_index_lstm(m)
         end_index_dense_output = self._end_index_combined(self._dropout(x)) + \
                                  self._end_index_model(self._dropout(F.transpose(m2,
                                                                                  axes=(1, 0, 2))))
-
+        print("2")
         start_index_dense_output = F.squeeze(start_index_dense_output)
         start_index_dense_output_masked = start_index_dense_output + ((1 - mask) *
                                                                       get_very_negative_number())
-
+        print("3")
         end_index_dense_output = F.squeeze(end_index_dense_output)
         end_index_dense_output_masked = end_index_dense_output + ((1 - mask) *
                                                                   get_very_negative_number())
-
+        print("4")
         return start_index_dense_output_masked, \
                end_index_dense_output_masked
 
