@@ -279,7 +279,7 @@ class BertForQA(Block):
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # correction
-        print(raw_offset_query[:,0])
+        print(raw_offset[:,0])
         exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
