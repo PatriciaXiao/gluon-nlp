@@ -399,7 +399,8 @@ class BertForQA(Block):
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
             elif self.bidaf_style_out:
-                print(attended_output)
+                modeled_output = self.modeling_layer(attended_output)
+                print(modeled_output)
                 exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
