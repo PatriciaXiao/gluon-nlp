@@ -281,7 +281,8 @@ class BertForQA(Block):
         # correction
         col_offsets = raw_offset[:,0]
         row_offsets = mx.nd.arange(len(col_offsets))
-        print(data_raw.shape, result.shape)
+        print(data.shape, result.shape)
+        print(result[:, :, 0])
         exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
