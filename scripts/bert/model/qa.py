@@ -279,6 +279,10 @@ class BertForQA(Block):
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # correction needed for the first digit
+        col_offsets = raw_offset[:,0]
+        row_offsets = mx.nd.arange(len(col_offsets))
+        print(data[0])
+        print(result[0])
         # mask shifted
         mask_result = (result != 0).max(axis=0)
         return result, mask_result
@@ -338,7 +342,7 @@ class BertForQA(Block):
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
 
-            # correction
+            # corrected
 
             print(bert_output[1,:,0])
             print(context_emb_encoded[1,:,0])
