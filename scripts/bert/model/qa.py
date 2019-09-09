@@ -281,8 +281,8 @@ class BertForQA(Block):
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
         row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
-        print(data[:,row_offsets,col_offsets])
-        print(result[:,:,0])
+        print(data[:,row_offsets+1,col_offsets+1])
+        print(result[:,:,0+1])
         exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
@@ -322,9 +322,8 @@ class BertForQA(Block):
             raw_offset_query = mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
             valid_query_length = query_mask.sum(axis=1)
             valid_contx_length = valid_length - valid_query_length
-            # the additional masks
-            cls_mask, sep_mask_1, sep_mask_2 = additional_masks
             if self.remove_special_token:
+                cls_mask, sep_mask_1, sep_mask_2 = additional_masks
                 context_mask = context_mask - sep_mask_2
                 query_mask = query_mask - (sep_mask_1 + cls_mask) 
                 valid_query_length = valid_query_length - 2
@@ -332,8 +331,8 @@ class BertForQA(Block):
                 raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
             # use raw_offset to shift the query, and shift back as well, as long as it is permitted
             # print(context_mask[0])
-            query, query_mask = self.shift_ndarray(o, (query_mask + cls_mask), raw_offset_query)
-            contx, context_mask = self.shift_ndarray(o, (context_mask + seq_mask_2), raw_offset_contx)
+            query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
+            contx, context_mask = self.shift_ndarray(o, context_mask, raw_offset_contx)
             query_emb_encoded = mx.ndarray.transpose(query, axes=(1,2,0))
             context_emb_encoded = mx.ndarray.transpose(contx, axes=(1,2,0))
 
