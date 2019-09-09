@@ -280,7 +280,7 @@ class BertForQA(Block):
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # correction
         col_offsets = raw_offset[:,0]
-        row_offsets = mx.nd.arrange(len(col_offsets))
+        row_offsets = mx.nd.arange(len(col_offsets))
         print(data_raw.shape, result.shape)
         exit(0)
         # mask shifted
