@@ -73,6 +73,9 @@ class BiDAFOutputLayer(HybridBlock):
         end_index_dense_output_masked = end_index_dense_output + ((1 - mask) *
                                                                   get_very_negative_number())
 
+        print("hello world")
+        exit(0)
+
         return start_index_dense_output_masked, \
                end_index_dense_output_masked
 
