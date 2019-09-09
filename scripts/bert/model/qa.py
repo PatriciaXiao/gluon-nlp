@@ -400,7 +400,8 @@ class BertForQA(Block):
                 return (output, bert_output)
             elif self.bidaf_style_out:
                 modeled_output = self.modeling_layer(attended_output)
-                print(modeled_output)
+                output = self.output_layer(attended_output, modeled_output, context_mask)
+                print(output)
                 exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
