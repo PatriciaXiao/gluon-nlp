@@ -278,12 +278,7 @@ class BertForQA(Block):
         grid = GridGenerator(data=warp_matrix, transform_type='warp')
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
-        # correction
-        col_offsets = raw_offset[:,0]
-        row_offsets = mx.nd.arange(len(col_offsets))
-        print(data.shape, result.shape)
-        print(result[:, :, 0])
-        exit(0)
+        # correction needed for the first digit
         # mask shifted
         mask_result = (result != 0).max(axis=0)
         return result, mask_result
@@ -343,10 +338,12 @@ class BertForQA(Block):
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
 
-            # print(bert_output[0,:,0])
-            # print(context_emb_encoded[0,:,0])
-            # print(context_mask[0])
-            # exit(0)
+            # correction
+
+            print(bert_output[0,:,0])
+            print(context_emb_encoded[0,:,0])
+            print(context_mask[0])
+            exit(0)
             # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
