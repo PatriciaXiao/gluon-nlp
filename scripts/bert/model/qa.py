@@ -236,7 +236,7 @@ class BertForQA(Block):
                     self.flatten = gluon.nn.Flatten()
                 elif self.bidaf_style_out:
                     # BiDAF mode
-                    self.modeling_layer = rnn.LSTM( hidden_size=bert_out_dim / 2, 
+                    self.modeling_layer = rnn.LSTM( hidden_size=bert_out_dim, 
                                                     num_layers=2, 
                                                     dropout=0.0, 
                                                     bidirectional=True)
