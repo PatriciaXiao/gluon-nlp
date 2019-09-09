@@ -8,7 +8,7 @@ import mxnet as mx
 def get_very_negative_number():
     return -1e30
 
-class BiDAFOutputLayer(Block): # HybridBlock):
+class BiDAFOutputLayer(HybridBlock):
     """
     ``BiDAFOutputLayer`` produces the final prediction of an answer. The output is a tuple of
     start and end index of token in the paragraph per each batch.
