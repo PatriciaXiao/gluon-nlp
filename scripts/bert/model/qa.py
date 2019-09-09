@@ -400,6 +400,9 @@ class BertForQA(Block):
                 return (output, bert_output)
             elif self.bidaf_style_out:
                 modeled_output = self.modeling_layer(attended_output)
+                print(modeled_output)
+                print(self.output_layer(attended_output, modeled_output, context_mask))
+                exit(0)
                 predicted_begin, predicted_end = self.output_layer(attended_output, modeled_output, context_mask)
                 print(predicted_begin)
                 exit(0)
