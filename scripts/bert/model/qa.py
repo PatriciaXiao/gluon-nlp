@@ -283,9 +283,9 @@ class BertForQA(Block):
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
         row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
-        print(data[:,row_offsets,col_offsets+1])
-        print(result[:,:,0+1])
-        exit(0)
+        # print(data[:,row_offsets,col_offsets+1])
+        # print(result[:,:,0+1])
+        # exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
         return result, mask_result
@@ -347,10 +347,10 @@ class BertForQA(Block):
 
             # corrected
 
-            print(bert_output[1,:,0])
-            print(context_emb_encoded[1,:,0])
-            print(context_mask[1])
-            exit(0)
+            # print(bert_output[1,:,0])
+            # print(context_emb_encoded[1,:,0])
+            # print(context_mask[1])
+            # exit(0)
             # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
