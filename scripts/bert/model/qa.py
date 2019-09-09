@@ -31,6 +31,8 @@ import gluonnlp as nlp
 from gluonnlp.model.attention_cell import DotProductAttentionCell, MultiHeadAttentionCell
 from gluonnlp.model.transformer import TransformerEncoder
 
+from .bidaf_blocks import BiDAFOutputLayer
+
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
@@ -181,12 +183,13 @@ class BertForQA(Block):
     """
 
     def __init__(self, bert, prefix=None, params=None, \
-                    n_rnn_layers=0, rnn_hidden_size=200, num_rnn_layers=2, n_dense_layers=0, units_dense=200, \
+                    n_rnn_layers=0, rnn_hidden_size=200, num_rnn_layers=1, n_dense_layers=0, units_dense=200, \
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
                     apply_transformer=False,
                     qanet_style_out=False,
+                    bidaf_style_out=False,
                     remove_special_token=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
@@ -194,6 +197,7 @@ class BertForQA(Block):
         self.apply_self_attention = apply_self_attention
         self.apply_transformer = apply_transformer
         self.qanet_style_out = qanet_style_out
+        self.bidaf_style_out = bidaf_style_out
         self.remove_special_token = remove_special_token
         self.bert = bert
         if self.apply_coattention:
@@ -230,9 +234,16 @@ class BertForQA(Block):
                         prefix='predict_end_'
                     )
                     self.flatten = gluon.nn.Flatten()
-                else:
+                elif self.bidaf_style_out:
                     # BiDAF mode
-                    n_rnn_layers = 1
+                    self.modeling_layer = self.span_classifier.add(rnn.LSTM( hidden_size=rnn_hidden_size, 
+                                                        num_layers=2, 
+                                                        dropout=0.0, 
+                                                        bidirectional=True))
+                    self.output_layer = BiDAFOutputLayer(span_start_input_dim=rnn_hidden_size,
+                                                        nlayers=1,
+                                                        dropout=0.2)
+
                 # '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(

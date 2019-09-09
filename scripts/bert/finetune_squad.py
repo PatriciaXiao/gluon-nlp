@@ -247,6 +247,9 @@ parser.add_argument('--freeze_bert', action='store_true', default=False,
 parser.add_argument('--qanet_style_out', action='store_true', default=False,
                     help='using the QANet-style output.')
 
+parser.add_argument('--bidaf_style_out', action='store_true', default=False,
+                    help='using the BiDAF-style output.')
+
 parser.add_argument('--remove_special_token', action='store_true', default=False,
                     help='remove the special tokens from bert output by masking.')
 
@@ -365,11 +368,12 @@ net = BertForQA(bert=bert, \
     apply_self_attention=args.apply_self_attention,
     apply_transformer=args.apply_transformer,
     qanet_style_out=args.qanet_style_out,
+    bidaf_style_out=args.bidaf_style_out,
     remove_special_token=args.remove_special_token)
-if not args.qanet_style_out:
-    additional_params = net.span_classifier.collect_params()
-else:
+if args.apply_coattention and (args.qanet_style_out or args.bidaf_style_out):
     additional_params = None
+else:
+    additional_params = net.span_classifier.collect_params()
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -396,6 +400,8 @@ if args.apply_coattention:
         net.model_encoder.collect_params().initialize(ctx=ctx)
         net.predict_begin.collect_params().initialize(ctx=ctx)
         net.predict_end.collect_params().initialize(ctx=ctx)
+    elif args.bidaf_style_out:
+        #
     # the additional paramaters if we want to freeze the BERT part of the model
     if additional_params is not None:
         additional_params.update(net.co_attention.collect_params())
