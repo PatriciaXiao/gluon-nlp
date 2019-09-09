@@ -283,6 +283,7 @@ class BertForQA(Block):
         row_offsets = mx.nd.arange(len(col_offsets))
         print(data[0])
         print(result[0])
+        exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
         return result, mask_result
