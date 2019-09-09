@@ -395,6 +395,8 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         elif self.apply_coattention and not self.qanet_style_out:
             context_output = self.span_classifier(attended_output)
+            print(context_output)
+            exit(0)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
