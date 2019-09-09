@@ -236,11 +236,12 @@ class BertForQA(Block):
                     self.flatten = gluon.nn.Flatten()
                 elif self.bidaf_style_out:
                     # BiDAF mode
-                    self.modeling_layer = rnn.LSTM( hidden_size=bert_out_dim, 
+                    self.modeling_layer = rnn.LSTM( hidden_size=int(bert_out_dim / 2), 
                                                     num_layers=2, 
                                                     dropout=0.0, 
-                                                    bidirectional=True)
-                    self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 4),
+                                                    bidirectional=True,
+                                                    input_size=int(bert_out_dim * 4))
+                    self.output_layer = BiDAFOutputLayer(span_start_input_dim=bert_out_dim,
                                                         nlayers=1,
                                                         dropout=0.2)
 
