@@ -356,8 +356,6 @@ class BertForQA(Block):
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
 
-            # corrected
-
             # print(bert_output[1,:,0])
             # print(context_emb_encoded[1,:,0])
             # print(context_mask[1])
@@ -401,7 +399,7 @@ class BertForQA(Block):
             elif self.bidaf_style_out:
                 modeled_output = self.modeling_layer(attended_output)
                 print(modeled_output)
-                print(self.output_layer(attended_output, modeled_output, context_mask))
+                print(attended_output.shape, modeled_output.shape)
                 exit(0)
                 predicted_begin, predicted_end = self.output_layer(attended_output, modeled_output, context_mask)
                 print(predicted_begin)
