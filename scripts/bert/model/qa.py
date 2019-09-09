@@ -398,18 +398,17 @@ class BertForQA(Block):
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
-            # elif self.bidaf_style_out:
-            #
+            elif self.bidaf_style_out:
+                print(attended_output)
+                exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
             attended_output, additional_outputs = self.transformer(bert_output)
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
-        elif self.apply_coattention and not self.qanet_style_out:
+        elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
             context_output = self.span_classifier(attended_output)
-            print(context_output)
-            exit(0)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
