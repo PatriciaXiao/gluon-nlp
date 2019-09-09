@@ -279,9 +279,7 @@ class BertForQA(Block):
         warpped_out = BilinearSampler(data_raw, grid)
         result = mx.ndarray.squeeze(warpped_out, axis=0)
         # mask shifting
-        mask_result = mx.ndarray.expand_dims(mx.ndarray.expand_dims(mask, 0), 0)
-        mask_result = BilinearSampler(mask_result, grid)
-        mask_result = mx.ndarray.squeeze(mask_result, axis=(0, 1)) #.astype(int).astype('float32')
+        mask_result = (result != 0).max(axis=2)
         return result, mask_result
 
     def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
