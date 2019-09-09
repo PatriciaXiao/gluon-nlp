@@ -415,6 +415,9 @@ if args.apply_coattention:
         additional_params.update(net.model_encoder.collect_params())
         additional_params.update(net.predict_begin.collect_params())
         additional_params.update(net.predict_end.collect_params())
+    elif args.bidaf_style_out:
+        additional_params.update(net.modeling_layer.collect_params())
+        additional_params.update(net.output_layer.collect_params())
     # net.co_attention_.collect_params().initialize(ctx=ctx)
     # additional_params.update(net.co_attention_.collect_params())
 
