@@ -182,13 +182,18 @@ def predict(features,
         
         if not offsets:
             shift = 0
+            orig_start_indexes = start_indexes
+            orig_end_indexes = end_indexes
         else:
             shift = feature.doc_offset - 1
-        # if offset, change the start and end indexes
-        orig_start_indexes = start_indexes + shift
-        orig_end_indexes = end_indexes + shift
-        orig_start_indexes[np.where(start_indexes==0)] = 0
-        orig_end_indexes[np.where(end_indexes==0)] = 0
+            print(shift)
+            print(feature.token)
+            exit(0)
+            # if offset, change the start and end indexes
+            orig_start_indexes = start_indexes + shift
+            orig_end_indexes = end_indexes + shift
+            orig_start_indexes[np.where(start_indexes==0)] = 0
+            orig_end_indexes[np.where(end_indexes==0)] = 0
         '''
         print(start_indexes)
         print(end_indexes)
