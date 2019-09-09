@@ -187,7 +187,7 @@ def predict(features,
         else:
             shift = feature.doc_offset - 1
             print(shift)
-            print(feature.token)
+            print(feature.tokens)
             print(list(feature.token_to_orig_map.keys()))
             exit(0)
             # if offset, change the start and end indexes
