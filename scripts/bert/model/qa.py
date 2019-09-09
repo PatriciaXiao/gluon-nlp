@@ -281,7 +281,7 @@ class BertForQA(Block):
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
         row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
-        print(data[:,row_offsets+1,col_offsets+1])
+        print(data[:,row_offsets,col_offsets+1])
         print(result[:,:,0+1])
         exit(0)
         # mask shifted
