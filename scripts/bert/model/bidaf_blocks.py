@@ -37,6 +37,9 @@ class BiDAFOutputLayer(HybridBlock):
                  dropout=0.2, prefix=None, params=None):
         super(BiDAFOutputLayer, self).__init__(prefix=prefix, params=params)
 
+        print(span_start_input_dim)
+        exit(0)
+
         with self.name_scope():
             self._dropout = nn.Dropout(rate=dropout)
             self._start_index_combined = nn.Dense(units=1, in_units=8 * span_start_input_dim,
