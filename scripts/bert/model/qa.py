@@ -398,6 +398,8 @@ class BertForQA(Block):
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
+            # elif self.bidaf_style_out:
+            #
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
