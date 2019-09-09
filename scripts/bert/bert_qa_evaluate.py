@@ -186,10 +186,10 @@ def predict(features,
             orig_end_indexes = end_indexes
         else:
             shift = feature.doc_offset - 1
-            print(shift)
-            print(feature.tokens)
-            print(list(feature.token_to_orig_map.keys()))
-            exit(0)
+            # print(shift)
+            # print(feature.tokens)
+            # print(list(feature.token_to_orig_map.keys()))
+            # exit(0)
             # if offset, change the start and end indexes
             orig_start_indexes = start_indexes + shift
             orig_end_indexes = end_indexes + shift

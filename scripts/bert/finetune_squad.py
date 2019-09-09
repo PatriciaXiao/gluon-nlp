@@ -257,7 +257,7 @@ args = parser.parse_args()
 
 VERIFIER_ID = args.verifier
 
-offsets = args.apply_coattention and args.qanet_style_out
+offsets = args.apply_coattention # and args.qanet_style_out
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):
@@ -628,10 +628,10 @@ def train():
             # forward and backward
             with mx.autograd.record():
 
-                # doc_tokens0 = train_features[example_ids[0].asscalar()][0].tokens
+                doc_tokens0 = train_features[example_ids[0].asscalar()][0].tokens
                 # doc_tokens0 = train_features[example_ids[1].asscalar()][0].tokens
-                # print(doc_tokens0)
-                # print(len(doc_tokens0))
+                print(doc_tokens0)
+                print(len(doc_tokens0))
 
                 additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
                                     sep_mask_1.astype('float32').as_in_context(ctx),

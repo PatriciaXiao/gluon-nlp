@@ -338,6 +338,12 @@ class BertForQA(Block):
             context_mask = context_mask[:,:context_max_len]
             query_mask = query_mask[:,:query_max_len]
 
+            print(bert_output[0])
+            print(query[0])
+            print(contx[0])
+            print(query_mask[0])
+            print(contx_mask[0])
+            exit(0)
             # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
