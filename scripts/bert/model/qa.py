@@ -240,7 +240,7 @@ class BertForQA(Block):
                                                     num_layers=2, 
                                                     dropout=0.0, 
                                                     bidirectional=True)
-                    self.output_layer = BiDAFOutputLayer(span_start_input_dim=bert_out_dim / 2,
+                    self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 2),
                                                         nlayers=1,
                                                         dropout=0.2)
 
