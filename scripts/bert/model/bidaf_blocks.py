@@ -54,7 +54,7 @@ class BiDAFOutputLayer(Block): # HybridBlock):
                                              flatten=False)
 
     # def hybrid_forward(self, F, x, m, mask):
-    def hybrid_forward(self, x, m, mask):
+    def forward(self, x, m, mask):
         # pylint: disable=arguments-differ,missing-docstring
         # setting batch size as the first dimension
         F = mx.nd
