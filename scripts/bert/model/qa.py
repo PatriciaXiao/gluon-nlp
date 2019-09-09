@@ -261,7 +261,7 @@ class BertForQA(Block):
         if self.apply_transformer:
             with self.name_scope():
                 self.transformer = TransformerEncoder(units=bert_out_dim)
-        if self.apply_coattention and (self.qanet_style_out of self.bidaf_style_out):
+        if self.apply_coattention and (self.qanet_style_out or self.bidaf_style_out):
             self.span_classifier = None
         else:
             self.span_classifier = nn.HybridSequential()
