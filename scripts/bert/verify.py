@@ -341,6 +341,11 @@ class AnswerVerifyDense(object):
 
 
 class AnswerVerify(object):
+    '''
+    The BERT-based verifier
+    code reference: https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html
+    mostly verifies the format of [S;Q;$;A]
+    '''
     def __init__(self, tokenizer=nlp.data.BERTBasicTokenizer(lower=True),
                 max_answer_length=30,
                 null_score_diff_threshold=-2.0,

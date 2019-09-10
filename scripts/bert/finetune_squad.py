@@ -235,8 +235,8 @@ parser.add_argument('--verifier', type=int, default=None, choices=[0, 1, 2],
 parser.add_argument('--verifier_mode', type=str, default="joint", choices=["joint", "all", "takeover"],
                     help='the id of the verifier to use')
 
-parser.add_argument('--extract_sentence', action='store_true', default=False,
-                    help='extracting sentence and use [S;Q;$;A] in verifier, instead of [C;Q;$;A]')
+parser.add_argument('--not_extract_sentence', action='store_false', default=False,
+                    help='extracting sentence and use [S;Q;$;A] in verifier when extract sentence, otherwise [C;Q;$;A]')
 
 parser.add_argument('--save_params', action='store_true', default=False,
                     help='save parameters')
@@ -259,6 +259,11 @@ parser.add_argument('--customize_loss', action='store_true', default=False,
 args = parser.parse_args()
 
 VERIFIER_ID = args.verifier
+
+extract_sentence = not args.not_extract_sentence
+
+print(extract_sentence)
+exit(0)
 
 offsets = args.apply_coattention # and args.qanet_style_out
 
@@ -453,7 +458,7 @@ if version_2 and VERIFIER_ID is not None:
                     version_2=version_2,
                     ctx=verify_ctx,
                     offsets=offsets,
-                    extract_sentence=args.extract_sentence) # debug: to be moved onto another GPU latter if space issue happens
+                    extract_sentence=extract_sentence) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerifyDense(
                     max_answer_length=max_answer_length,
@@ -462,7 +467,7 @@ if version_2 and VERIFIER_ID is not None:
                     max_len=max_seq_length,
                     in_units=BERT_DIM[args.bert_model],
                     version_2=version_2,
-                    extract_sentence=args.extract_sentence,
+                    extract_sentence=extract_sentence,
                     offsets=offsets,
                     ctx=verify_ctx)
     else:
