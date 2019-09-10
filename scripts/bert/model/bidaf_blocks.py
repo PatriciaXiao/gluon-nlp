@@ -53,11 +53,11 @@ class BiDAFOutputLayer(HybridBlock):
             self._end_index_model = nn.Dense(units=1, in_units=2 * span_start_input_dim,
                                              flatten=False)
 
-    def hybrid_forward(self, F, x, m, mask):
-        # def forward(self, x, m, mask):
+    #def hybrid_forward(self, F, x, m, mask):
+    def forward(self, x, m, mask):
         # pylint: disable=arguments-differ,missing-docstring
         # setting batch size as the first dimension
-        # F = mx.nd
+        F = mx.nd
         # x = F.transpose(x, axes=(1, 0, 2))
 
         start_index_dense_output = self._start_index_combined(self._dropout(x)) + \
