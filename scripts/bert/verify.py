@@ -420,7 +420,7 @@ class AnswerVerify(object):
         if len(data_raw):
             self.data.extend(data_raw)
 
-    def update(self, num_epochs=3, verbose=False):
+    def update(self, num_epochs=3, verbose=True):
         dataset_raw = VerifierDataset(self.data)
 
         dataset = dataset_raw.transform(self.transform)
