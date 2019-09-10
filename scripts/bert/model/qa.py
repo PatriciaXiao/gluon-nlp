@@ -372,8 +372,12 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
-            print(token_types)
-            print(query_mask)
+            print(token_types[0])
+            print(token_types[1])
+            print(query_mask[0])
+            print(query_mask[1])
+            print(context_mask[0])
+            print(context_mask[1])
             exit(0)
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
