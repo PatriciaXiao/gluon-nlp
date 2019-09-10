@@ -41,17 +41,12 @@ class BiDAFOutputLayer(HybridBlock):
 
         with self.name_scope():
             self._dropout = nn.Dropout(rate=dropout)
-            self._start_index_combined = nn.Dense(units=1, in_units=8 * span_start_input_dim,
-                                                  flatten=False)
-            self._start_index_model = nn.Dense(units=1, in_units=2 * span_start_input_dim,
-                                               flatten=False)
+            self._start_index_combined = nn.Dense(units=1, flatten=False)
+            self._start_index_model = nn.Dense(units=1, flatten=False)
             self._end_index_lstm = LSTM(hidden_size=span_start_input_dim,
-                                        num_layers=nlayers, dropout=dropout, bidirectional=biflag,
-                                        input_size=2 * span_start_input_dim)
-            self._end_index_combined = nn.Dense(units=1, in_units=8 * span_start_input_dim,
-                                                flatten=False)
-            self._end_index_model = nn.Dense(units=1, in_units=2 * span_start_input_dim,
-                                             flatten=False)
+                                        num_layers=nlayers, dropout=dropout, bidirectional=biflag)
+            self._end_index_combined = nn.Dense(units=1, flatten=False)
+            self._end_index_model = nn.Dense(units=1, flatten=False)
 
     # def hybrid_forward(self, F, x, m, mask):
     def forward(self, x, m, mask):
