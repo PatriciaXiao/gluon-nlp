@@ -204,7 +204,6 @@ class BertForQA(Block):
             with self.name_scope():
                 #self.co_attention_ = CoAttention("co-attention_", bert_out_dim) # try multiple layers
                 self.co_attention = CoAttention("co-attention", bert_out_dim)
-                # '''
                 if self.qanet_style_out:
                     self.project = gluon.nn.Dense(
                         units=bert_out_dim,
@@ -244,8 +243,6 @@ class BertForQA(Block):
                     self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 2),
                                                         nlayers=1,
                                                         dropout=0.2)
-
-                # '''
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
@@ -406,8 +403,6 @@ class BertForQA(Block):
                 # print(predicted_begin)
                 # exit(0)
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
-                print(prediction)
-                exit(0)
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
@@ -423,6 +418,8 @@ class BertForQA(Block):
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
+            print(cls_reshaped.shape, context_output.shape)
+            exit(0)
             output = mx.ndarray.concat(cls_reshaped, context_output, dim=1)
         else:
             output = self.span_classifier(bert_output)
