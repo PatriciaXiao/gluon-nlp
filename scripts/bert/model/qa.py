@@ -405,7 +405,7 @@ class BertForQA(Block):
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
-                print(cls_reshaped.shape, context_output.shape)
+                print(cls_reshaped.shape, prediction.shape)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
         if self.apply_self_attention:

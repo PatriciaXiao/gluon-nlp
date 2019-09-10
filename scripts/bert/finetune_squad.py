@@ -720,7 +720,7 @@ def train_verifier():
 def evaluate():
     """Evaluate the model on validation dataset.
     """
-    log.info('start prediction')
+    log.info('Start Evaluation')
 
     all_results = collections.defaultdict(list)
 
