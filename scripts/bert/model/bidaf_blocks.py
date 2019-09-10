@@ -58,7 +58,7 @@ class BiDAFOutputLayer(HybridBlock):
         # pylint: disable=arguments-differ,missing-docstring
         # setting batch size as the first dimension
         F = mx.nd
-        x = F.transpose(x, axes=(1, 0, 2))
+        # x = F.transpose(x, axes=(1, 0, 2))
 
         start_index_dense_output = self._start_index_combined(self._dropout(x)) + \
                                    self._start_index_model(self._dropout(
