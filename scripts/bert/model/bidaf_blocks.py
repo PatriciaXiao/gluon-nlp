@@ -41,19 +41,24 @@ class BiDAFOutputLayer(HybridBlock):
 
         with self.name_scope():
             self._dropout = nn.Dropout(rate=dropout)
-            self._start_index_combined = nn.Dense(units=1, flatten=False)
-            self._start_index_model = nn.Dense(units=1, flatten=False)
+            self._start_index_combined = nn.Dense(units=1, in_units=8 * span_start_input_dim,
+                                                  flatten=False)
+            self._start_index_model = nn.Dense(units=1, in_units=2 * span_start_input_dim,
+                                               flatten=False)
             self._end_index_lstm = LSTM(hidden_size=span_start_input_dim,
-                                        num_layers=nlayers, dropout=dropout, bidirectional=biflag)
-            self._end_index_combined = nn.Dense(units=1, flatten=False)
-            self._end_index_model = nn.Dense(units=1, flatten=False)
+                                        num_layers=nlayers, dropout=dropout, bidirectional=biflag,
+                                        input_size=2 * span_start_input_dim)
+            self._end_index_combined = nn.Dense(units=1, in_units=8 * span_start_input_dim,
+                                                flatten=False)
+            self._end_index_model = nn.Dense(units=1, in_units=2 * span_start_input_dim,
+                                             flatten=False)
 
     # def hybrid_forward(self, F, x, m, mask):
     def forward(self, x, m, mask):
         # pylint: disable=arguments-differ,missing-docstring
         # setting batch size as the first dimension
         F = mx.nd
-        x = F.transpose(x, axes=(0, 2, 1))
+        x = F.transpose(x, axes=(1, 0, 2))
 
         start_index_dense_output = self._start_index_combined(self._dropout(x)) + \
                                    self._start_index_model(self._dropout(
