@@ -74,9 +74,9 @@ class BiDAFOutputLayer(HybridBlock):
         #exit(0)
 
         start_index_dense_output = F.squeeze(start_index_dense_output)
-        start_index_dense_output_masked = start_index_dense_output + ((1 - mask) * get_very_negative_number())
-        print(start_index_dense_output_masked)
+        print(start_index_dense_output.shape, mask.shape)
         exit(0)
+        start_index_dense_output_masked = start_index_dense_output + ((1 - mask) * get_very_negative_number())
 
         end_index_dense_output = F.squeeze(end_index_dense_output)
         end_index_dense_output_masked = end_index_dense_output + ((1 - mask) *
