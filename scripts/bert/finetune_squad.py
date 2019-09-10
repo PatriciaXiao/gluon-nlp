@@ -232,6 +232,9 @@ parser.add_argument('--answerable_threshold',
 parser.add_argument('--verifier', type=int, default=None, choices=[0, 1, 2],
                     help='the id of the verifier to use, 0 refers to the standard thresholding.')
 
+parser.add_argument('--v_epochs', type=int, default=1,
+                    help='verifier running epochs / main model epoch.')
+
 parser.add_argument('--verifier_mode', type=str, default="joint", choices=["joint", "all", "takeover"],
                     help='the id of the verifier to use')
 
