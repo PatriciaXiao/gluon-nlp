@@ -426,9 +426,9 @@ class AnswerVerify(object):
         dataset = dataset_raw.transform(self.transform)
         sample_id = 0
         print('vocabulary used for tokenization = \n%s'% self.vocabulary)
-        print('%s token id = %s'%(self.vocabulary.padding_token, self.vocabulary[vocabulary.padding_token]))
-        print('%s token id = %s'%(self.vocabulary.cls_token, vocabulary[vocabulary.cls_token]))
-        print('%s token id = %s'%(self.vocabulary.sep_token, vocabulary[vocabulary.sep_token]))
+        print('%s token id = %s'%(self.vocabulary.padding_token, self.vocabulary[self.vocabulary.padding_token]))
+        print('%s token id = %s'%(self.vocabulary.cls_token, self.vocabulary[self.vocabulary.cls_token]))
+        print('%s token id = %s'%(self.vocabulary.sep_token, self.vocabulary[self.vocabulary.sep_token]))
         print('token ids = \n%s'%dataset[sample_id][0])
         print('valid length = \n%s'%dataset[sample_id][1])
         print('segment ids = \n%s'%dataset[sample_id][2])
