@@ -61,13 +61,13 @@ class BiDAFOutputLayer(HybridBlock):
         # x = F.transpose(x, axes=(1, 0, 2))
 
         start_index_dense_output = self._start_index_combined(self._dropout(x)) + \
-                                   self._start_index_model(self._dropout(
-                                       F.transpose(m, axes=(1, 0, 2))))
+                                   self._start_index_model(self._dropout( m))
+                                   #    F.transpose(m, axes=(1, 0, 2))))
 
         m2 = self._end_index_lstm(m)
         end_index_dense_output = self._end_index_combined(self._dropout(x)) + \
-                                 self._end_index_model(self._dropout(F.transpose(m2,
-                                                                                 axes=(1, 0, 2))))
+                                 self._end_index_model(self._dropout(m2) ) #F.transpose(m2,
+                                                                        #         axes=(1, 0, 2))))
 
         #print(start_index_dense_output)
         #print(end_index_dense_output)
