@@ -374,7 +374,7 @@ class AnswerVerify(object):
 
         self.lr = 5e-6
         self.eps = 1e-9
-        self.batch_size = 3
+        self.batch_size = 12
 
         self.extract_sentence = extract_sentence
 
@@ -420,11 +420,12 @@ class AnswerVerify(object):
         if len(data_raw):
             self.data.extend(data_raw)
 
-    def update(self, num_epochs=1, verbose=False):
+    def update(self, num_epochs=3, verbose=False):
         dataset_raw = VerifierDataset(self.data)
 
         dataset = dataset_raw.transform(self.transform)
         sample_id = 0
+        '''
         print('vocabulary used for tokenization = \n%s'% self.vocabulary)
         print('%s token id = %s'%(self.vocabulary.padding_token, self.vocabulary[self.vocabulary.padding_token]))
         print('%s token id = %s'%(self.vocabulary.cls_token, self.vocabulary[self.vocabulary.cls_token]))
@@ -434,6 +435,7 @@ class AnswerVerify(object):
         print('segment ids = \n%s'%dataset[sample_id][2])
         print('label = \n%s'%dataset[sample_id][3])
         exit(0)
+        '''
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=self.batch_size,
