@@ -377,26 +377,19 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            # print(mx.nd.add(attended_output, attended_query)) # this works
+
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
-                '''
-                M_0, _ = self.model_encoder(M, valid_length=valid_length)
-                M_1, _ = self.model_encoder(M_0, valid_length=valid_length)
-                M_2, _ = self.model_encoder(M_1, valid_length=valid_length)
-                '''
                 M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
                 M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
                 M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
-                # '''
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
                 predicted_begin = mask_logits(begin_hat, context_mask)
                 predicted_end = mask_logits(end_hat, context_mask)
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
-                # print(prediction.shape) # (12, 384, 2)
                 # deal with the null-score score
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
@@ -404,16 +397,10 @@ class BertForQA(Block):
                 return (output, bert_output)
             elif self.bidaf_style_out:
                 modeled_output = self.modeling_layer(attended_output)
-                # print(modeled_output)
-                # print(attended_output.shape, modeled_output.shape)
-                # exit(0)
                 predicted_begin, predicted_end = self.output_layer(attended_output, modeled_output, context_mask)
-                # print(predicted_begin)
-                # exit(0)
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
-                # print(cls_reshaped.shape, prediction.shape)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
         if self.apply_self_attention:
