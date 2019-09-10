@@ -3,6 +3,8 @@ from mxnet.gluon import HybridBlock, Block
 from mxnet.gluon import nn
 from mxnet.gluon.rnn import LSTM
 
+# https://github.com/dmlc/gluon-nlp/blob/bidaf/scripts/question_answering/question_answering.py
+
 import mxnet as mx
 
 def get_very_negative_number():
