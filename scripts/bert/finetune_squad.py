@@ -458,6 +458,7 @@ if version_2 and VERIFIER_ID is not None:
                     version_2=version_2,
                     ctx=verify_ctx,
                     offsets=offsets,
+                    epochs=args.v_epochs,
                     extract_sentence=extract_sentence) # debug: to be moved onto another GPU latter if space issue happens
     elif VERIFIER_ID == 2:
         verifier = AnswerVerifyDense(

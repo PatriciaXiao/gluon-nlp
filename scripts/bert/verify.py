@@ -354,6 +354,7 @@ class AnswerVerify(object):
                 version_2=True,
                 extract_sentence=True,
                 offsets=False,
+                epochs=1,
                 ctx=mx.cpu()):
         self.tokenizer=tokenizer
         self.max_answer_length=max_answer_length
@@ -361,6 +362,7 @@ class AnswerVerify(object):
         self.n_best_size=n_best_size
         self.version_2=version_2
         self.offsets = offsets
+        self.epochs = epochs
 
         # The labels for the two classes [(0 = not proper) or  (1 = proper)]
         self.all_labels = [0, 1]
@@ -420,7 +422,7 @@ class AnswerVerify(object):
         if len(data_raw):
             self.data.extend(data_raw)
 
-    def update(self, num_epochs=1, verbose=False):
+    def update(self, verbose=True):
         dataset_raw = VerifierDataset(self.data)
 
         dataset = dataset_raw.transform(self.transform)
@@ -443,7 +445,7 @@ class AnswerVerify(object):
                                                     shuffle=True)
         dataloader = mx.gluon.data.DataLoader(dataset, batch_sampler=train_sampler)
 
-        for epoch_id in range(num_epochs):
+        for epoch_id in range(self.epochs):
             if verbose:
                 self.metric.reset()
                 step_loss = 0
