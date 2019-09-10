@@ -72,7 +72,8 @@ class BiDAFOutputLayer(HybridBlock):
         #print(start_index_dense_output)
         #print(end_index_dense_output)
         #exit(0)
-        print((1 - mask))
+        print((1 - mask).astype(float))
+        print(get_very_negative_number())
         print((1 - mask) * get_very_negative_number())
         exit(0)
 
