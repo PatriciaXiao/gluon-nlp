@@ -392,8 +392,6 @@ class AnswerVerify(object):
                                              dataset_name='book_corpus_wiki_en_uncased',
                                              pretrained=True, ctx=ctx, use_pooler=True,
                                              use_decoder=False, use_classifier=False)
-        print(bert_base)
-        exit(0)
         self.ctx = ctx
         self.bert_classifier = model.classification.BERTClassifier(bert_base, num_classes=2, dropout=0.0)
         self.bert_classifier.classifier.initialize(init=mx.init.Normal(0.02), ctx=self.ctx)
@@ -423,6 +421,8 @@ class AnswerVerify(object):
 
     def update(self, num_epochs=1, verbose=False):
         dataset_raw = VerifierDataset(self.data)
+        print(dataset_raw[0])
+        exit(0)
         dataset = dataset_raw.transform(self.transform)
 
         # The FixedBucketSampler and the DataLoader for making the mini-batches
