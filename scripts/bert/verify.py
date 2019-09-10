@@ -422,10 +422,10 @@ class AnswerVerify(object):
 
     def update(self, num_epochs=1, verbose=False):
         dataset_raw = VerifierDataset(self.data)
-        print(dataset_raw[0], dataset_raw[1], dataset_raw[2])
-        exit(0)
-        dataset = dataset_raw.transform(self.transform)
 
+        dataset = dataset_raw.transform(self.transform)
+        print(dataset[0], dataset[1], dataset[2])
+        exit(0)
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
                                                     batch_size=self.batch_size,
