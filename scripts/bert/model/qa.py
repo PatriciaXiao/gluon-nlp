@@ -405,6 +405,9 @@ class BertForQA(Block):
                 predicted_begin, predicted_end = self.output_layer(attended_output, modeled_output, context_mask)
                 # print(predicted_begin)
                 # exit(0)
+                prediction = nd.stack(predicted_begin, predicted_end, axis=2)
+                print(prediction)
+                exit(0)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
