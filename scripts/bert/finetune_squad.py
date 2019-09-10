@@ -265,7 +265,9 @@ VERIFIER_ID = args.verifier
 
 extract_sentence = not args.not_extract_sentence
 
-offsets = False # shifting the order of the embedding actually harms the performance
+offsets = args.apply_coattention 
+# shifting the order of the embedding might potentially harm the performance
+# TODO: make sure that it doesn't harm the performance
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):

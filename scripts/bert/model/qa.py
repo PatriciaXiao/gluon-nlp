@@ -212,7 +212,7 @@ class BertForQA(Block):
                         weight_initializer=Xavier(),
                         prefix='projection_'
                     )
-                    self.dropout = gluon.nn.Dropout(0.1)
+                    self.dropout = gluon.nn.Dropout(0.0) # 0.1
                     self.model_encoder = TransformerEncoder(units=bert_out_dim)
                     self.predict_begin = gluon.nn.Dense(
                         units=1,
@@ -242,7 +242,7 @@ class BertForQA(Block):
                                                     input_size=int(bert_out_dim * 4))
                     self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 2),
                                                         nlayers=1,
-                                                        dropout=0.2)
+                                                        dropout=0.0) # 0.2
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
@@ -326,7 +326,6 @@ class BertForQA(Block):
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
             # get the two encodings separated
-            '''
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
@@ -374,6 +373,7 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
+            '''
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
@@ -381,12 +381,15 @@ class BertForQA(Block):
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
+                '''
                 M_0, _ = self.model_encoder(M, valid_length=valid_length)
-                print(M)
-                print(M_0)
-                exit(0)
                 M_1, _ = self.model_encoder(M_0, valid_length=valid_length)
                 M_2, _ = self.model_encoder(M_1, valid_length=valid_length)
+                '''
+                M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
+                M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
+                M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
+                # '''
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
