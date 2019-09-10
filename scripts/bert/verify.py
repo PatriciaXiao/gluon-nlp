@@ -417,11 +417,12 @@ class AnswerVerify(object):
         if not self.version_2:
             return
         data_raw = self.parse_sentences(train_features, example_ids, out)
-        self.data.extend(data_raw)
+        if len(data_raw):
+            self.data.extend(data_raw)
 
     def update(self, num_epochs=1, verbose=False):
         dataset_raw = VerifierDataset(self.data)
-        print(dataset_raw)
+        print(dataset_raw[0], dataset_raw[1], data_raw[2])
         exit(0)
         dataset = dataset_raw.transform(self.transform)
 
@@ -532,13 +533,13 @@ class AnswerVerify(object):
             # if len(prediction) == 0:
             #     continue # not validating for n/a output
             if self.extract_sentence:
-                if len(prediction) > 0:
-                    sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
-                    sentence_text = self.find_sentence(sentences, prediction)
-                    raw_data.append([sentence_text + '. ' + question_text, prediction, label])
                 if label == 1:
                     answer_sentence = self.find_sentence(sentences, answer_text)
                     raw_data.append([answer_sentence + '. ' + question_text, answer_text, label])
+                elif len(prediction) > 0:
+                    sentences =  list(filter(lambda x: len(x.strip())>0, re.split(pattern, context_text) ))
+                    sentence_text = self.find_sentence(sentences, prediction)
+                    raw_data.append([sentence_text + '. ' + question_text, prediction, label])
             else:
                 first_part = context_text + '. ' + question_text
                 if len(prediction) > 0:
