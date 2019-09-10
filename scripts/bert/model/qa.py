@@ -405,6 +405,7 @@ class BertForQA(Block):
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
+                print(cls_reshaped.shape, context_output.shape)
                 output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
                 return (output, bert_output)
         if self.apply_self_attention:
@@ -418,8 +419,6 @@ class BertForQA(Block):
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            print(cls_reshaped.shape, context_output.shape)
-            exit(0)
             output = mx.ndarray.concat(cls_reshaped, context_output, dim=1)
         else:
             output = self.span_classifier(bert_output)
