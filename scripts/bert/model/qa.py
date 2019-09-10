@@ -372,13 +372,6 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
-            print(token_types[0])
-            print(token_types[1])
-            print(query_mask[0])
-            print(query_mask[1])
-            print(context_mask[0])
-            print(context_mask[1])
-            exit(0)
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
@@ -386,9 +379,12 @@ class BertForQA(Block):
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
-                M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
-                M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
-                M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
+                M_0, _ = self.model_encoder(M, valid_length=valid_length)
+                print(M)
+                print(M_0)
+                exit(0)
+                M_1, _ = self.model_encoder(M_0, valid_length=valid_length)
+                M_2, _ = self.model_encoder(M_1, valid_length=valid_length)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
