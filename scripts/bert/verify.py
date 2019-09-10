@@ -424,7 +424,15 @@ class AnswerVerify(object):
         dataset_raw = VerifierDataset(self.data)
 
         dataset = dataset_raw.transform(self.transform)
-        print(dataset[0], dataset[1], dataset[2])
+        sample_id = 0
+        print('vocabulary used for tokenization = \n%s'% self.vocabulary)
+        print('%s token id = %s'%(self.vocabulary.padding_token, self.vocabulary[vocabulary.padding_token]))
+        print('%s token id = %s'%(self.vocabulary.cls_token, vocabulary[vocabulary.cls_token]))
+        print('%s token id = %s'%(self.vocabulary.sep_token, vocabulary[vocabulary.sep_token]))
+        print('token ids = \n%s'%dataset[sample_id][0])
+        print('valid length = \n%s'%dataset[sample_id][1])
+        print('segment ids = \n%s'%dataset[sample_id][2])
+        print('label = \n%s'%dataset[sample_id][3])
         exit(0)
         # The FixedBucketSampler and the DataLoader for making the mini-batches
         train_sampler = nlp.data.FixedBucketSampler(lengths=[int(item[1]) for item in dataset],
