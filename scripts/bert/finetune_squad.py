@@ -265,7 +265,7 @@ VERIFIER_ID = args.verifier
 
 extract_sentence = not args.not_extract_sentence
 
-offsets = args.apply_coattention # and args.qanet_style_out
+offsets = False # shifting the order of the embedding actually harms the performance
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):

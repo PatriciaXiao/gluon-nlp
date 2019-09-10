@@ -329,6 +329,12 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
+            if self.remove_special_token:
+                cls_mask, sep_mask_1, sep_mask_2 = additional_masks
+                context_mask = context_mask - sep_mask_2
+                query_mask = query_mask - (sep_mask_1 + cls_mask) 
+
+            '''
             raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
             raw_offset_query = mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
             valid_query_length = query_mask.sum(axis=1)
@@ -358,23 +364,19 @@ class BertForQA(Block):
             # print(context_emb_encoded[1,:,0])
             # print(context_mask[1])
             # exit(0)
-            # context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
-            # query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
-            # context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
-            # query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
+            '''
+
+            context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
+            query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
+            context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
+            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
+            context_mask = (context_emb_encoded != 0).max(axis=0)
+            query_mask = (query_emb_encoded != 0).max(axis=0)
+            print(query_mask)
+            exit(0)
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            #'''
-            # how about doing it again?
-            '''
-            attended_output_, attended_query_ = self.co_attention_(context_emb_encoded, query_emb_encoded, 
-                                                context_mask, query_mask, 
-                                                context_max_len, query_max_len)
-            attended_output, attended_query = self.co_attention(attended_output_, query_emb_encoded, 
-                                                context_mask, query_mask, 
-                                                context_max_len, query_max_len)
-            '''
             # print(mx.nd.add(attended_output, attended_query)) # this works
             if self.qanet_style_out:
                 M = self.project(attended_output)
