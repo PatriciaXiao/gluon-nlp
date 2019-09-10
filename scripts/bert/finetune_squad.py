@@ -262,9 +262,6 @@ VERIFIER_ID = args.verifier
 
 extract_sentence = not args.not_extract_sentence
 
-print(extract_sentence)
-exit(0)
-
 offsets = args.apply_coattention # and args.qanet_style_out
 
 output_dir = args.output_dir
