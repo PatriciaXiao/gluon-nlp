@@ -370,8 +370,9 @@ class BertForQA(Block):
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
-            context_mask = (context_emb_encoded != 0).max(axis=0)
-            query_mask = (query_emb_encoded != 0).max(axis=0)
+            context_mask = (context_emb_encoded != 0).max(axis=2)
+            query_mask = (query_emb_encoded != 0).max(axis=2)
+            print(token_types)
             print(query_mask)
             exit(0)
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
