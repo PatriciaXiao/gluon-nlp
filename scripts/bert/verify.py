@@ -542,10 +542,10 @@ class AnswerVerify(object):
                     raw_data.append([sentence_text + '. ' + question_text, prediction, label])
             else:
                 first_part = context_text + '. ' + question_text
-                if len(prediction) > 0:
-                    raw_data.append([first_part, prediction, label])
                 if label == 1:
                     raw_data.append([first_part, answer_text, label])
+                elif len(prediction) > 0:
+                    raw_data.append([first_part, prediction, label])
         # dataset = VerifierDataset(raw_data)
         # return dataset
         return raw_data
