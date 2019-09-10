@@ -422,7 +422,7 @@ class AnswerVerify(object):
 
     def update(self, num_epochs=1, verbose=False):
         dataset_raw = VerifierDataset(self.data)
-        print(dataset_raw[0], dataset_raw[1], data_raw[2])
+        print(dataset_raw[0], dataset_raw[1], dataset_raw[2])
         exit(0)
         dataset = dataset_raw.transform(self.transform)
 
