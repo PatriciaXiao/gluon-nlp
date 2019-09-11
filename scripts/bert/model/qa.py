@@ -378,7 +378,7 @@ class BertForQA(Block):
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
 
-            print(attended_output[0])
+            print(attended_output[0,:,0])
             exit(0)
 
             if self.qanet_style_out:
