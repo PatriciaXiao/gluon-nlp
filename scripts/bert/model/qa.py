@@ -212,7 +212,7 @@ class BertForQA(Block):
                         weight_initializer=Xavier(),
                         prefix='projection_'
                     )
-                    self.dropout = gluon.nn.Dropout(0.0) # 0.1 - from the debug set seems that dropout 0.1 is beneficial
+                    self.dropout = gluon.nn.Dropout(0.1)
                     self.model_encoder = TransformerEncoder(units=bert_out_dim)
                     self.predict_begin = gluon.nn.Dense(
                         units=1,
@@ -242,7 +242,7 @@ class BertForQA(Block):
                                                     input_size=int(bert_out_dim * 4))
                     self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 2),
                                                         nlayers=1,
-                                                        dropout=0.0) # 0.2
+                                                        dropout=0.2)
                 # for the cls's encoding
                 self.cls_mapping = nn.Dense(
                     units=2,
