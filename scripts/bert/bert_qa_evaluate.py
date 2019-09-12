@@ -128,7 +128,7 @@ def predict(features,
             results,
             tokenizer,
             max_answer_length=64,
-            n_best_size=10,
+            n_best_size=15,
             version_2=False,
             offsets=False):
     """Get prediction results.
@@ -352,7 +352,7 @@ def predict(features,
 def predict_span(features,
             results,
             max_answer_length=64,
-            n_best_size=10,
+            n_best_size=15,
             offsets=False,
             version_2=False):
     """Get prediction results.
