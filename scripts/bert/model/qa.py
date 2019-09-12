@@ -352,6 +352,7 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
+            # get the two encodings separated
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
