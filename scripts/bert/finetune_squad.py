@@ -579,7 +579,8 @@ def train():
 
     optimizer_params = {'learning_rate': lr}
     if args.separate_train:
-        separated_optim_params = {'learning_rate': 1e-3}
+        separated_lr = 1e-3
+        separated_optim_params = {'learning_rate': separated_lr}
 
     if args.freeze_bert:
         trainable_params = additional_params
@@ -633,17 +634,17 @@ def train():
             offset = (step_num - num_warmup_steps) * lr / \
                 (num_train_steps - num_warmup_steps)
             new_lr = lr - offset
-        additional_trainer.set_learning_rate(new_lr)
+        trainer.set_learning_rate(new_lr)
         return step_num
 
     def set_new_lr_additional(step_num):
         """set new learning rate"""
         # batch_id and step_num already updated
         if step_num < num_warmup_steps:
-            new_lr = lr * step_num / num_warmup_steps
+            new_lr = separated_lr * step_num / num_warmup_steps
         else:
-            new_lr = lr
-        trainer.set_learning_rate(new_lr)
+            new_lr = separated_lr
+        additional_trainer.set_learning_rate(new_lr)
 
     # Do not apply weight decay on LayerNorm and bias terms
     for _, v in net.collect_params('.*beta|.*gamma|.*bias').items():
