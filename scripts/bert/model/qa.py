@@ -415,7 +415,7 @@ class BertForQA(Block):
             # mask the output
             print(context_output)
             print(context_output_mask)
-            print(nd.concat(context_mask, context_mask, dim=-1))
+            print(nd.concat(context_output_mask, context_output_mask, dim=-1))
             exit(0)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
