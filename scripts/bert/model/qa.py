@@ -369,7 +369,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            attended_output = attended_output * 0 + F.concat(context_emb_encoded, context_emb_encoded, context_emb_encoded, context_emb_encoded, dim=-1)
+            attended_output = attended_output * 0 + nd.concat(context_emb_encoded, context_emb_encoded, context_emb_encoded, context_emb_encoded, dim=-1)
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
