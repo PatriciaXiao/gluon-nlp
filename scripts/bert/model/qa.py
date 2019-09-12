@@ -366,7 +366,10 @@ class BertForQA(Block):
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            print(attended_output[0])
+            print(bert_output[0, :, 0])
+            print(context_emb_encoded[0, :, 0])
+            print(query_emb_encoded[0, :, 0])
+            print(attended_output[0, :, 0])
             print(context_mask[0])
             print(query_mask[0])
             exit(0)
