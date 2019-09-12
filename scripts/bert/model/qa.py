@@ -120,10 +120,10 @@ class CoAttention(Block):
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
         if self.concat_out:
-            print(context[0,:,0])
-            print(c2q[0,:,0])
-            print((context * c2q)[0,:,0])
-            print((context * q2c)[0,:,0])
+            print(query[0,:,0])
+            print(q2c[0,:,0])
+            print((query * q2c)[0,:,0])
+            print((query * c2q)[0,:,0])
             exit(0)
             return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
                    F.concat(query,   q2c, query * q2c, query * c2q, dim=-1)
