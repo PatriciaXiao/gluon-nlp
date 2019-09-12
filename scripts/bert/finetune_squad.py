@@ -383,6 +383,10 @@ net = BertForQA(bert=bert, \
     bidaf_style_out=args.bidaf_style_out,
     n_rnn_layers=args.n_rnn_layers,
     remove_special_token=args.remove_special_token)
+
+print(net)
+exit(0)
+
 if args.apply_coattention and (args.qanet_style_out or args.bidaf_style_out):
     additional_params = None
 else:
