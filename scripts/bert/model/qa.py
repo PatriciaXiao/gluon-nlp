@@ -411,11 +411,12 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
             context_output = self.span_classifier(attended_output)
-            context_output_mask = context_mask.expand_dims(-1)
+            context_output_mask_raw = context_mask.expand_dims(-1)
+            context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
             # mask the output
             print(context_output)
             print(context_output_mask)
-            print(nd.concat(context_output_mask, context_output_mask, dim=-1))
+            print(mask_logits(context_output, context_output_mask))
             exit(0)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
