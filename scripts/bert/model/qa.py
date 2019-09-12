@@ -364,8 +364,8 @@ class BertForQA(Block):
             query_max_len = bert_output.shape[1]
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
-            context_mask = (context_emb_encoded != 0).max(axis=2)
-            query_mask = (query_emb_encoded != 0).max(axis=2)
+            #context_mask = (context_emb_encoded != 0).max(axis=2)
+            #query_mask = (query_emb_encoded != 0).max(axis=2)
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
@@ -401,15 +401,12 @@ class BertForQA(Block):
         if self.add_query or self.apply_self_attention or self.apply_transformer:
             output = self.span_classifier(attended_output)
         elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
-            context_output = self.span_classifier(attended_output)
-            '''
             context_output_raw = self.span_classifier(attended_output)
             # mask the output - have to do this, because the rest digits are previously masked as 0, which is incorrect
             #     many valid digits have values smaller than 0, it is improper to use 0 as "impossible value"
             context_output_mask_raw = context_mask.expand_dims(-1)
             context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
             context_output = mask_logits(context_output_raw, context_output_mask)
-            '''
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
