@@ -195,7 +195,7 @@ def predict(features,
             orig_end_indexes = end_indexes + shift
             orig_start_indexes[np.where(start_indexes==0)] = 0
             orig_end_indexes[np.where(end_indexes==0)] = 0
-        '''
+        
         print(start_indexes)
         print(end_indexes)
         print(shift)
@@ -204,7 +204,7 @@ def predict(features,
         print(feature.orig_answer_text)
         print([feature.tokens[i] for i in orig_start_indexes])
         exit(0)
-        '''
+        
 
         if version_2:
             feature_null_score = result.start[0] + \
