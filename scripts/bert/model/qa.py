@@ -120,16 +120,12 @@ class CoAttention(Block):
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
         if self.concat_out:
-            print(query[0,:,0])
-            print(q2c[0,:,0])
-            print((query * q2c)[0,:,0])
-            print((query * c2q)[0,:,0])
-            exit(0)
             return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
                    F.concat(query,   q2c, query * q2c, query * c2q, dim=-1)
         else:
             out_weight = self.out_weight.data(ctx)
-            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c
+            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c, \
+                    out_weight[0,0] * query  + out_weight[0,1] * q2c + out_weight[0,2] * query * q2c   + out_weight[0,3] * query * c2q
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
