@@ -580,6 +580,8 @@ def train():
     optimizer_params = {'learning_rate': lr}
     if args.separate_train:
         separated_lr = 1e-3
+        if args.qanet_style_out:
+            separated_lr = 1e-5
         separated_optim_params = {'learning_rate': separated_lr}
 
     if args.freeze_bert:
