@@ -413,6 +413,8 @@ class BertForQA(Block):
             context_output = self.span_classifier(attended_output)
             # mask the output
             print(context_output)
+            print(context_mask)
+            print(nd.concat(context_mask, context_mask, dim=-1))
             exit(0)
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
