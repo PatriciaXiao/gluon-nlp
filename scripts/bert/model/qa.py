@@ -55,7 +55,7 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, name, bert_out_dim, params=None, concat_out=False):
+    def __init__(self, name, bert_out_dim, params=None, concat_out=True):
         super(CoAttention, self).__init__(name)
         self.in_dim = bert_out_dim
         self.concat_out = concat_out
@@ -352,7 +352,18 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
+            o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
+            context_mask = token_types
+            query_mask = 1 - context_mask
+            context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
+            query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
+            context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
+            query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
+            attended_output, _ = self.co_attention(context_emb_encoded, query_emb_encoded, 
+                                                context_mask, query_mask, 
+                                                context_max_len, query_max_len)
             # get the two encodings separated
+            '''
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
@@ -369,7 +380,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            attended_output = attended_output * 0 + context_emb_encoded
+            '''
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
@@ -413,7 +424,7 @@ class BertForQA(Block):
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
             output = mx.ndarray.concat(cls_reshaped, context_output[:,1:,:], dim=1)
 
-            output = self.span_classifier(attended_output) + 0 * output
+            output = context_output_raw + 0 * output
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
