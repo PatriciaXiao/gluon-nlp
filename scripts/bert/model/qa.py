@@ -368,9 +368,12 @@ class BertForQA(Block):
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
             print(context_mask[0])
-            print((attended_output != 0).max(axis=1))
+            print((attended_output != 0).max(axis=0)[0])
+            print((attended_output != 0).max(axis=1)[0])
+            print((attended_output != 0).max(axis=2)[0])
+            exit(0)
             print(query_mask[0])
-            print((attended_query != 0).max(axis=1))
+            print((attended_query != 0).max(axis=1)[0])
             exit(0)
             if self.qanet_style_out:
                 M = self.project(attended_output)
