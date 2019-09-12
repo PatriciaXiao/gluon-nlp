@@ -252,6 +252,9 @@ parser.add_argument('--save_params', action='store_true', default=False,
 parser.add_argument('--freeze_bert', action='store_true', default=False,
                     help='not finetuning bert parameters, only finetuning the rest parts.')
 
+parser.add_argument('--separate_train', action='store_true', default=False,
+                    help='separate BERT and the additional layers to use different learning rate and different trainer.')
+
 parser.add_argument('--qanet_style_out', action='store_true', default=False,
                     help='using the QANet-style output.')
 
@@ -578,6 +581,13 @@ def train():
 
     if args.freeze_bert:
         trainable_params = additional_params
+    elif args.separate_train:
+        trainable_params = net.bert.collect_params()
+        separated_params = additional_params
+        print(trainable_params)
+        print("==========================")
+        print(separated_params)
+        exit(0)
     else:
         trainable_params = net.collect_params()
 
