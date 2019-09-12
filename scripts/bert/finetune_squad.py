@@ -273,9 +273,11 @@ VERIFIER_ID = args.verifier
 
 extract_sentence = not args.not_extract_sentence # by default extracting sentences for verifiers
 
-offsets = args.apply_coattention 
+offsets = False # args.apply_coattention 
 # shifting the order of the embedding might potentially harm the performance
-# TODO: make sure that it doesn't harm the performance
+# it does harm the performance
+# NOTICE: shifting is not a good idea since it harms the performance and AT TIMES cause corruption (EM around 1, F1 around 10)
+#     in case that offset needs to be shifted, refer to BertForQA.shift_ndarray
 
 output_dir = args.output_dir
 if not os.path.exists(output_dir):

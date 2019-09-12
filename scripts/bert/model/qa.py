@@ -278,8 +278,36 @@ class BertForQA(Block):
         Parameters
         ----------
         data: NDArray, shape(dim, batch_size, seq_length)
+                mostly we use o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
         mask: NDArray, shape(batch_size, seq_length)
+                the mask; in most cases,
+                        context_mask = token_types
+                        query_mask = 1 - context_mask
         raw_offset: NDArray, shape(batch_size, seq_length)
+                    For example, if it is:
+                    [[1, 1, 1, 1, 1, .... 1],
+                     [-2, -2, -2, -2, -2, .... -2],
+                     [0, 0, 0, 0, 0, .... 0]]
+                    we'll shift every entry of the targeting matrix, data (o) 
+                                           first line left-ward 1 position
+                                           second line right-ward 1 position
+                                           third line remains unchanged
+                                           and after shifting, the blank positions will be fillled in with zeros
+                    one way of computing this offset matrix:
+                    raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
+                    raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
+                                    or mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
+            in case that ndarray is shifted, we need new valid length
+                valid_query_length = query_mask.sum(axis=1)
+                valid_contx_length = valid_length - valid_query_length
+            and if remove special token, 
+                valid_query_length = valid_query_length - 2
+                valid_contx_length = valid_contx_length - 1
+
+        Returns
+        -------
+        result: the final result we want is mx.ndarray.transpose(result, axes=(1,2,0))
+        mask_result: the mask of the result (shifted)
         '''
         data_raw = mx.ndarray.expand_dims(mx.nd.multiply(mask, data), 0)
         raw_offset = raw_offset.astype(float)
@@ -292,9 +320,6 @@ class BertForQA(Block):
         # correction needed for the first digit
         col_offsets = raw_offset[:,0].as_in_context(data.context)
         row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
-        # print(data[:,row_offsets,col_offsets+1])
-        # print(result[:,:,0+1])
-        # exit(0)
         # mask shifted
         mask_result = (result != 0).max(axis=0)
         return result, mask_result
@@ -325,65 +350,32 @@ class BertForQA(Block):
             o = mx.nd.add(o, mx.nd.multiply(avg_q.expand_dims(axis=2), token_types))
             attended_output = mx.ndarray.transpose(o, axes=(1,2,0))
         if self.apply_coattention:
-            # get the two encodings separated
-            o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
-            context_mask = token_types
-            query_mask = 1 - context_mask
-            raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
-            raw_offset_query = mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
-            valid_query_length = query_mask.sum(axis=1)
-            valid_contx_length = valid_length - valid_query_length
-            if self.remove_special_token:
-                cls_mask, sep_mask_1, sep_mask_2 = additional_masks
-                context_mask = context_mask - sep_mask_2
-                query_mask = query_mask - (sep_mask_1 + cls_mask) 
-                valid_query_length = valid_query_length - 2
-                valid_contx_length = valid_contx_length - 1
-                raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
-            # use raw_offset to shift the query, and shift back as well, as long as it is permitted
-            # print(context_mask[0])
-            query, query_mask = self.shift_ndarray(o, query_mask, raw_offset_query)
-            contx, context_mask = self.shift_ndarray(o, context_mask, raw_offset_contx)
-            query_emb_encoded = mx.ndarray.transpose(query, axes=(1,2,0))
-            context_emb_encoded = mx.ndarray.transpose(contx, axes=(1,2,0))
-
-            context_max_len = int(valid_contx_length.max().asscalar())
-            query_max_len = int(valid_query_length.max().asscalar())
-            context_emb_encoded = context_emb_encoded[:,:context_max_len,:]
-            query_emb_encoded = query_emb_encoded[:,:query_max_len,:]
-            context_mask = context_mask[:,:context_max_len]
-            query_mask = query_mask[:,:query_max_len]
-
-            # print(bert_output[1,:,0])
-            # print(context_emb_encoded[1,:,0])
-            # print(context_mask[1])
-            # exit(0)
-            '''
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
             if self.remove_special_token:
                 cls_mask, sep_mask_1, sep_mask_2 = additional_masks
                 context_mask = context_mask - sep_mask_2
-                query_mask = query_mask - (sep_mask_1 + cls_mask) 
-                
-            context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
-            query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
+                query_mask = query_mask - (sep_mask_1 + cls_mask)
+            context_max_len = bert_output.shape[1]
+            query_max_len = bert_output.shape[1]
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
-            '''
             attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-
+            print(attended_output[0])
+            print(context_mask[0])
+            print(query_mask[0])
+            exit(0)
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
-                M_0, _ = self.model_encoder(M, valid_length=valid_contx_length)
-                M_1, _ = self.model_encoder(M_0, valid_length=valid_contx_length)
-                M_2, _ = self.model_encoder(M_1, valid_length=valid_contx_length)
+                M_0, _ = self.model_encoder(M, valid_length=valid_length)
+                M_1, _ = self.model_encoder(M_0, valid_length=valid_length)
+                M_2, _ = self.model_encoder(M_1, valid_length=valid_length)
                 begin_hat = self.flatten(
                     self.predict_begin(nd.concat(M_0, M_1, dim=-1)))
                 end_hat = self.flatten(self.predict_end(nd.concat(M_0, M_2, dim=-1)))
@@ -393,7 +385,7 @@ class BertForQA(Block):
                 # deal with the null-score score
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
-                output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
+                output = mx.ndarray.concat(cls_reshaped, prediction[:,1:,:], dim=1)
                 return (output, bert_output)
             elif self.bidaf_style_out:
                 modeled_output = self.modeling_layer(attended_output)
@@ -401,7 +393,7 @@ class BertForQA(Block):
                 prediction = nd.stack(predicted_begin, predicted_end, axis=2)
                 cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
                 cls_reshaped = self.cls_mapping(cls_emb_encoded)
-                output = mx.ndarray.concat(cls_reshaped, prediction, dim=1)
+                output = mx.ndarray.concat(cls_reshaped, prediction[:,1:,:], dim=1)
                 return (output, bert_output)
         if self.apply_self_attention:
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
@@ -419,7 +411,7 @@ class BertForQA(Block):
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
-            output = mx.ndarray.concat(cls_reshaped, context_output, dim=1)
+            output = mx.ndarray.concat(cls_reshaped, context_output[:,1:,:], dim=1)
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
