@@ -55,7 +55,7 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, name, bert_out_dim, params=None, concat_out=True):
+    def __init__(self, name, bert_out_dim, params=None, concat_out=False):
         super(CoAttention, self).__init__(name)
         self.in_dim = bert_out_dim
         self.concat_out = concat_out
