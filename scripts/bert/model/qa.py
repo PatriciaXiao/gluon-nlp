@@ -411,7 +411,8 @@ class BertForQA(Block):
             output = self.span_classifier(attended_output)
         elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
             context_output_raw = self.span_classifier(attended_output)
-            # mask the output
+            # mask the output - have to do this, because the rest digits are previously masked as 0, which is incorrect
+            #     many valid digits have values smaller than 0, it is improper to use 0 as "impossible value"
             context_output_mask_raw = context_mask.expand_dims(-1)
             context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
             context_output = mask_logits(context_output_raw, context_output_mask)
