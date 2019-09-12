@@ -578,28 +578,36 @@ def train():
     log.info('Start Training')
 
     optimizer_params = {'learning_rate': lr}
+    if args.separate_train:
+        separated_optim_params = {'learning_rate': 1e-3}
 
     if args.freeze_bert:
         trainable_params = additional_params
     elif args.separate_train:
         trainable_params = net.bert.collect_params()
         separated_params = additional_params
-        print(trainable_params)
-        print("==========================")
-        print(separated_params)
-        exit(0)
+        # print(trainable_params)
+        # print("==========================")
+        # print(separated_params)
+        # exit(0)
     else:
         trainable_params = net.collect_params()
 
     try:
         trainer = mx.gluon.Trainer(trainable_params, optimizer,
                                    optimizer_params, update_on_kvstore=False)
+        if args.separate_train:
+            additional_trainer = mx.gluon.Trainer(separated_params, optimizer,
+                                   separated_optim_params, update_on_kvstore=False)
     except ValueError as e:
         print(e)
         warnings.warn('AdamW optimizer is not found. Please consider upgrading to '
                       'mxnet>=1.5.0. Now the original Adam optimizer is used instead.')
         trainer = mx.gluon.Trainer(trainable_params, 'adam',
                                    optimizer_params, update_on_kvstore=False)
+        if args.separate_train:
+            additional_trainer = mx.gluon.Trainer(separated_params, 'adam',
+                                   separated_optim_params, update_on_kvstore=False)
 
     num_train_examples = len(train_data_transform)
     step_size = batch_size * accumulate if accumulate else batch_size
@@ -625,8 +633,17 @@ def train():
             offset = (step_num - num_warmup_steps) * lr / \
                 (num_train_steps - num_warmup_steps)
             new_lr = lr - offset
-        trainer.set_learning_rate(new_lr)
+        additional_trainer.set_learning_rate(new_lr)
         return step_num
+
+    def set_new_lr_additional(step_num):
+        """set new learning rate"""
+        # batch_id and step_num already updated
+        if step_num < num_warmup_steps:
+            new_lr = lr * step_num / num_warmup_steps
+        else:
+            new_lr = lr
+        trainer.set_learning_rate(new_lr)
 
     # Do not apply weight decay on LayerNorm and bias terms
     for _, v in net.collect_params('.*beta|.*gamma|.*bias').items():
@@ -634,10 +651,16 @@ def train():
     # Collect differentiable parameters
     params = [p for p in trainable_params.values()
               if p.grad_req != 'null']
+    if args.separate_train:
+        params_additional = [p for p in separated_params.values()
+              if p.grad_req != 'null']
     # Set grad_req if gradient accumulation is required
     if accumulate:
         for p in params:
             p.grad_req = 'add'
+        if args.separate_train:
+            for p in params_additional:
+                p.grad_req = 'add'
 
     epoch_tic = time.time()
     total_num = 0
@@ -648,6 +671,8 @@ def train():
         for batch_id, data in enumerate(train_dataloader):
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
+            if args.separate_train:
+                set_new_lr_additional(step_num)
             example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
             cls_mask = mx.nd.zeros(token_types.shape)
@@ -695,6 +720,10 @@ def train():
                 trainer.allreduce_grads()
                 nlp.utils.clip_grad_global_norm(params, 1)
                 trainer.update(1)
+                if args.separate_train:
+                    additional_trainer.allreduce_grads()
+                    nlp.utils.clip_grad_global_norm(params_additional, 1)
+                    additional_trainer.update(1)
 
             step_loss += ls.asscalar()
 
