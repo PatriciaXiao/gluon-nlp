@@ -268,7 +268,7 @@ args = parser.parse_args()
 
 VERIFIER_ID = args.verifier
 
-extract_sentence = not args.not_extract_sentence
+extract_sentence = not args.not_extract_sentence # by default extracting sentences for verifiers
 
 offsets = args.apply_coattention 
 # shifting the order of the embedding might potentially harm the performance
