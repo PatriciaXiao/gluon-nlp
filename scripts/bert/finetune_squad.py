@@ -172,6 +172,11 @@ parser.add_argument('--max_query_length',
                     help='The maximum number of tokens for the question. Questions longer than '
                     'this will be truncated to this length. default is 64')
 
+parser.add_argument('--n_rnn_layers',
+                    type=int,
+                    default=0,
+                    help='number of LSTM layers added after the BERT-output and before the dense span-classifier.')
+
 parser.add_argument('--n_best_size',
                     type=int,
                     default=20, # 20
@@ -376,6 +381,7 @@ net = BertForQA(bert=bert, \
     apply_transformer=args.apply_transformer,
     qanet_style_out=args.qanet_style_out,
     bidaf_style_out=args.bidaf_style_out,
+    n_rnn_layers=args.n_rnn_layers,
     remove_special_token=args.remove_special_token)
 if args.apply_coattention and (args.qanet_style_out or args.bidaf_style_out):
     additional_params = None

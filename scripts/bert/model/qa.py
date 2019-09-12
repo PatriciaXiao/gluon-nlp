@@ -183,7 +183,7 @@ class BertForQA(Block):
     """
 
     def __init__(self, bert, prefix=None, params=None, \
-                    n_rnn_layers=0, rnn_hidden_size=200, num_rnn_layers=1, n_dense_layers=0, units_dense=200, \
+                    n_rnn_layers=0, rnn_hidden_size=650, num_rnn_layers=1, n_dense_layers=0, units_dense=650, \
                     add_query=False, \
                     apply_coattention=False, bert_out_dim=768,\
                     apply_self_attention=False, self_attention_dimension=None, n_attention_heads=4,
