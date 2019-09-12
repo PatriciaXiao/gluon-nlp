@@ -412,7 +412,7 @@ class BertForQA(Block):
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
             output = mx.ndarray.concat(cls_reshaped, context_output[:,1:,:], dim=1)
 
-            output = self.span_classifier(attended_output)
+            output = self.span_classifier(attended_output) + 0 * output
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
