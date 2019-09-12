@@ -55,7 +55,7 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, name, bert_out_dim, params=None, concat_out=True):
+    def __init__(self, name, bert_out_dim, params=None, concat_out=False):
         super(CoAttention, self).__init__(name)
         self.in_dim = bert_out_dim
         self.concat_out = concat_out
@@ -369,7 +369,7 @@ class BertForQA(Block):
             attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            attended_output = attended_output * 0 + nd.concat(context_emb_encoded, context_emb_encoded, context_emb_encoded, context_emb_encoded, dim=-1)
+            attended_output = attended_output * 0 + context_emb_encoded
             if self.qanet_style_out:
                 M = self.project(attended_output)
                 M = self.dropout(M)
