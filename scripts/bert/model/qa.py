@@ -120,7 +120,8 @@ class CoAttention(Block):
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
         if self.concat_out:
-            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
+            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
+                   F.concat(query,   q2c, query * q2c, query * c2q, dim=-1)
         else:
             out_weight = self.out_weight.data(ctx)
             return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c
@@ -363,15 +364,13 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
-            attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
+            attended_output, attended_query = self.co_attention(context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
-            print(bert_output[0, :, 0])
-            print(context_emb_encoded[0, :, 0])
-            print(query_emb_encoded[0, :, 0])
-            print(attended_output[0, :, 0])
             print(context_mask[0])
+            print((attended_output != 0).max(axis=2))
             print(query_mask[0])
+            print((attended_query != 0).max(axis=2))
             exit(0)
             if self.qanet_style_out:
                 M = self.project(attended_output)
