@@ -403,9 +403,12 @@ class BertForQA(Block):
             context_output_raw = self.span_classifier(attended_output)
             # mask the output - have to do this, because the rest digits are previously masked as 0, which is incorrect
             #     many valid digits have values smaller than 0, it is improper to use 0 as "impossible value"
+            '''
             context_output_mask_raw = context_mask.expand_dims(-1)
             context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
             context_output = mask_logits(context_output_raw, context_output_mask)
+            '''
+            context_output = context_output_raw
             # deal with the null-score score
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
