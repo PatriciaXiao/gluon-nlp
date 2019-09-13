@@ -758,7 +758,7 @@ def train_verifier():
         valid_query_length = (1 - token_types).sum(axis=1)
         sep_mask_1[range_row_index, valid_query_length - 1] = 1.
         sep_mask_2[range_row_index, valid_length - 1] = 1. 
-        # if args.apply_coattention:
+        # if offsets:
         #     start_label = start_label - valid_query_length
         #     end_label = end_label - valid_query_length
         additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
