@@ -411,9 +411,12 @@ class BertForQA(Block):
             context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
             context_output = mask_logits(context_output_raw, context_output_mask)
             # deal with the null-score score
+            '''
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
             output = mx.ndarray.concat(cls_reshaped, context_output[:,1:,:], dim=1)
+            '''
+            output = context_output
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
