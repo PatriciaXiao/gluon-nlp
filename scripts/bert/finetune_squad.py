@@ -682,7 +682,7 @@ def train():
             sep_mask_1[range_row_index, valid_query_length - 1] = 1.
             sep_mask_2[range_row_index, valid_length - 1] = 1. 
 
-            if args.apply_coattention:
+            if offsets:
                 start_label = start_label - valid_query_length + 1
                 end_label = end_label - valid_query_length + 1 # 1 for the [CLS]
 

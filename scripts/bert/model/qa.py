@@ -73,7 +73,7 @@ class CoAttention(Block):
                 use_bias=False
             )
             self.w4mlu = self.params.get(
-                'linear_kernel', shape=(1, 1, int(bert_out_dim)), init=mx.init.Xavier())
+                'linear_kernel', shape=(1, 1, bert_out_dim), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
             if not self.concat_out:
