@@ -410,7 +410,7 @@ else:
 
 if args.apply_coattention:
     net.co_attention.collect_params().initialize(ctx=ctx)
-    net.cls_mapping.initialize(ctx=ctx)
+    # net.cls_mapping.initialize(ctx=ctx)
     if args.qanet_style_out:
         net.project.collect_params().initialize(ctx=ctx)
         net.dropout.collect_params().initialize(ctx=ctx)
@@ -425,7 +425,7 @@ if args.apply_coattention:
         additional_params.update(net.co_attention.collect_params())
     else:
         additional_params = net.co_attention.collect_params()
-    additional_params.update(net.cls_mapping.collect_params())
+    # additional_params.update(net.cls_mapping.collect_params())
     if args.qanet_style_out:
         additional_params.update(net.project.collect_params())
         additional_params.update(net.dropout.collect_params())
@@ -435,8 +435,6 @@ if args.apply_coattention:
     elif args.bidaf_style_out:
         additional_params.update(net.modeling_layer.collect_params())
         additional_params.update(net.output_layer.collect_params())
-    # net.co_attention_.collect_params().initialize(ctx=ctx)
-    # additional_params.update(net.co_attention_.collect_params())
 
 if args.apply_self_attention:
     net.multi_head_attention.collect_params().initialize(ctx=ctx)

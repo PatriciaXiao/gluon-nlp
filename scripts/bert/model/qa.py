@@ -245,13 +245,16 @@ class BertForQA(Block):
                     self.output_layer = BiDAFOutputLayer(span_start_input_dim=int(bert_out_dim / 2),
                                                         nlayers=1,
                                                         dropout=0.2)
+                '''
                 # for the cls's encoding
+                # used in version 2.0
                 self.cls_mapping = nn.Dense(
                     units=2,
                     flatten=False,
                     weight_initializer=Xavier(),
                     prefix='cls_mapping_'
                 )
+                '''
         if self.apply_self_attention:
             if self_attention_dimension is None:
                 self_attention_dimension = bert_out_dim
@@ -398,9 +401,10 @@ class BertForQA(Block):
             attended_output, att_weights = self.multi_head_attention(bert_output, bert_output)   
         if self.apply_transformer:
             attended_output, additional_outputs = self.transformer(bert_output)
-        if self.add_query or self.apply_self_attention or self.apply_transformer:
+        if self.add_query or self.apply_self_attention or self.apply_transformer or self.apply_coattention:
             output = self.span_classifier(attended_output)
-        elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
+            '''
+            elif self.apply_coattention and not (self.qanet_style_out or self.bidaf_style_out):
             context_output_raw = self.span_classifier(attended_output)
             # mask the output - have to do this, because the rest digits are previously masked as 0, which is incorrect
             #     many valid digits have values smaller than 0, it is improper to use 0 as "impossible value"
@@ -411,6 +415,7 @@ class BertForQA(Block):
             cls_emb_encoded = mx.ndarray.expand_dims(bert_output[:, 0, :], 1)
             cls_reshaped = self.cls_mapping(cls_emb_encoded)
             output = mx.ndarray.concat(cls_reshaped, context_output[:,1:,:], dim=1)
+            '''
         else:
             output = self.span_classifier(bert_output)
         return (output, bert_output)
