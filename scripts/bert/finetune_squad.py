@@ -308,7 +308,8 @@ BERT_DIM = {
 }
 
 net = BertForQA(bert=bert, \
-    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model])
+    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],
+    remove_special_token=args.remove_special_token)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)

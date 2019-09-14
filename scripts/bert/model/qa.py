@@ -175,12 +175,14 @@ class BertForQA(Block):
                     n_rnn_layers=0, rnn_hidden_size=200,
                     n_dense_layers=0, units_dense=200, 
                     add_query=False,
-                    apply_coattention=False, bert_out_dim=768):
+                    apply_coattention=False, bert_out_dim=768,
+                    remove_special_token=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
+        self.remove_special_token=remove_special_token
         if self.apply_coattention:
             with self.name_scope():
                 self.co_attention = CoAttention(bert_out_dim)
