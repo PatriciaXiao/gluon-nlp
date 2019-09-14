@@ -23,6 +23,8 @@ __all__ = ['BertForQA', 'BertForQALoss']
 from mxnet.gluon import Block, loss, nn
 from mxnet.gluon.loss import Loss
 
+from mxnet import gluon, nd
+
 def mask_logits(x, mask):
     r"""Implement mask logits computation.
 
