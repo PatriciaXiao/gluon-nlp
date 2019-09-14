@@ -191,7 +191,58 @@ class BertForQA(Block):
                 self.span_classifier.add(nn.Dense(units=units_dense, flatten=False, activation='relu'))
             self.span_classifier.add(nn.Dense(units=2, flatten=False))
 
-    def forward(self, inputs, token_types, valid_length=None):  # pylint: disable=arguments-differ
+    def shift_ndarray(self, data, mask, raw_offset):
+        '''
+        Parameters
+        ----------
+        data: NDArray, shape(dim, batch_size, seq_length)
+                mostly we use o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
+        mask: NDArray, shape(batch_size, seq_length)
+                the mask; in most cases,
+                        context_mask = token_types
+                        query_mask = 1 - context_mask
+        raw_offset: NDArray, shape(batch_size, seq_length)
+                    For example, if it is:
+                    [[1, 1, 1, 1, 1, .... 1],
+                     [-2, -2, -2, -2, -2, .... -2],
+                     [0, 0, 0, 0, 0, .... 0]]
+                    we'll shift every entry of the targeting matrix, data (o) 
+                                           first line left-ward 1 position
+                                           second line right-ward 1 position
+                                           third line remains unchanged
+                                           and after shifting, the blank positions will be fillled in with zeros
+                    one way of computing this offset matrix:
+                    raw_offset_contx = query_mask.sum(axis=1).reshape(len(query_mask),1).tile(bert_output.shape[1])
+                    raw_offset_query = mx.nd.ones(inputs.shape).as_in_context(inputs.context)
+                                    or mx.nd.zeros(inputs.shape).as_in_context(inputs.context)
+            in case that ndarray is shifted, we need new valid length
+                valid_query_length = query_mask.sum(axis=1)
+                valid_contx_length = valid_length - valid_query_length
+            and if remove special token, 
+                valid_query_length = valid_query_length - 2
+                valid_contx_length = valid_contx_length - 1
+
+        Returns
+        -------
+        result: the final result we want is mx.ndarray.transpose(result, axes=(1,2,0))
+        mask_result: the mask of the result (shifted)
+        '''
+        data_raw = mx.ndarray.expand_dims(mx.nd.multiply(mask, data), 0)
+        raw_offset = raw_offset.astype(float)
+        warp_matrix = mx.ndarray.expand_dims(mx.ndarray.stack(raw_offset, 
+                                                mx.nd.zeros(raw_offset.shape).astype(float).as_in_context(raw_offset.context)), 
+                                            0)
+        grid = GridGenerator(data=warp_matrix, transform_type='warp')
+        warpped_out = BilinearSampler(data_raw.astype(float), grid.astype(float))
+        result = mx.ndarray.squeeze(warpped_out, axis=0).astype('float32')
+        # correction needed for the first digit
+        col_offsets = raw_offset[:,0].as_in_context(data.context)
+        row_offsets = mx.nd.arange(len(col_offsets)).as_in_context(data.context)
+        # mask shifted
+        mask_result = (result != 0).max(axis=0)
+        return result, mask_result
+
+    def forward(self, inputs, token_types, valid_length=None, additional_masks=None):  # pylint: disable=arguments-differ
         """Generate the unnormalized score for the given the input sequences.
 
         Parameters
@@ -220,6 +271,8 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
+            cls_mask, sep_mask_1, sep_mask_2 = additional_masks
+            # to add something here if the performance is not harmed
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
             query_max_len = bert_output.shape[1] # int(query_mask.sum(axis=1).max().asscalar())
             context_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(context_mask, o), axes=(1,2,0))

@@ -421,12 +421,29 @@ def train():
         for batch_id, data in enumerate(train_dataloader):
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
+            _, inputs, token_types, valid_length, start_label, end_label = data
+
+            ########## Pre-processing the masks
+            cls_mask = mx.nd.zeros(token_types.shape)
+            sep_mask_1 = mx.nd.zeros(token_types.shape)
+            sep_mask_2 = mx.nd.zeros(token_types.shape)
+            cls_mask[:, 0] = 1.
+            range_row_index = mx.nd.array(np.arange(len(example_ids)))
+            valid_query_length = (1 - token_types).sum(axis=1)
+            sep_mask_1[range_row_index, valid_query_length - 1] = 1.
+            sep_mask_2[range_row_index, valid_length - 1] = 1.
+            ########## End pre-processing the masks
+
             # forward and backward
             with mx.autograd.record():
-                _, inputs, token_types, valid_length, start_label, end_label = data
 
                 log_num += len(inputs)
                 total_num += len(inputs)
+
+                additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
+                                    sep_mask_1.astype('float32').as_in_context(ctx),
+                                    sep_mask_2.astype('float32').as_in_context(ctx),
+                                    additional_masks)
 
                 out = net(inputs.astype('float32').as_in_context(ctx),
                           token_types.astype('float32').as_in_context(ctx),
@@ -511,9 +528,23 @@ def evaluate():
     for data in dev_dataloader:
         example_ids, inputs, token_types, valid_length, _, _ = data
         total_num += len(inputs)
+        ########## Pre-processing the masks
+        cls_mask = mx.nd.zeros(token_types.shape)
+        sep_mask_1 = mx.nd.zeros(token_types.shape)
+        sep_mask_2 = mx.nd.zeros(token_types.shape)
+        cls_mask[:, 0] = 1.
+        range_row_index = mx.nd.array(np.arange(len(example_ids)))
+        valid_query_length = (1 - token_types).sum(axis=1)
+        sep_mask_1[range_row_index, valid_query_length - 1] = 1.
+        sep_mask_2[range_row_index, valid_length - 1] = 1.
+        ########## End pre-processing the masks
+        additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
+                            sep_mask_1.astype('float32').as_in_context(ctx),
+                            sep_mask_2.astype('float32').as_in_context(ctx))
         out = net(inputs.astype('float32').as_in_context(ctx),
                   token_types.astype('float32').as_in_context(ctx),
-                  valid_length.astype('float32').as_in_context(ctx))
+                  valid_length.astype('float32').as_in_context(ctx),
+                  additional_masks)
 
         output = mx.nd.split(out, axis=2, num_outputs=2)
         example_ids = example_ids.asnumpy().tolist()
