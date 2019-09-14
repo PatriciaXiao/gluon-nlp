@@ -201,6 +201,15 @@ parser.add_argument('--debug',
                     action='store_true',
                     help='Run the example in test mode for sanity checks')
 
+parser.add_argument('--remove_special_token', action='store_true', default=False,
+                    help='remove the special tokens from bert output by masking.')
+
+parser.add_argument('--customize_loss', action='store_true', default=False,
+                    help='custimizing the loss function when needed.')
+
+parser.add_argument('--apply_coattention', action='store_true', default=False,
+                    help='apply coattention to BERT\' output')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -293,7 +302,13 @@ batchify_fn = nlp.data.batchify.Tuple(
     nlp.data.batchify.Stack('float32'),
     nlp.data.batchify.Stack('float32'))
 
-net = BertForQA(bert=bert)
+BERT_DIM = {
+    'bert_12_768_12': 768,
+    'bert_24_1024_16': 1024
+}
+
+net = BertForQA(bert=bert, \
+    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model])
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)
@@ -308,6 +323,9 @@ elif pretrained:
 else:
     # no checkpoint is loaded
     net.initialize(init=mx.init.Normal(0.02), ctx=ctx)
+
+if args.apply_coattention:
+    net.co_attention.collect_params().initialize(ctx=ctx)
 
 net.hybridize(static_alloc=True)
 
@@ -324,7 +342,7 @@ def train():
     else:
         train_data = SQuAD(segment, version='1.1')
     if args.debug:
-        sampled_data = [train_data[i] for i in range(1000)]
+        sampled_data = [train_data[i] for i in range(120)] # 1000
         train_data = mx.gluon.data.SimpleDataset(sampled_data)
     log.info('Number of records in Train data:{}'.format(len(train_data)))
 
@@ -517,14 +535,19 @@ def evaluate():
         results = all_results[features[0].example_id]
         example_qas_id = features[0].qas_id
 
-        prediction, _ = predict(
+        prediction, score_diff, best_result = predict(
             features=features,
             results=results,
             tokenizer=nlp.data.BERTBasicTokenizer(lower=lower),
             max_answer_length=max_answer_length,
-            null_score_diff_threshold=null_score_diff_threshold,
+            # null_score_diff_threshold=null_score_diff_threshold,
             n_best_size=n_best_size,
             version_2=version_2)
+
+        if version_2:
+            if score_diff > null_score_diff_threshold:
+                prediction = ''
+            
 
         all_predictions[example_qas_id] = prediction
 

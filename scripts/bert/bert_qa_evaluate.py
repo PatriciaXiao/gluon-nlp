@@ -318,7 +318,7 @@ def predict(features,
         nbest_json.append((entry.text, float(probs[i])))
 
     if not version_2:
-        prediction = best_non_null_entry.text # nbest_json[0][0]
+        prediction = nbest_json[0][0]
         score_diff = 0.
     else:
         # predict '' iff (the null score - the score of best non-null) > threshold
