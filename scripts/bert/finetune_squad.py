@@ -421,7 +421,7 @@ def train():
         for batch_id, data in enumerate(train_dataloader):
             # set new lr
             step_num = set_new_lr(step_num, batch_id)
-            _, inputs, token_types, valid_length, start_label, end_label = data
+            example_ids, inputs, token_types, valid_length, start_label, end_label = data
 
             ########## Pre-processing the masks
             cls_mask = mx.nd.zeros(token_types.shape)
