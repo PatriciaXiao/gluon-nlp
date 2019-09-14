@@ -105,8 +105,8 @@ parser.add_argument('--output_dir',
 
 parser.add_argument('--epochs',
                     type=int,
-                    default=3,
-                    help='number of epochs, default is 3')
+                    default=2,
+                    help='number of epochs, default is 2')
 
 parser.add_argument('--batch_size',
                     type=int,
