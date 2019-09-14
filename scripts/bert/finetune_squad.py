@@ -110,12 +110,12 @@ parser.add_argument('--epochs',
 
 parser.add_argument('--batch_size',
                     type=int,
-                    default=32,
+                    default=12,
                     help='Batch size. Number of examples per gpu in a minibatch. default is 32')
 
 parser.add_argument('--test_batch_size',
                     type=int,
-                    default=24,
+                    default=12,
                     help='Test batch size. default is 24')
 
 parser.add_argument('--optimizer',
