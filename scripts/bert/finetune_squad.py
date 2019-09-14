@@ -442,12 +442,12 @@ def train():
 
                 additional_masks = (cls_mask.astype('float32').as_in_context(ctx),
                                     sep_mask_1.astype('float32').as_in_context(ctx),
-                                    sep_mask_2.astype('float32').as_in_context(ctx),
-                                    additional_masks)
+                                    sep_mask_2.astype('float32').as_in_context(ctx))
 
                 out = net(inputs.astype('float32').as_in_context(ctx),
                           token_types.astype('float32').as_in_context(ctx),
-                          valid_length.astype('float32').as_in_context(ctx))
+                          valid_length.astype('float32').as_in_context(ctx),
+                          additional_masks)
 
                 ls = loss_function(out, [
                     start_label.astype('float32').as_in_context(ctx),
