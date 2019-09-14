@@ -329,7 +329,7 @@ if args.apply_coattention:
 
 net.hybridize(static_alloc=True)
 
-loss_function = BertForQALoss()
+loss_function = BertForQALoss(customize_loss=args.customize_loss)
 loss_function.hybridize(static_alloc=True)
 
 
