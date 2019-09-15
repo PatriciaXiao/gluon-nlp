@@ -210,6 +210,11 @@ parser.add_argument('--customize_loss', action='store_true', default=False,
 parser.add_argument('--apply_coattention', action='store_true', default=False,
                     help='apply coattention to BERT\' output')
 
+parser.add_argument('--n_rnn_layers',
+                    type=int,
+                    default=0,
+                    help='number of LSTM layers added after the BERT-output and before the dense span-classifier.')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -308,7 +313,8 @@ BERT_DIM = {
 }
 
 net = BertForQA(bert=bert, \
-    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model],
+    n_rnn_layers = args.n_rnn_layers,
+    apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model], \
     remove_special_token=args.remove_special_token)
 if model_parameters:
     # load complete BertForQA parameters

@@ -172,8 +172,8 @@ class BertForQA(Block):
     """
 
     def __init__(self, bert, prefix=None, params=None,
-                    n_rnn_layers=0, rnn_hidden_size=200,
-                    n_dense_layers=0, units_dense=200, 
+                    n_rnn_layers=0, rnn_hidden_size=600, # used to be 200 but changed to 600 because of some language models' settings, seems that 600 is better
+                    n_dense_layers=0, units_dense=600, 
                     add_query=False,
                     apply_coattention=False, bert_out_dim=768,
                     remove_special_token=False):
@@ -273,8 +273,8 @@ class BertForQA(Block):
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             context_mask = token_types
             query_mask = 1 - context_mask
-            cls_mask, sep_mask_1, sep_mask_2 = additional_masks
             if self.remove_special_token:
+                cls_mask, sep_mask_1, sep_mask_2 = additional_masks
                 context_mask = context_mask - sep_mask_2
                 query_mask = query_mask - (sep_mask_1 + cls_mask)
             context_max_len = bert_output.shape[1] # int(context_mask.sum(axis=1).max().asscalar())
