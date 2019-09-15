@@ -215,6 +215,9 @@ parser.add_argument('--n_rnn_layers',
                     default=0,
                     help='number of LSTM layers added after the BERT-output and before the dense span-classifier.')
 
+parser.add_argument('--mask_output', action='store_true', default=False,
+                    help='mask the BertForQA final output with very negative numbers. (not suitable for customize_loss)')
+
 args = parser.parse_args()
 
 output_dir = args.output_dir
@@ -315,7 +318,8 @@ BERT_DIM = {
 net = BertForQA(bert=bert, \
     n_rnn_layers = args.n_rnn_layers,
     apply_coattention=args.apply_coattention, bert_out_dim=BERT_DIM[args.bert_model], \
-    remove_special_token=args.remove_special_token)
+    remove_special_token=args.remove_special_token,
+    mask_output=args.mask_output)
 if model_parameters:
     # load complete BertForQA parameters
     net.load_parameters(model_parameters, ctx=ctx, cast_dtype=True)

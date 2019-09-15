@@ -53,7 +53,7 @@ class CoAttention(Block):
     An implementation of co-attention block.
     """
 
-    def __init__(self, bert_out_dim, params=None):
+    def __init__(self, bert_out_dim, concat_out=True, params=None):
         super(CoAttention, self).__init__("co_attention")
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
@@ -72,6 +72,9 @@ class CoAttention(Block):
                 'linear_kernel', shape=(1, 1, bert_out_dim), init=mx.init.Xavier())
             self.bias = self.params.get(
                 'coattention_bias', shape=(1,), init=mx.init.Zero())
+            if not self.concat_out:
+                self.out_weight = self.params.get(
+                    'weight_of_output', shape=(1,4), init=mx.init.Xavier())
 
     def forward(self, context, query, context_mask, query_mask,
                        context_max_len, query_max_len):
@@ -111,7 +114,15 @@ class CoAttention(Block):
         c2q = F.batch_dot(similarity_dash, query)
         q2c = F.batch_dot(F.batch_dot(
             similarity_dash, similarity_dash_trans), context)
-        return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
+        # return F.concat(context, c2q, context * c2q, context * q2c, dim=-1)
+        if self.concat_out:
+            return F.concat(context, c2q, context * c2q, context * q2c, dim=-1), \
+                   F.concat(query,   q2c, query * q2c, query * c2q, dim=-1)
+        else:
+            out_weight = self.out_weight.data(ctx)
+            return out_weight[0,0] * context + out_weight[0,1] * c2q + out_weight[0,2] * context * c2q + out_weight[0,3] * context * q2c, \
+                    out_weight[0,0] * query  + out_weight[0,1] * q2c + out_weight[0,2] * query * q2c   + out_weight[0,3] * query * c2q
+
 
     def _calculate_trilinear_similarity(self, context, query, context_max_len, query_max_len,
                                         w4mlu, bias):
@@ -176,13 +187,15 @@ class BertForQA(Block):
                     n_dense_layers=0, units_dense=600, 
                     add_query=False,
                     apply_coattention=False, bert_out_dim=768,
-                    remove_special_token=False):
+                    remove_special_token=False,
+                    mask_output=False):
         super(BertForQA, self).__init__(prefix=prefix, params=params)
         self.add_query=add_query
         self.apply_coattention = apply_coattention
         self.bert = bert
         self.span_classifier = nn.HybridSequential()
         self.remove_special_token=remove_special_token
+        self.mask_output = mask_output
         if self.apply_coattention:
             with self.name_scope():
                 self.co_attention = CoAttention(bert_out_dim)
@@ -263,6 +276,7 @@ class BertForQA(Block):
             Shape (batch_size, seq_length, 2)
         """
         bert_output = self.bert(inputs, token_types, valid_length)
+        context_mask = None
         if self.add_query:
             o = mx.ndarray.transpose(bert_output, axes=(2,0,1))
             mask = 1 - token_types
@@ -283,13 +297,22 @@ class BertForQA(Block):
             query_emb_encoded = mx.ndarray.transpose(mx.nd.multiply(query_mask, o), axes=(1,2,0))
             context_mask = (context_emb_encoded != 0).max(axis=2)
             query_mask = (query_emb_encoded != 0).max(axis=2)
-            attended_output = self.co_attention(context_emb_encoded, query_emb_encoded, 
+            attended_output, attended_query = self.co_attention(
+                                                context_emb_encoded, query_emb_encoded, 
                                                 context_mask, query_mask, 
                                                 context_max_len, query_max_len)
         if self.add_query or self.apply_coattention:
             output = self.span_classifier(attended_output)
         else:
             output = self.span_classifier(bert_output)
+        # if output needs to be masked
+        if self.mask_output:
+            if context_mask is not None:
+                context_output_mask_raw = context_mask.expand_dims(-1)
+            else:
+                context_output_mask_raw = token_types.expand_dims(-1)
+            context_output_mask = nd.concat(context_output_mask_raw, context_output_mask_raw, dim=-1)
+            output = mask_logits(output, context_output_mask)
         return output
 
 
