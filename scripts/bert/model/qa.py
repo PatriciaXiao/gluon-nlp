@@ -55,6 +55,7 @@ class CoAttention(Block):
 
     def __init__(self, bert_out_dim, concat_out=True, params=None):
         super(CoAttention, self).__init__("co_attention")
+        self.concat_out=concat_out
         with self.name_scope():
             self.w4c = gluon.nn.Dense(
                 units=1,
