@@ -375,6 +375,10 @@ class BertForQALoss(Loss):
                     end_label[i, j] = b / (2 ** abs(j - end_label_idx[i]) )
                 start_label[i, start_label_idx[i]] = a
                 end_label[i, end_label_idx[i]] = a
+            # to make it more precise: sum up to exactly 1
+            print(start_label.sum(axis=0))
+            print(end_label.sum(axis=0))
+            exit(0)  
             # start_label = start_label.softmax(axis=1) # too-----slow
             # end_label = end_label.softmax(axis=1)
         return (self.loss(start_pred, start_label) + self.loss(
