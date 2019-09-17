@@ -376,6 +376,7 @@ class BertForQALoss(Loss):
                 start_label[i, start_label_idx[i]] = a
                 end_label[i, end_label_idx[i]] = a
             # to make it more precise: sum up to exactly 1
+            print(start_label)
             print(start_label.sum(axis=1))
             print(end_label.sum(axis=1))
             exit(0)  
